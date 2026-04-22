@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+out/
+release/
+*.app
+*.dmg
+
+# Local / IDE
+.DS_Store
+.vscode/
+.idea/
+*.log
+
+# Electron
+.electron/
+
+# Brainstorm session artifacts (not part of the product)
+.superpowers/
+
+# Env
+.env
+.env.local
