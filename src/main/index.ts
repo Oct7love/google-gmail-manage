@@ -1,6 +1,8 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { join } from 'node:path';
 import { IpcChannels } from '../shared/ipc-channels';
+import { getDb, closeDb } from './storage/db';
+import { registerAccountsIpc } from './ipc/accounts';
 
 const isDev = !app.isPackaged;
 
@@ -38,9 +40,12 @@ function createWindow(): void {
 
 function registerIpc(): void {
   ipcMain.handle(IpcChannels.System.Ping, () => 'pong');
+  registerAccountsIpc();
 }
 
 app.whenReady().then(() => {
+  // 惰性初始化数据库（getDb 内部会建表）。显式调用一次让启动时就把 DB 文件创建出来，方便排查
+  getDb();
   registerIpc();
   createWindow();
 
@@ -51,4 +56,8 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('before-quit', () => {
+  closeDb();
 });

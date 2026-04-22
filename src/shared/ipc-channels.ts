@@ -3,4 +3,7 @@ export const IpcChannels = {
   System: {
     Ping: 'system:ping',
   },
+  Accounts: {
+    List: 'accounts:list',
+  },
 } as const;
