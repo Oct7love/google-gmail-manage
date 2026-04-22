@@ -6,4 +6,10 @@ export const IpcChannels = {
   Accounts: {
     List: 'accounts:list',
   },
+  Credentials: {
+    /** 只返回 { configured: boolean }，不返回实际值 */
+    Status: 'credentials:status',
+    Set: 'credentials:set',
+    Clear: 'credentials:clear',
+  },
 } as const;

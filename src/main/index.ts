@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { IpcChannels } from '../shared/ipc-channels';
 import { getDb, closeDb } from './storage/db';
 import { registerAccountsIpc } from './ipc/accounts';
+import { registerCredentialsIpc } from './ipc/credentials';
 
 const isDev = !app.isPackaged;
 
@@ -41,6 +42,7 @@ function createWindow(): void {
 function registerIpc(): void {
   ipcMain.handle(IpcChannels.System.Ping, () => 'pong');
   registerAccountsIpc();
+  registerCredentialsIpc();
 }
 
 app.whenReady().then(() => {

@@ -10,7 +10,7 @@
     "preview": "electron-vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "lint": "eslint . --ext .ts,.tsx",
-    "postinstall": "electron-rebuild -f -w better-sqlite3"
+    "postinstall": "electron-rebuild -f -w better-sqlite3,keytar"
   },
   "devDependencies": {
     "@electron/rebuild": "^4.0.4",
@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "better-sqlite3": "^12.9.0",
+    "keytar": "^7.9.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "zustand": "^5.0.0"
@@ -37,7 +38,8 @@
     "onlyBuiltDependencies": [
       "better-sqlite3",
       "electron",
-      "esbuild"
+      "esbuild",
+      "keytar"
     ]
   }
 }
