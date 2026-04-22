@@ -5,6 +5,14 @@ export const IpcChannels = {
   },
   Accounts: {
     List: 'accounts:list',
+    Add: 'accounts:add',
+    Remove: 'accounts:remove',
+    Reauth: 'accounts:reauth',
+  },
+  Messages: {
+    List: 'messages:list',
+    Detail: 'messages:detail',
+    Sync: 'messages:sync',
   },
   Credentials: {
     /** 只返回 { configured: boolean }，不返回实际值 */

@@ -4,6 +4,7 @@ import { IpcChannels } from '../shared/ipc-channels';
 import { getDb, closeDb } from './storage/db';
 import { registerAccountsIpc } from './ipc/accounts';
 import { registerCredentialsIpc } from './ipc/credentials';
+import { registerMessagesIpc } from './ipc/messages';
 
 const isDev = !app.isPackaged;
 
@@ -43,6 +44,7 @@ function registerIpc(): void {
   ipcMain.handle(IpcChannels.System.Ping, () => 'pong');
   registerAccountsIpc();
   registerCredentialsIpc();
+  registerMessagesIpc();
 }
 
 app.whenReady().then(() => {
