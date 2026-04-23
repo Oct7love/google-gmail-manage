@@ -1,15 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
 import { TOTP, URI } from 'otpauth';
-import { ShieldCheck, Copy, Check } from 'lucide-react';
+import { ShieldCheck, Copy, Check, RefreshCw } from 'lucide-react';
 
 const PERIOD = 30;
 
 interface Props {
-  initialSecret?: string;
+  /** 当前密钥（受控值） */
+  secret: string;
+  /** 密钥变更回调 */
+  onSecretChange: (s: string) => void;
+  /** 用于显示"已修改"提示的原始值（从粘贴解析来的） */
+  originalSecret?: string;
 }
 
-export default function TotpPanel({ initialSecret = '' }: Props): JSX.Element {
-  const [secretInput, setSecretInput] = useState(initialSecret);
+export default function TotpPanel({ secret, onSecretChange, originalSecret }: Props): JSX.Element {
   const [now, setNow] = useState(() => Date.now());
   const [copied, setCopied] = useState(false);
 
@@ -19,9 +23,8 @@ export default function TotpPanel({ initialSecret = '' }: Props): JSX.Element {
   }, []);
 
   const { code, error, remaining } = useMemo(() => {
-    const s = secretInput.trim();
+    const s = secret.trim();
     if (!s) return { code: '', error: null as string | null, remaining: PERIOD };
-
     try {
       const totp = buildTotp(s);
       const code = totp.generate({ timestamp: now });
@@ -34,7 +37,7 @@ export default function TotpPanel({ initialSecret = '' }: Props): JSX.Element {
         remaining: PERIOD,
       };
     }
-  }, [secretInput, now]);
+  }, [secret, now]);
 
   const onCopy = async (): Promise<void> => {
     if (!code) return;
@@ -48,6 +51,7 @@ export default function TotpPanel({ initialSecret = '' }: Props): JSX.Element {
   };
 
   const progressPct = ((PERIOD - remaining) / PERIOD) * 100;
+  const modified = Boolean(originalSecret && originalSecret.trim() && secret.trim() !== originalSecret.trim());
 
   return (
     <div className="rounded-lg border border-border bg-white px-3 py-2.5 text-xs">
@@ -55,15 +59,37 @@ export default function TotpPanel({ initialSecret = '' }: Props): JSX.Element {
         <span className="flex items-center gap-1.5 font-medium text-text">
           <ShieldCheck size={13} className="text-accent" />
           2FA 验证码生成器
+          {modified && (
+            <span
+              className="rounded-full bg-orange-100 px-1.5 py-0 text-[9.5px] text-warning"
+              title="密钥已被你修改，提交账号时会以当前值保存"
+            >
+              已改动
+            </span>
+          )}
         </span>
-        <span className="text-[10.5px] text-muted">本地算，不联网</span>
+        <div className="flex items-center gap-2 text-[10.5px] text-muted">
+          {originalSecret && originalSecret.trim() && (
+            <button
+              type="button"
+              onClick={() => onSecretChange(originalSecret)}
+              disabled={!modified}
+              className="flex items-center gap-0.5 rounded px-1.5 py-0.5 hover:bg-sidebar disabled:opacity-30"
+              title="撤销改动，恢复成粘贴解析时的值"
+            >
+              <RefreshCw size={9} />
+              还原
+            </button>
+          )}
+          <span>本地算，不联网</span>
+        </div>
       </div>
 
       <input
         type="text"
-        value={secretInput}
-        onChange={(e) => setSecretInput(e.target.value)}
-        placeholder="粘贴 2FA 密钥（base32 或 otpauth://...）"
+        value={secret}
+        onChange={(e) => onSecretChange(e.target.value)}
+        placeholder="粘贴 2FA 密钥（base32 或 otpauth://...），想改直接覆盖"
         className="w-full rounded-md border border-border bg-white px-2 py-1.5 font-mono text-[11px] focus:border-accent focus:outline-none"
       />
 

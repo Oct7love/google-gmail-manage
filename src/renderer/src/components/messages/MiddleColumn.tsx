@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import type { MessageSummary } from '../../../../shared/types';
 import { useStore } from '../../store';
 import MessageRow from './MessageRow';
-import { Inbox, RefreshCw } from 'lucide-react';
+import CredentialsDrawer from '../accounts/CredentialsDrawer';
+import { Inbox, KeyRound, RefreshCw } from 'lucide-react';
 
 const EMPTY_MESSAGES: MessageSummary[] = [];
 
@@ -14,6 +16,7 @@ export default function MiddleColumn(): JSX.Element {
     s.selectedEmail ? s.refreshingEmails.has(s.selectedEmail) : false,
   );
   const refreshOne = useStore((s) => s.refreshOne);
+  const [credsOpen, setCredsOpen] = useState(false);
 
   if (!selected) {
     return (
@@ -40,16 +43,27 @@ export default function MiddleColumn(): JSX.Element {
             </div>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={() => void refreshOne(selected)}
-          disabled={refreshing}
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted transition hover:bg-black/5 disabled:opacity-30"
-          title="刷新"
-          aria-label="刷新"
-        >
-          <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
-        </button>
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setCredsOpen(true)}
+            className="flex h-7 w-7 items-center justify-center rounded-md text-muted transition hover:bg-black/5"
+            title="查看账号凭据（密码 / 2FA / 辅邮）"
+            aria-label="查看账号凭据"
+          >
+            <KeyRound size={13} />
+          </button>
+          <button
+            type="button"
+            onClick={() => void refreshOne(selected)}
+            disabled={refreshing}
+            className="flex h-7 w-7 items-center justify-center rounded-md text-muted transition hover:bg-black/5 disabled:opacity-30"
+            title="刷新"
+            aria-label="刷新"
+          >
+            <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
+          </button>
+        </div>
       </header>
       <div className="flex-1 overflow-y-auto">
         {messages.length === 0 ? (
@@ -62,6 +76,9 @@ export default function MiddleColumn(): JSX.Element {
           </ul>
         )}
       </div>
+      {credsOpen && selected && (
+        <CredentialsDrawer email={selected} onClose={() => setCredsOpen(false)} />
+      )}
     </section>
   );
 }

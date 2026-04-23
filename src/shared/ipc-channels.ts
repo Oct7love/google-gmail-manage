@@ -3,6 +3,8 @@ export const IpcChannels = {
   System: {
     Ping: 'system:ping',
     OpenAppPasswordPage: 'system:openAppPasswordPage',
+    GetSettings: 'system:getSettings',
+    SetSettings: 'system:setSettings',
   },
   Accounts: {
     List: 'accounts:list',
@@ -10,6 +12,8 @@ export const IpcChannels = {
     Remove: 'accounts:remove',
     Verify: 'accounts:verify',
     UpdatePassword: 'accounts:updatePassword',
+    GetCredentials: 'accounts:getCredentials',
+    SetInfo: 'accounts:setInfo',
   },
   Messages: {
     List: 'messages:list',

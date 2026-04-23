@@ -2,6 +2,8 @@ import { contextBridge, ipcRenderer } from 'electron';
 import { IpcChannels } from '../shared/ipc-channels';
 import type {
   Account,
+  AccountCredentials,
+  AccountInfo,
   MessageDetail,
   MessageSummary,
   RefreshEvent,
@@ -10,6 +12,7 @@ import type {
 export interface AddAccountInput {
   email: string;
   password: string;
+  info?: AccountInfo;
 }
 
 export interface AddAccountResult {
@@ -35,6 +38,10 @@ const api = {
     ping: (): Promise<string> => ipcRenderer.invoke(IpcChannels.System.Ping),
     openAppPasswordPage: (): Promise<void> =>
       ipcRenderer.invoke(IpcChannels.System.OpenAppPasswordPage),
+    getSettings: (): Promise<{ webviewProxy?: string }> =>
+      ipcRenderer.invoke(IpcChannels.System.GetSettings),
+    setSettings: (next: { webviewProxy?: string }): Promise<{ webviewProxy?: string }> =>
+      ipcRenderer.invoke(IpcChannels.System.SetSettings, next),
   },
   accounts: {
     list: (): Promise<Account[]> => ipcRenderer.invoke(IpcChannels.Accounts.List),
@@ -46,6 +53,10 @@ const api = {
       ipcRenderer.invoke(IpcChannels.Accounts.UpdatePassword, input),
     remove: (email: string): Promise<{ ok: boolean; code?: string }> =>
       ipcRenderer.invoke(IpcChannels.Accounts.Remove, email),
+    getCredentials: (email: string): Promise<AccountCredentials> =>
+      ipcRenderer.invoke(IpcChannels.Accounts.GetCredentials, email),
+    setInfo: (email: string, info: AccountInfo): Promise<void> =>
+      ipcRenderer.invoke(IpcChannels.Accounts.SetInfo, email, info),
   },
   messages: {
     list: (email: string, limit: number): Promise<MessageSummary[]> =>

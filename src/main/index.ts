@@ -13,6 +13,7 @@ import { registerSystemIpc } from './ipc/system';
 import { registerTranslationIpc } from './ipc/translation';
 import { startAutoRefresh, stopAutoRefresh } from './scheduler/auto-refresh';
 import { startAllIdle, stopAllIdle, reconnectAll } from './imap/idle-manager';
+import { applyWebviewProxy, loadSettings } from './settings';
 
 const isDev = !app.isPackaged;
 
@@ -69,6 +70,8 @@ app.whenReady().then(() => {
   // 惰性初始化数据库（getDb 内部会建表）。显式调用一次让启动时就把 DB 文件创建出来，方便排查
   getDb();
   registerIpc();
+  // 应用已保存的 webview 代理（如果用户配置过）
+  void applyWebviewProxy(loadSettings().webviewProxy);
   createWindow();
   startAutoRefresh(); // 1h 兜底轮询
   startAllIdle(); // 实时 IMAP IDLE 推送

@@ -31,6 +31,25 @@ export interface MessageDetail extends MessageSummary {
   bodyText: string | null;
 }
 
+/** 账号附加信息（可选字段，用户粘贴解析或手动录入） */
+export interface AccountInfo {
+  /** Google 登录密码（不是应用专用密码） */
+  googlePassword?: string;
+  /** 2FA 密钥（base32 或 otpauth:// URI） */
+  totpSecret?: string;
+  /** 辅助邮箱 */
+  recoveryEmail?: string;
+  /** 备用链接 */
+  link?: string;
+}
+
+/** 查看账号凭据时返回的完整 bundle */
+export interface AccountCredentials extends AccountInfo {
+  email: string;
+  /** 应用专用密码（IMAP 用） */
+  appPassword?: string;
+}
+
 /** 刷新事件（后台刷新时 main → renderer 推送） */
 export interface RefreshEvent {
   email: string;

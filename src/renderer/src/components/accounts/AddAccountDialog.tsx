@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useStore } from '../../store';
 import TotpPanel from './TotpPanel';
 import { parseAccountLine, ParsedAccount } from '../../lib/parseAccount';
@@ -17,6 +17,9 @@ import {
   ExternalLink,
   ArrowRight,
   CheckCircle2,
+  AlertTriangle,
+  Settings,
+  Globe,
 } from 'lucide-react';
 
 // React 对自定义 <webview> 标签没有内建类型；用 any 放行
@@ -28,6 +31,7 @@ type WebviewEl = HTMLElement & {
 const WebView = 'webview' as unknown as React.FC<Record<string, unknown>>;
 
 const APP_PASSWORD_URL = 'https://myaccount.google.com/apppasswords';
+const TWO_FA_URL = 'https://myaccount.google.com/signinoptions/two-step-verification';
 const LOGOUT_URL = `https://accounts.google.com/Logout?continue=${encodeURIComponent(APP_PASSWORD_URL)}`;
 
 export default function AddAccountDialog(): JSX.Element | null {
@@ -45,7 +49,6 @@ export default function AddAccountDialog(): JSX.Element | null {
   const [busy, setBusy] = useState(false);
   const [showWebView, setShowWebView] = useState(true);
   const [lastAdded, setLastAdded] = useState<string | null>(null);
-  const [resetKey, setResetKey] = useState(0);
   const [helpOpen, setHelpOpen] = useState(false);
 
   // 批量导入
@@ -53,10 +56,67 @@ export default function AddAccountDialog(): JSX.Element | null {
   const [importOpen, setImportOpen] = useState(false);
   const [importText, setImportText] = useState('');
   const [importError, setImportError] = useState<string | null>(null);
-  const [initialTotpSecret, setInitialTotpSecret] = useState<string>('');
+
+  // 2FA 密钥：受控状态，用户在 TotpPanel 里改了什么这里就是什么
+  const [totpSecret, setTotpSecret] = useState<string>('');
+  const [originalTotpSecret, setOriginalTotpSecret] = useState<string>('');
 
   const webviewRef = useRef<WebviewEl | null>(null);
   const emailInputRef = useRef<HTMLInputElement | null>(null);
+
+  // webview 加载错误 / 代理设置
+  const [webviewError, setWebviewError] = useState<string | null>(null);
+  const [proxyPanelOpen, setProxyPanelOpen] = useState(false);
+  const [proxyInput, setProxyInput] = useState('');
+  const [proxySaving, setProxySaving] = useState(false);
+
+  // 启动时读已存的代理设置
+  useEffect(() => {
+    void window.api.system.getSettings().then((s) => {
+      if (s.webviewProxy) setProxyInput(s.webviewProxy);
+    });
+  }, []);
+
+  // webview 事件监听（did-fail-load / did-finish-load）
+  const webviewRefCallback = useCallback((el: HTMLElement | null) => {
+    const prev = webviewRef.current;
+    if (prev) {
+      // 清掉旧的监听
+      (prev as HTMLElement).removeEventListener('did-fail-load', onWebviewFail as EventListener);
+      (prev as HTMLElement).removeEventListener('did-finish-load', onWebviewOk as EventListener);
+    }
+    webviewRef.current = el as WebviewEl | null;
+    if (el) {
+      el.addEventListener('did-fail-load', onWebviewFail as EventListener);
+      el.addEventListener('did-finish-load', onWebviewOk as EventListener);
+    }
+  }, []);
+
+  function onWebviewFail(e: Event): void {
+    // webview 的 did-fail-load 带 errorCode / errorDescription 属性（在 CustomEvent 的 detail 或直接 on event）
+    const ev = e as Event & { errorCode?: number; errorDescription?: string; validatedURL?: string };
+    // 忽略 ERR_ABORTED（-3），因为我们主动调用 loadURL 会触发这个
+    if (ev.errorCode === -3) return;
+    setWebviewError(ev.errorDescription || '加载失败');
+  }
+
+  function onWebviewOk(): void {
+    setWebviewError(null);
+  }
+
+  const saveProxy = async (): Promise<void> => {
+    setProxySaving(true);
+    await window.api.system.setSettings({ webviewProxy: proxyInput.trim() });
+    setProxySaving(false);
+    setProxyPanelOpen(false);
+    // 重新加载 webview 生效
+    try {
+      webviewRef.current?.loadURL(APP_PASSWORD_URL);
+      setWebviewError(null);
+    } catch {
+      /* noop */
+    }
+  };
 
   if (mode === null) return null;
 
@@ -76,7 +136,18 @@ export default function AddAccountDialog(): JSX.Element | null {
     e.preventDefault();
     setBusy(true);
     setError(null);
-    const submitFn = isUpdate ? () => submitUpdate(lockedEmail!, password) : () => submitAdd(email, password);
+    // 提交时用的是**当前** TOTP 面板里的密钥（用户可能刚改过）+ 其他字段
+    const info = imported || totpSecret.trim()
+      ? {
+          googlePassword: imported?.googlePassword,
+          totpSecret: totpSecret.trim() || undefined,
+          recoveryEmail: imported?.recoveryEmail,
+          link: imported?.link,
+        }
+      : undefined;
+    const submitFn = isUpdate
+      ? () => submitUpdate(lockedEmail!, password, info)
+      : () => submitAdd(email, password, info);
     const res = await submitFn();
     setBusy(false);
     if (!res.ok) {
@@ -95,9 +166,9 @@ export default function AddAccountDialog(): JSX.Element | null {
     setError(null);
     setLastAdded(addedEmail);
     setImported(null);
-    setInitialTotpSecret('');
+    setTotpSecret('');
+    setOriginalTotpSecret('');
     setImportText('');
-    setResetKey((k) => k + 1);
     logoutWebview();
     setTimeout(() => emailInputRef.current?.focus(), 30);
   };
@@ -111,8 +182,8 @@ export default function AddAccountDialog(): JSX.Element | null {
     setImportError(null);
     setImported(parsed);
     setEmail(parsed.email);
-    setInitialTotpSecret(parsed.totpSecret);
-    setResetKey((k) => k + 1);
+    setTotpSecret(parsed.totpSecret);
+    setOriginalTotpSecret(parsed.totpSecret);
     setImportOpen(false);
     setImportText('');
   };
@@ -294,7 +365,11 @@ export default function AddAccountDialog(): JSX.Element | null {
               />
             </label>
 
-            <TotpPanel key={resetKey} initialSecret={initialTotpSecret} />
+            <TotpPanel
+              secret={totpSecret}
+              onSecretChange={setTotpSecret}
+              originalSecret={originalTotpSecret}
+            />
 
             {error && (
               <div className="whitespace-pre-wrap rounded-md bg-red-50 px-3 py-2 text-[12px] text-danger">
@@ -341,6 +416,15 @@ export default function AddAccountDialog(): JSX.Element | null {
                 </button>
                 <button
                   type="button"
+                  onClick={() => webviewRef.current?.loadURL(TWO_FA_URL)}
+                  className="flex items-center gap-1 rounded-md bg-accent/10 px-2 py-1 font-medium text-accent hover:bg-accent/20"
+                  title="跳转到两步验证设置页（修改 2FA 密钥用）"
+                >
+                  <ArrowRight size={11} />
+                  2FA 设置
+                </button>
+                <button
+                  type="button"
                   onClick={logoutWebview}
                   className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-white hover:bg-sidebar"
                   title="登出侧边 Google"
@@ -354,6 +438,16 @@ export default function AddAccountDialog(): JSX.Element | null {
                   title="刷新"
                 >
                   <RotateCw size={11} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProxyPanelOpen((o) => !o)}
+                  className={`flex h-6 w-6 items-center justify-center rounded-md border border-border bg-white hover:bg-sidebar ${
+                    proxyInput ? 'text-accent' : ''
+                  }`}
+                  title="配置 webview 代理（Google 连不上时用）"
+                >
+                  <Settings size={11} />
                 </button>
                 <button
                   type="button"
@@ -373,14 +467,88 @@ export default function AddAccountDialog(): JSX.Element | null {
                 </button>
               </div>
             </header>
-            <WebView
-              ref={webviewRef as unknown as React.Ref<Record<string, unknown>>}
-              src={APP_PASSWORD_URL}
-              className="flex-1 w-full"
-              style={{ display: 'flex' }}
-              partition="persist:google-apppasswords"
-              allowpopups="true"
-            />
+
+            {proxyPanelOpen && (
+              <div className="border-b border-border bg-blue-50/40 px-3 py-2 text-[11px]">
+                <div className="mb-1 flex items-center gap-1.5 text-accent">
+                  <Globe size={11} />
+                  <span className="font-medium">webview 代理</span>
+                </div>
+                <div className="mb-1.5 text-muted">
+                  Google 连不上时填一个本地代理（只影响这个内嵌浏览器，不影响 IMAP / 翻译）。留空=直连。
+                </div>
+                <div className="flex gap-1">
+                  <input
+                    value={proxyInput}
+                    onChange={(e) => setProxyInput(e.target.value)}
+                    placeholder="http://127.0.0.1:7890 或 socks5://127.0.0.1:1080"
+                    className="flex-1 rounded border border-border bg-white px-2 py-1 font-mono text-[11px] focus:border-accent focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void saveProxy()}
+                    disabled={proxySaving}
+                    className="rounded bg-accent px-2 py-1 text-[11px] text-white hover:bg-accent/90 disabled:opacity-50"
+                  >
+                    {proxySaving ? '保存…' : '保存并重载'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="relative flex flex-1">
+              <WebView
+                ref={webviewRefCallback as unknown as React.Ref<Record<string, unknown>>}
+                src={APP_PASSWORD_URL}
+                className="flex-1 w-full"
+                style={{ display: 'flex' }}
+                partition="persist:google-apppasswords"
+                allowpopups="true"
+              />
+              {webviewError && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/95 p-8">
+                  <div className="max-w-sm text-center">
+                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+                      <AlertTriangle size={24} className="text-warning" />
+                    </div>
+                    <h3 className="mb-1 text-sm font-semibold text-text">连不上 Google</h3>
+                    <p className="mb-4 text-xs text-muted">
+                      {webviewError}
+                      <br />
+                      常见原因：国内网络 / 代理没开 / VPN 断了
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setWebviewError(null);
+                          webviewRef.current?.loadURL(APP_PASSWORD_URL);
+                        }}
+                        className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent/90"
+                      >
+                        重试
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setProxyPanelOpen(true)}
+                        className="rounded-md border border-border bg-white px-3 py-1.5 text-xs text-text hover:bg-sidebar"
+                      >
+                        <Settings size={11} className="mr-1 inline" />
+                        配置代理
+                      </button>
+                      <button
+                        type="button"
+                        onClick={openInBrowser}
+                        className="rounded-md border border-border bg-white px-3 py-1.5 text-xs text-text hover:bg-sidebar"
+                      >
+                        <ExternalLink size={11} className="mr-1 inline" />
+                        用系统浏览器打开
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
 

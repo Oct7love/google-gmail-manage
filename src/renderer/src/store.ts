@@ -44,10 +44,12 @@ interface State {
   submitAdd: (
     email: string,
     password: string,
+    info?: import('../../shared/types').AccountInfo,
   ) => Promise<{ ok: boolean; error?: string }>;
   submitUpdate: (
     email: string,
     password: string,
+    info?: import('../../shared/types').AccountInfo,
   ) => Promise<{ ok: boolean; error?: string }>;
 
   removeAccount: (email: string) => Promise<void>;
@@ -114,8 +116,8 @@ export const useStore = create<State>((set, get) => ({
   openUpdateDialog: (email: string) => set({ dialogMode: { update: email } }),
   closeDialog: () => set({ dialogMode: null }),
 
-  submitAdd: async (email, password) => {
-    const res = await window.api.accounts.add({ email, password });
+  submitAdd: async (email, password, info) => {
+    const res = await window.api.accounts.add({ email, password, info });
     if (res.ok && res.email) {
       const accounts = await window.api.accounts.list();
       // 不关闭 dialog：component 决定是关还是清空继续
@@ -126,8 +128,8 @@ export const useStore = create<State>((set, get) => ({
     return { ok: false, error: res.error };
   },
 
-  submitUpdate: async (email, password) => {
-    const res = await window.api.accounts.updatePassword({ email, password });
+  submitUpdate: async (email, password, info) => {
+    const res = await window.api.accounts.updatePassword({ email, password, info });
     if (res.ok) {
       const accounts = await window.api.accounts.list();
       set({ accounts, dialogMode: null });

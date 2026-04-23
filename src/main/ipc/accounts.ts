@@ -1,6 +1,7 @@
 import { dialog, ipcMain } from 'electron';
 import { IpcChannels } from '../../shared/ipc-channels';
 import { MESSAGES_PER_ACCOUNT } from '../../shared/constants';
+import type { AccountCredentials, AccountInfo } from '../../shared/types';
 import * as repo from '../storage/accounts-repo';
 import * as keychain from '../keychain';
 import { verifyCredentials } from '../imap/client';
@@ -10,6 +11,8 @@ import { startIdleFor, stopIdleFor, restartIdleFor } from '../imap/idle-manager'
 export interface AddAccountInput {
   email: string;
   password: string;
+  /** 可选：同时保存的附加信息（Google 密码 / 2FA / 辅邮 / 链接） */
+  info?: AccountInfo;
 }
 
 export interface AddAccountResult {
@@ -58,6 +61,9 @@ async function handleAdd(input: AddAccountInput): Promise<AddAccountResult> {
 
   repo.insertAccount(email);
   await keychain.setPassword(email, password);
+  if (input.info) {
+    await keychain.setAccountInfo(email, input.info);
+  }
 
   await syncAccount(email, MESSAGES_PER_ACCOUNT);
   void startIdleFor(email); // 启动实时 IDLE 连接
@@ -76,6 +82,9 @@ async function handleUpdatePassword(input: AddAccountInput): Promise<AddAccountR
   if (!verify.ok) return { ok: false, error: verify.error };
 
   await keychain.setPassword(email, password);
+  if (input.info) {
+    await keychain.setAccountInfo(email, input.info);
+  }
   repo.updateSyncStatus(email, 'ok');
   await syncAccount(email, MESSAGES_PER_ACCOUNT);
   void restartIdleFor(email); // 用新密码重连 IDLE
@@ -85,7 +94,27 @@ async function handleUpdatePassword(input: AddAccountInput): Promise<AddAccountR
 async function handleRemove(email: string): Promise<void> {
   await stopIdleFor(email); // 先断 IDLE 连接
   await keychain.deletePassword(email);
+  await keychain.deleteAccountInfo(email);
   repo.deleteAccount(email);
+}
+
+async function handleGetCredentials(email: string): Promise<AccountCredentials> {
+  const [appPass, info] = await Promise.all([
+    keychain.getPassword(email),
+    keychain.getAccountInfo(email),
+  ]);
+  return {
+    email,
+    appPassword: appPass ?? undefined,
+    googlePassword: info?.googlePassword,
+    totpSecret: info?.totpSecret,
+    recoveryEmail: info?.recoveryEmail,
+    link: info?.link,
+  };
+}
+
+async function handleSetInfo(email: string, info: AccountInfo): Promise<void> {
+  await keychain.setAccountInfo(email, info);
 }
 
 export function registerAccountsIpc(): void {
@@ -94,6 +123,12 @@ export function registerAccountsIpc(): void {
   ipcMain.handle(IpcChannels.Accounts.Add, (_e, input: AddAccountInput) => handleAdd(input));
   ipcMain.handle(IpcChannels.Accounts.UpdatePassword, (_e, input: AddAccountInput) =>
     handleUpdatePassword(input),
+  );
+  ipcMain.handle(IpcChannels.Accounts.GetCredentials, (_e, email: string) =>
+    handleGetCredentials(email),
+  );
+  ipcMain.handle(IpcChannels.Accounts.SetInfo, (_e, email: string, info: AccountInfo) =>
+    handleSetInfo(email, info),
   );
   ipcMain.handle(IpcChannels.Accounts.Remove, async (_e, email: string) => {
     const confirmed = await dialog.showMessageBox({
