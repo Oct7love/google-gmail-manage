@@ -2,24 +2,24 @@ import { contextBridge, ipcRenderer } from 'electron';
 import { IpcChannels } from '../shared/ipc-channels';
 import type {
   Account,
-  Credentials,
   MessageDetail,
   MessageSummary,
+  RefreshEvent,
 } from '../shared/types';
 
-export interface CredentialsStatus {
-  configured: boolean;
-}
-
-export interface SetCredentialsResult {
-  ok: boolean;
-  error?: string;
+export interface AddAccountInput {
+  email: string;
+  password: string;
 }
 
 export interface AddAccountResult {
   ok: boolean;
   email?: string;
-  code?: string;
+  error?: string;
+}
+
+export interface VerifyResult {
+  ok: boolean;
   error?: string;
 }
 
@@ -33,11 +33,17 @@ export interface SyncResult {
 const api = {
   system: {
     ping: (): Promise<string> => ipcRenderer.invoke(IpcChannels.System.Ping),
+    openAppPasswordPage: (): Promise<void> =>
+      ipcRenderer.invoke(IpcChannels.System.OpenAppPasswordPage),
   },
   accounts: {
     list: (): Promise<Account[]> => ipcRenderer.invoke(IpcChannels.Accounts.List),
-    add: (): Promise<AddAccountResult> => ipcRenderer.invoke(IpcChannels.Accounts.Add),
-    reauth: (): Promise<AddAccountResult> => ipcRenderer.invoke(IpcChannels.Accounts.Reauth),
+    verify: (input: AddAccountInput): Promise<VerifyResult> =>
+      ipcRenderer.invoke(IpcChannels.Accounts.Verify, input),
+    add: (input: AddAccountInput): Promise<AddAccountResult> =>
+      ipcRenderer.invoke(IpcChannels.Accounts.Add, input),
+    updatePassword: (input: AddAccountInput): Promise<AddAccountResult> =>
+      ipcRenderer.invoke(IpcChannels.Accounts.UpdatePassword, input),
     remove: (email: string): Promise<{ ok: boolean; code?: string }> =>
       ipcRenderer.invoke(IpcChannels.Accounts.Remove, email),
   },
@@ -49,11 +55,17 @@ const api = {
     sync: (email: string, max = 10): Promise<SyncResult> =>
       ipcRenderer.invoke(IpcChannels.Messages.Sync, email, max),
   },
-  credentials: {
-    status: (): Promise<CredentialsStatus> => ipcRenderer.invoke(IpcChannels.Credentials.Status),
-    set: (input: Credentials): Promise<SetCredentialsResult> =>
-      ipcRenderer.invoke(IpcChannels.Credentials.Set, input),
-    clear: (): Promise<void> => ipcRenderer.invoke(IpcChannels.Credentials.Clear),
+  refresh: {
+    all: (): Promise<SyncResult[]> => ipcRenderer.invoke(IpcChannels.Refresh.All),
+    onProgress: (cb: (evt: RefreshEvent) => void): (() => void) => {
+      const listener = (_e: unknown, evt: RefreshEvent): void => cb(evt);
+      ipcRenderer.on(IpcChannels.Refresh.Progress, listener);
+      return () => ipcRenderer.removeListener(IpcChannels.Refresh.Progress, listener);
+    },
+  },
+  translation: {
+    translate: (text: string): Promise<{ ok: boolean; text?: string; error?: string }> =>
+      ipcRenderer.invoke(IpcChannels.Translation.Translate, text),
   },
 };
 

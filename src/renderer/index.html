@@ -3,9 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <title>Mail Viewer</title>
+    <!-- webview 加载 Google 页，需放宽 frame-src；脚本/样式仍限制在自身 -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';"
+      content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data: https:; connect-src 'self' ws: http://localhost:5173; frame-src https://myaccount.google.com https://accounts.google.com;"
     />
   </head>
   <body class="bg-bg text-text font-sans antialiased">

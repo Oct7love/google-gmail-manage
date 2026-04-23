@@ -1,52 +1,24 @@
 import keytar from 'keytar';
-import type { Credentials, Tokens } from '../../shared/types';
 
 /**
  * Keychain 薄封装。
- * - Credentials（Client ID / Secret）：account 固定为 'default'
- * - Tokens（每个 Gmail 账号一份）：account 使用 email 地址
  *
- * 存的值一律 JSON.stringify；读取时若解析失败视为未配置。
+ * 存储内容：Gmail 地址对应的"应用专用密码"。
+ * - service: MailViewer-imap-passwords
+ * - account: 用户的 Gmail 地址
+ * - password: Google 颁发的 16 位应用密码（可包含空格，存取原样）
  */
 
-const SERVICE_CREDENTIALS = 'MailViewer-gmail-credentials';
-const SERVICE_TOKENS = 'MailViewer-gmail-tokens';
-const CREDENTIALS_ACCOUNT = 'default';
+const SERVICE_PASSWORDS = 'MailViewer-imap-passwords';
 
-export async function getCredentials(): Promise<Credentials | null> {
-  const raw = await keytar.getPassword(SERVICE_CREDENTIALS, CREDENTIALS_ACCOUNT);
-  if (!raw) return null;
-  try {
-    const parsed = JSON.parse(raw) as Credentials;
-    if (!parsed.clientId || !parsed.clientSecret) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
+export async function getPassword(email: string): Promise<string | null> {
+  return keytar.getPassword(SERVICE_PASSWORDS, email);
 }
 
-export async function setCredentials(creds: Credentials): Promise<void> {
-  await keytar.setPassword(SERVICE_CREDENTIALS, CREDENTIALS_ACCOUNT, JSON.stringify(creds));
+export async function setPassword(email: string, password: string): Promise<void> {
+  await keytar.setPassword(SERVICE_PASSWORDS, email, password);
 }
 
-export async function clearCredentials(): Promise<void> {
-  await keytar.deletePassword(SERVICE_CREDENTIALS, CREDENTIALS_ACCOUNT);
-}
-
-export async function getTokens(email: string): Promise<Tokens | null> {
-  const raw = await keytar.getPassword(SERVICE_TOKENS, email);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as Tokens;
-  } catch {
-    return null;
-  }
-}
-
-export async function setTokens(email: string, tokens: Tokens): Promise<void> {
-  await keytar.setPassword(SERVICE_TOKENS, email, JSON.stringify(tokens));
-}
-
-export async function deleteTokens(email: string): Promise<void> {
-  await keytar.deletePassword(SERVICE_TOKENS, email);
+export async function deletePassword(email: string): Promise<void> {
+  await keytar.deletePassword(SERVICE_PASSWORDS, email);
 }

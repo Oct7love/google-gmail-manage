@@ -1,19 +1,21 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, shell } from 'electron';
 import { join } from 'node:path';
-import { IpcChannels } from '../shared/ipc-channels';
 import { getDb, closeDb } from './storage/db';
 import { registerAccountsIpc } from './ipc/accounts';
-import { registerCredentialsIpc } from './ipc/credentials';
 import { registerMessagesIpc } from './ipc/messages';
+import { registerRefreshIpc } from './ipc/refresh';
+import { registerSystemIpc } from './ipc/system';
+import { registerTranslationIpc } from './ipc/translation';
+import { startAutoRefresh, stopAutoRefresh } from './scheduler/auto-refresh';
 
 const isDev = !app.isPackaged;
 
 function createWindow(): void {
   const win = new BrowserWindow({
-    width: 1200,
-    height: 780,
-    minWidth: 900,
-    minHeight: 600,
+    width: 1280,
+    height: 820,
+    minWidth: 960,
+    minHeight: 620,
     show: false,
     titleBarStyle: 'hiddenInset',
     backgroundColor: '#fafafa',
@@ -22,10 +24,17 @@ function createWindow(): void {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
+      webviewTag: true, // 让 AddAccountDialog 里能内嵌 Google 密码生成页
     },
   });
 
   win.on('ready-to-show', () => win.show());
+  // DevTools 按需打开：⌘⌥I 组合键（dev / production 都生效）
+  win.webContents.on('before-input-event', (_e, input) => {
+    if (input.type === 'keyDown' && input.meta && input.alt && input.key.toLowerCase() === 'i') {
+      win.webContents.toggleDevTools();
+    }
+  });
 
   // 外部链接走系统浏览器，不在 App 内打开
   win.webContents.setWindowOpenHandler(({ url }) => {
@@ -41,10 +50,11 @@ function createWindow(): void {
 }
 
 function registerIpc(): void {
-  ipcMain.handle(IpcChannels.System.Ping, () => 'pong');
+  registerSystemIpc();
   registerAccountsIpc();
-  registerCredentialsIpc();
   registerMessagesIpc();
+  registerRefreshIpc();
+  registerTranslationIpc();
 }
 
 app.whenReady().then(() => {
@@ -52,6 +62,7 @@ app.whenReady().then(() => {
   getDb();
   registerIpc();
   createWindow();
+  startAutoRefresh();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -63,5 +74,6 @@ app.on('window-all-closed', () => {
 });
 
 app.on('before-quit', () => {
+  stopAutoRefresh();
   closeDb();
 });

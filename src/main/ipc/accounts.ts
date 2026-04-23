@@ -1,56 +1,96 @@
 import { dialog, ipcMain } from 'electron';
 import { IpcChannels } from '../../shared/ipc-channels';
+import { MESSAGES_PER_ACCOUNT } from '../../shared/constants';
 import * as repo from '../storage/accounts-repo';
 import * as keychain from '../keychain';
-import { authorize } from '../oauth/flow';
-import { revokeToken } from '../gmail/revoke';
+import { verifyCredentials } from '../imap/client';
 import { syncAccount } from '../sync';
+
+export interface AddAccountInput {
+  email: string;
+  password: string;
+}
 
 export interface AddAccountResult {
   ok: boolean;
   email?: string;
-  /** 'cancelled' | 'error' */
-  code?: string;
   error?: string;
 }
 
-async function handleAdd(): Promise<AddAccountResult> {
-  try {
-    const { email, tokens } = await authorize();
-    repo.insertAccount(email);
-    await keychain.setTokens(email, tokens);
+export interface VerifyResult {
+  ok: boolean;
+  error?: string;
+}
 
-    // 首次添加后立刻拉一轮
-    await syncAccount(email, 10);
+function normalizeEmail(s: string): string {
+  return s.trim().toLowerCase();
+}
 
-    return { ok: true, email };
-  } catch (err) {
-    const code = (err as { code?: string }).code;
-    if (code === 'OAUTH_CANCELLED') {
-      return { ok: false, code: 'cancelled', error: (err as Error).message };
-    }
-    return { ok: false, code: 'error', error: (err as Error).message };
-  }
+function normalizePassword(s: string): string {
+  // Google 生成的应用密码带空格，IMAP 登录时不能带——去掉所有空白
+  return s.replace(/\s+/g, '');
+}
+
+function validateInput(input: AddAccountInput): string | null {
+  const email = normalizeEmail(input.email);
+  const pass = normalizePassword(input.password);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return '邮箱格式不正确';
+  if (pass.length < 16) return '应用密码长度不对（应为 16 位字符）';
+  return null;
+}
+
+async function handleVerify(input: AddAccountInput): Promise<VerifyResult> {
+  const err = validateInput(input);
+  if (err) return { ok: false, error: err };
+  return verifyCredentials(normalizeEmail(input.email), normalizePassword(input.password));
+}
+
+async function handleAdd(input: AddAccountInput): Promise<AddAccountResult> {
+  const validationErr = validateInput(input);
+  if (validationErr) return { ok: false, error: validationErr };
+
+  const email = normalizeEmail(input.email);
+  const password = normalizePassword(input.password);
+
+  const verify = await verifyCredentials(email, password);
+  if (!verify.ok) return { ok: false, error: verify.error };
+
+  repo.insertAccount(email);
+  await keychain.setPassword(email, password);
+
+  await syncAccount(email, MESSAGES_PER_ACCOUNT);
+  return { ok: true, email };
+}
+
+async function handleUpdatePassword(input: AddAccountInput): Promise<AddAccountResult> {
+  // 重新设置某个已有账号的应用密码（比如过期后换新）
+  const validationErr = validateInput(input);
+  if (validationErr) return { ok: false, error: validationErr };
+
+  const email = normalizeEmail(input.email);
+  const password = normalizePassword(input.password);
+
+  const verify = await verifyCredentials(email, password);
+  if (!verify.ok) return { ok: false, error: verify.error };
+
+  await keychain.setPassword(email, password);
+  repo.updateSyncStatus(email, 'ok');
+  await syncAccount(email, MESSAGES_PER_ACCOUNT);
+  return { ok: true, email };
 }
 
 async function handleRemove(email: string): Promise<void> {
-  const existing = await keychain.getTokens(email);
-  if (existing) {
-    await revokeToken(existing.refreshToken);
-  }
-  await keychain.deleteTokens(email);
+  await keychain.deletePassword(email);
   repo.deleteAccount(email);
-}
-
-async function handleReauth(): Promise<AddAccountResult> {
-  // 和 add 一样走完整 OAuth，但 upsert 语义（已有行只更新 added_at）
-  return handleAdd();
 }
 
 export function registerAccountsIpc(): void {
   ipcMain.handle(IpcChannels.Accounts.List, () => repo.listAccounts());
-  ipcMain.handle(IpcChannels.Accounts.Add, handleAdd);
-  ipcMain.handle(IpcChannels.Accounts.Reauth, handleReauth);
+  ipcMain.handle(IpcChannels.Accounts.Verify, (_e, input: AddAccountInput) => handleVerify(input));
+  ipcMain.handle(IpcChannels.Accounts.Add, (_e, input: AddAccountInput) => handleAdd(input));
+  ipcMain.handle(IpcChannels.Accounts.UpdatePassword, (_e, input: AddAccountInput) =>
+    handleUpdatePassword(input),
+  );
   ipcMain.handle(IpcChannels.Accounts.Remove, async (_e, email: string) => {
     const confirmed = await dialog.showMessageBox({
       type: 'warning',
@@ -59,7 +99,7 @@ export function registerAccountsIpc(): void {
       cancelId: 0,
       title: '移除账号',
       message: `确定要移除 ${email} 吗？`,
-      detail: '本地缓存邮件会被删除，Google 端授权也会同时被撤销。',
+      detail: '本地缓存邮件和应用密码会被删除。你仍可以在 Google 账号设置里手动撤销该应用密码。',
     });
     if (confirmed.response !== 1) return { ok: false, code: 'cancelled' };
     await handleRemove(email);

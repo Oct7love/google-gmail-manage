@@ -2,22 +2,25 @@
 export const IpcChannels = {
   System: {
     Ping: 'system:ping',
+    OpenAppPasswordPage: 'system:openAppPasswordPage',
   },
   Accounts: {
     List: 'accounts:list',
     Add: 'accounts:add',
     Remove: 'accounts:remove',
-    Reauth: 'accounts:reauth',
+    Verify: 'accounts:verify',
+    UpdatePassword: 'accounts:updatePassword',
   },
   Messages: {
     List: 'messages:list',
     Detail: 'messages:detail',
     Sync: 'messages:sync',
   },
-  Credentials: {
-    /** 只返回 { configured: boolean }，不返回实际值 */
-    Status: 'credentials:status',
-    Set: 'credentials:set',
-    Clear: 'credentials:clear',
+  Refresh: {
+    All: 'refresh:all',
+    Progress: 'refresh:progress',
+  },
+  Translation: {
+    Translate: 'translation:translate',
   },
 } as const;

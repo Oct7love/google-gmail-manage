@@ -31,20 +31,6 @@ export interface MessageDetail extends MessageSummary {
   bodyText: string | null;
 }
 
-/** Keychain 里存的 OAuth token 集合 */
-export interface Tokens {
-  refreshToken: string;
-  accessToken: string;
-  /** access_token 的到期时间戳（毫秒） */
-  expiryDate: number;
-}
-
-/** Google Cloud 凭据 */
-export interface Credentials {
-  clientId: string;
-  clientSecret: string;
-}
-
 /** 刷新事件（后台刷新时 main → renderer 推送） */
 export interface RefreshEvent {
   email: string;
