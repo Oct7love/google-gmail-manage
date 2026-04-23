@@ -1,10 +1,10 @@
-# Google Mail Manager
+# Mail Viewer
 
-一个 Mac 桌面应用，让你在**一个窗口里**查看几十个 Gmail 账号的收件箱，不用一个一个打开浏览器登录。
+一个 Mac / Windows 桌面应用，让你在**一个窗口里**查看几十个 Gmail 账号的收件箱，不用一个一个打开浏览器登录。
 
 ## 它解决什么问题
 
-你是一个 Noon 卖家（或类似工作场景），手上有 30 个左右的 Gmail 账号，每隔几天还会新增/替换一批。每次要看邮件：
+你是一个 Noon 卖家（或类似工作场景），手上有 30 多个 Gmail 账号，每隔几天还会新增/替换一批。每次要看邮件：
 
 - 打开浏览器
 - 登录某个账号
@@ -16,11 +16,11 @@
 
 这个软件让你：
 
-1. 打开 App，左边看到所有绑定的账号列表
+1. 打开 App，左边看到所有绑定的账号列表（带头像、状态点、未读提示）
 2. 点哪个就看哪个账号的收件箱
-3. 只看邮件（**不能发邮件**，这是故意的，越少权限越安全）
+3. **只读邮件**（不能发，这是故意的，越少权限越安全）
 4. 新加 / 删除账号都是一键操作
-5. 一切通过 Google 官方的 Gmail API，不是爬网页，不容易触发封控
+5. 通过**IMAP + 应用专用密码**（Mac Mail、Thunderbird、Outlook 同款协议），不容易触发封控
 
 ## 它不做什么
 
@@ -30,35 +30,61 @@
 - ❌ 跨账号搜索
 - ❌ 附件预览
 - ❌ 过滤器/标签/已读标记
-- ❌ 超过 10 封历史邮件
+- ❌ 超过 20 封历史邮件
 - ❌ 系统弹窗通知
 
 如果将来需要，再单独讨论加什么。现在不做就是不做。
+
+## 它"顺便"做的事
+
+| 功能 | 说明 |
+|---|---|
+| **一键英转中** | 邮件正文一键翻译成中文（Google Translate 免费接口） |
+| **内置 2FA 码生成器** | 粘贴 2FA 密钥 → 本地生成 6 位码，不用再切换其他 App |
+| **应用密码页内嵌浏览器** | 添加账号时右侧直接显示 Google 应用密码生成页，边看边操作 |
+| **粘贴一行解析** | 粘贴 `账号 密码 辅邮 2fa` 一行，自动填入邮箱和 2FA |
 
 ## 技术栈
 
 | 层 | 选型 |
 |---|---|
-| 框架 | Electron（打包成 `.app`） |
-| 界面 | React + TypeScript |
-| 数据 | better-sqlite3（本地缓存） |
-| 凭证 | macOS Keychain（系统钥匙串，不落盘明文） |
-| Google 对接 | `googleapis` 官方 Node SDK，Gmail API `readonly` 权限 |
+| 框架 | Electron（打包 `.app` / `.exe`） |
+| 界面 | React + TypeScript + Tailwind + lucide-react |
+| 数据 | better-sqlite3（本地缓存邮件） |
+| 凭证 | macOS Keychain / Windows Credential Manager（通过 keytar） |
+| 邮件对接 | `imapflow`（IMAP 官方协议）+ `mailparser`（MIME 解析） |
+| 2FA | `otpauth`（本地 TOTP 生成） |
+| 翻译 | `translate.googleapis.com` 免费端点 |
 
 详细理由见 [`docs/tech_stack.md`](docs/tech_stack.md)。
 
-## 怎么用（初次设置）
+## 怎么用
 
-> ⚠️ 首次使用需要你去 Google Cloud Console 做一次约 10 分钟的配置。文档会一步步带你做，需要截图对着抄。
+### 首次设置（给每个 Gmail 做一次）
 
-1. 安装 App（拖到 Applications 文件夹）
-2. 第一次打开，按引导去 Google Cloud Console 创建一个"OAuth 凭据"（一次性）
-3. 把凭据复制到 App 里
-4. 点"添加账号" → 弹出谷歌登录 → 授权 → 完成
-5. 重复第 4 步把你剩下的账号加进来
-6. 之后正常使用
+> 前提：这个 Gmail 开启了 2FA（两步验证）
 
-**注意**：每 7 天，每个账号的授权会自动失效，需要你再点一次那个账号重新登录。这是 Google 的规则，不是我们能绕过的。详见 [`docs/prd.md`](docs/prd.md) 的"约束"章节。
+1. 下载并安装 Mail Viewer
+2. 打开 App，点"+ 添加账号"
+3. 弹出对话框，**右侧是嵌入的 Google 应用密码页**
+4. 在右侧登录那个 Gmail → 生成一个 16 位应用密码 → 复制
+5. 在左侧填入 Gmail 地址 + 粘贴应用密码
+6. （可选）粘贴你的 2FA 密钥到 TOTP 面板，登录时直接用
+7. 点"验证并添加" → 完成
+
+### 后续使用
+
+- **1 小时自动刷新**所有账号的最新邮件
+- 手动点左栏顶部 🔄 = 全部账号立即刷新
+- 点中栏顶部 🔄 = 当前账号刷新
+- 点邮件 → 右栏看正文
+- 外部图片默认不加载（防追踪像素），需要看时点"加载外部图片"
+- 英文邮件点"翻译为中文"
+
+### 应用密码失效
+
+理论上永不过期（只要主密码不改、不关 2FA、不手动撤销）。
+如果某账号突然变成 ⚠️ 状态：点它 → 弹出"更新应用密码"对话框 → 重新生成一个 → 粘贴 → 恢复。
 
 ## 文档索引
 
@@ -67,8 +93,8 @@
 - [`docs/tech_stack.md`](docs/tech_stack.md) — 技术栈与选型理由
 - [`docs/backend_structure.md`](docs/backend_structure.md) — 主进程/后端结构
 - [`docs/frontend_guideline.md`](docs/frontend_guideline.md) — 界面规范
-- [`docs/implementation_plan.md`](docs/implementation_plan.md) — 分阶段开发计划
+- [`docs/implementation_plan.md`](docs/implementation_plan.md) — 开发阶段回顾
 
 ## 状态
 
-📋 **规划阶段** — 文档和设计完成，代码尚未开始。
+✅ **核心功能可用**，未打包。开发中运行 `pnpm dev`；打包成 `.app`/`.exe` 待做。

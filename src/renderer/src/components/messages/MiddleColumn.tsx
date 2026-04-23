@@ -1,6 +1,7 @@
 import type { MessageSummary } from '../../../../shared/types';
 import { useStore } from '../../store';
 import MessageRow from './MessageRow';
+import { Inbox, RefreshCw } from 'lucide-react';
 
 const EMPTY_MESSAGES: MessageSummary[] = [];
 
@@ -17,7 +18,10 @@ export default function MiddleColumn(): JSX.Element {
   if (!selected) {
     return (
       <section className="flex w-[360px] shrink-0 flex-col items-center justify-center border-r border-border bg-white">
-        <p className="text-sm text-muted">选择左侧账号查看邮件</p>
+        <div className="text-center text-sm text-muted">
+          <Inbox size={36} strokeWidth={1.3} className="mx-auto mb-2 text-border" />
+          选择左侧账号查看邮件
+        </div>
       </section>
     );
   }
@@ -25,12 +29,15 @@ export default function MiddleColumn(): JSX.Element {
   return (
     <section className="flex w-[360px] shrink-0 flex-col border-r border-border bg-white">
       <header className="flex items-center justify-between gap-2 border-b border-border px-4 py-2.5">
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-[13px] font-semibold text-text" title={selected}>
-            收件箱
-          </div>
-          <div className="truncate text-[11px] text-muted">
-            {selected} · {messages.length} 封
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <Inbox size={13} className="shrink-0 text-muted" />
+          <div className="min-w-0">
+            <div className="truncate text-[13px] font-semibold text-text" title={selected}>
+              收件箱
+            </div>
+            <div className="truncate text-[11px] text-muted">
+              {selected} · {messages.length} 封
+            </div>
           </div>
         </div>
         <button
@@ -41,7 +48,7 @@ export default function MiddleColumn(): JSX.Element {
           title="刷新"
           aria-label="刷新"
         >
-          <RefreshIcon spinning={refreshing} />
+          <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
         </button>
       </header>
       <div className="flex-1 overflow-y-auto">
@@ -56,25 +63,5 @@ export default function MiddleColumn(): JSX.Element {
         )}
       </div>
     </section>
-  );
-}
-
-function RefreshIcon({ spinning }: { spinning: boolean }): JSX.Element {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={spinning ? 'animate-spin' : ''}
-    >
-      <polyline points="23 4 23 10 17 10" />
-      <polyline points="1 20 1 14 7 14" />
-      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-    </svg>
   );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { MessageDetail } from '../../../../shared/types';
+import { Languages, Loader2, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface Props {
   detail: MessageDetail;
@@ -11,15 +12,10 @@ type State =
   | { kind: 'done'; text: string }
   | { kind: 'error'; error: string };
 
-/**
- * 邮件翻译面板：按需请求，结果按每封邮件 id 缓存到组件内 state。
- * 展示在邮件正文上方，可以折叠。
- */
 export default function TranslationPanel({ detail }: Props): JSX.Element | null {
   const [state, setState] = useState<State>({ kind: 'idle' });
   const [expanded, setExpanded] = useState(true);
 
-  // 切换邮件时重置
   useEffect(() => {
     setState({ kind: 'idle' });
     setExpanded(true);
@@ -37,15 +33,15 @@ export default function TranslationPanel({ detail }: Props): JSX.Element | null 
 
   if (state.kind === 'idle') {
     return (
-      <div className="flex items-center justify-between rounded-md border border-border bg-bg px-3 py-2 text-xs">
+      <div className="flex items-center justify-between rounded-md border border-border bg-gradient-to-r from-sidebar/40 to-sidebar/20 px-3 py-2 text-xs">
         <span className="flex items-center gap-1.5 text-muted">
-          <GlobeIcon />
+          <Languages size={13} className="text-accent" />
           英文邮件？一键翻译成中文
         </span>
         <button
           type="button"
           onClick={() => void translate()}
-          className="rounded-md bg-accent px-2.5 py-1 text-xs text-white hover:bg-accent/90"
+          className="rounded-md bg-accent px-2.5 py-1 text-xs font-medium text-white hover:bg-accent/90"
         >
           翻译为中文
         </button>
@@ -56,7 +52,8 @@ export default function TranslationPanel({ detail }: Props): JSX.Element | null 
   if (state.kind === 'loading') {
     return (
       <div className="flex items-center gap-2 rounded-md border border-border bg-bg px-3 py-2 text-xs text-muted">
-        <Spinner /> 翻译中…
+        <Loader2 size={13} className="animate-spin text-accent" />
+        翻译中…
       </div>
     );
   }
@@ -76,42 +73,60 @@ export default function TranslationPanel({ detail }: Props): JSX.Element | null 
     );
   }
 
-  // done
   return (
     <div className="overflow-hidden rounded-md border border-border bg-bg">
       <header className="flex items-center justify-between border-b border-border px-3 py-1.5 text-[11px] text-muted">
         <span className="flex items-center gap-1.5">
-          <GlobeIcon />
+          <Languages size={12} className="text-accent" />
           中文翻译
         </span>
         <div className="flex gap-1">
           <button
             type="button"
             onClick={() => setExpanded((e) => !e)}
-            className="rounded px-2 py-0.5 hover:bg-sidebar"
+            className="flex items-center gap-0.5 rounded px-1.5 py-0.5 hover:bg-sidebar"
           >
+            {expanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
             {expanded ? '折叠' : '展开'}
           </button>
           <button
             type="button"
             onClick={() => void translate()}
-            className="rounded px-2 py-0.5 hover:bg-sidebar"
+            className="flex items-center gap-0.5 rounded px-1.5 py-0.5 hover:bg-sidebar"
           >
+            <RotateCcw size={11} />
             重新翻译
           </button>
         </div>
       </header>
       {expanded && (
-        <div className="whitespace-pre-wrap px-4 py-3 text-[13px] leading-relaxed text-text">
-          {state.text.split(/\n\n+/).map((para, i) => (
-            <p key={i} className="mb-3 last:mb-0">
-              {para}
-            </p>
-          ))}
+        <div className="whitespace-pre-wrap px-4 py-3 text-[13px] leading-[1.75] text-text">
+          {compactParagraphs(state.text)}
         </div>
       )}
     </div>
   );
+}
+
+function compactParagraphs(text: string): string {
+  const paras = text.split(/\n\s*\n+/).map((p) => p.trim()).filter(Boolean);
+  const merged: string[] = [];
+  let buf = '';
+  for (const p of paras) {
+    const shortSelf = p.length <= 40;
+    const shortBuf = buf.length > 0 && buf.length <= 40;
+    if (shortSelf && (shortBuf || buf === '')) {
+      buf = buf ? `${buf} ${p}` : p;
+    } else if (shortBuf) {
+      merged.push(`${buf} ${p}`);
+      buf = '';
+    } else {
+      if (buf) merged.push(buf);
+      buf = p;
+    }
+  }
+  if (buf) merged.push(buf);
+  return merged.join('\n\n');
 }
 
 function pickSourceText(detail: MessageDetail): string {
@@ -137,23 +152,4 @@ function stripHtmlForText(html: string): string {
     .replace(/\n[ \t]+/g, '\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
-}
-
-function GlobeIcon(): JSX.Element {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <line x1="2" y1="12" x2="22" y2="12" />
-      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-    </svg>
-  );
-}
-
-function Spinner(): JSX.Element {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="animate-spin">
-      <circle cx="12" cy="12" r="10" strokeOpacity="0.2" />
-      <path d="M12 2 A 10 10 0 0 1 22 12" />
-    </svg>
-  );
 }

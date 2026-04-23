@@ -4,6 +4,7 @@ import MessageBody from './MessageBody';
 import TranslationPanel from './TranslationPanel';
 import Avatar from '../common/Avatar';
 import { displayNameFor } from '../../lib/avatar';
+import { MailOpen, Image as ImageIcon, ImageOff } from 'lucide-react';
 
 export default function RightColumn(): JSX.Element {
   const detailKey = useStore((s) =>
@@ -15,12 +16,9 @@ export default function RightColumn(): JSX.Element {
   if (!detail) {
     return (
       <section className="flex flex-1 items-center justify-center bg-bg">
-        <div className="text-center">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5" className="mx-auto mb-3">
-            <rect x="3" y="5" width="18" height="14" rx="2" />
-            <polyline points="3,7 12,13 21,7" />
-          </svg>
-          <p className="text-sm text-muted">选择一封邮件查看内容</p>
+        <div className="text-center text-sm text-muted">
+          <MailOpen size={48} strokeWidth={1.2} className="mx-auto mb-3 text-border" />
+          选择一封邮件查看内容
         </div>
       </section>
     );
@@ -57,13 +55,13 @@ export default function RightColumn(): JSX.Element {
             <button
               type="button"
               onClick={() => setShowImages((s) => !s)}
-              className={`flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] transition ${
+              className={`flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] transition ${
                 showImages
                   ? 'border-accent/40 bg-accent/5 text-accent'
                   : 'border-border bg-white text-muted hover:bg-sidebar'
               }`}
             >
-              <ImageIcon />
+              {showImages ? <ImageIcon size={12} /> : <ImageOff size={12} />}
               {showImages ? '已加载外部图片' : '加载外部图片'}
             </button>
           </div>
@@ -74,15 +72,5 @@ export default function RightColumn(): JSX.Element {
       </div>
       <MessageBody detail={detail} allowImages={showImages} />
     </section>
-  );
-}
-
-function ImageIcon(): JSX.Element {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <circle cx="8.5" cy="8.5" r="1.5" />
-      <polyline points="21 15 16 10 5 21" />
-    </svg>
   );
 }

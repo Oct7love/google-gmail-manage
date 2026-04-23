@@ -78,12 +78,24 @@ function parseResponse(data: unknown): string {
  */
 function preprocessText(text: string): string {
   return text
+    // markdown 链接 [文字](url) → 只保留"文字"（文字可跨行）
+    .replace(/\[([^\]]*)\]\s*\(https?:\/\/[^)]+\)/g, '$1')
+    // markdown 图片 ![alt](url) → 去整段
+    .replace(/!\[[^\]]*\]\(https?:\/\/[^)]+\)/g, '')
+    // 剩余单独的 (https://...) / <https://...> / 裸 URL
     .replace(/\(https?:\/\/[^)\s]+\)/g, ' ')
     .replace(/<https?:\/\/[^>\s]+>/g, ' ')
     .replace(/https?:\/\/\S+/g, ' ')
+    // 散落的 [image: xxx] / [cid: xxx]
     .replace(/\[image:[^\]]*\]/gi, '')
     .replace(/\[cid:[^\]]*\]/gi, '')
+    // 零宽字符
     .replace(/[​-‍﻿]/g, '')
+    // 去除只剩 [ 或 ] 的行（markdown 链接被切断后的残渣）
+    .replace(/^[ \t]*[\[\]][ \t]*$/gm, '')
+    // 行首/行尾残留的 [ ]
+    .replace(/^[ \t]*\]/gm, '')
+    .replace(/\[[ \t]*$/gm, '')
     .split('\n')
     .map((line) => line.replace(/[ \t]+/g, ' ').trim())
     .filter((line, i, arr) => {

@@ -1,242 +1,152 @@
-# 分阶段实现计划（Implementation Plan）
+# 实现过程（Implementation History）
 
-> 不是"功能列表"，是"一步步怎么从空仓库走到能双击打开的 `.app`"。
-> 每个阶段有**明确的验收标准**——做完了能眼见为实的那种。
-> 顺序可微调，但阶段之间的依赖不能跳。
+> 从空仓库到现在功能齐全的开发全过程记录。
+> 这不是"还要做什么"的 TODO，而是"已经走过了什么"的回顾 —— 方便下个 Claude 理解为什么某些东西长这样。
 
 ---
 
 ## 总览
 
 ```
-P0 搭架子 ──► P1 SQLite + 类型 ──► P2 Keychain + 凭据引导
-                                        │
-                                        ▼
-P5 打包分发 ◄─ P4 UI 正栏 ◄─ P3 OAuth + 首个账号 ◄─────┘
-       ▲
-       │
-       └── P3.5 自动刷新 + 7 天过期处理（与 P4 并行）
+P0 脚手架 ──► P1 SQLite ──► P2 凭据向导 ─X弃用─► 
+                                  │
+                                  ▼
+     [遇到 OAuth 7-day + test user 风控 → 架构调整]
+                                  │
+                                  ▼
+P3 OAuth（一次通） ──► 重构到 IMAP + 应用密码 ──►
+                                  │
+                                  ▼
+P4 3 栏 UI + 自动刷新 ──► UI/UX 多轮迭代 ──► 文档更新 ──► [待做] 打包 .app/.exe
 ```
 
 ---
 
-## P0：项目脚手架 🏗️（半天）
+## 已完成的阶段
 
-**目标**：能 `pnpm dev` 打开一个空 Electron 窗口，显示 "Hello"。
+### P0：脚手架
+- Electron 33 + electron-vite + React 18 + TypeScript 严格模式 + Tailwind + Zustand
+- 三进程 IPC 通路（main / preload / renderer）
+- preload 通过 contextBridge 暴露 `window.api` 白名单
+- 产出：空窗口显示 "IPC 状态: pong" 确认通路
 
-**任务**：
-- [ ] `pnpm init` + 安装 electron、electron-vite、react、typescript、tailwind、zustand
-- [ ] 配 `electron.vite.config.ts`：main / preload / renderer 三个入口
-- [ ] 写最小 `main/index.ts`：创建 BrowserWindow，加载 renderer
-- [ ] 写最小 `preload/index.ts`：用 contextBridge 暴露一个 `api.ping()`
-- [ ] 写最小 `renderer/App.tsx`：显示 "Hello"，调用 `window.api.ping()` 确认 IPC 通
-- [ ] `.gitignore`、ESLint、Prettier
-- [ ] 配置 Tailwind，Hello 字是蓝色的
+### P1：SQLite + 共享类型
+- `better-sqlite3` + `@electron/rebuild`（postinstall 自动重建 Electron ABI）
+- 数据库 schema：`accounts`、`messages`（复合 PK + CASCADE + 日期索引）
+- accounts-repo / messages-repo 仓储层
+- 共享类型定义（`Account`、`MessageSummary`、`MessageDetail`、`SyncStatus`、`RefreshEvent`）
+- IPC 常量集中在 `shared/ipc-channels.ts`
 
-**验收**：
-- `pnpm dev` 窗口打开
-- DevTools Console 里 ping 返回 pong
-- 按 ⌘Q 正常退出
+### P2：凭据向导 + Keychain（**已弃用**）
+- `keytar` 接入
+- 原计划：6 步向导引导用户配置 Google Cloud Console OAuth 凭据
+- 实现过：SetupWizard 组件 + credentials:status/set/clear IPC
+- **后来为什么删**：Google Cloud + OAuth 方案整体弃用（见下文 P3 后的重构）
 
-**不做**：没有数据库、没有真功能。就是架子。
+### P3：OAuth 流程 + 第一个账号（**整套弃用**）
+- `googleapis` 官方 SDK 接入
+- OAuth loopback server（系统分配端口 + 2 分钟超时）
+- 完整 OAuth 流程（loopback + shell.openExternal + access_type=offline + prompt=consent）
+- Gmail client（tokens 事件同步回 Keychain + invalid_grant 识别）
+- messages fetch（list + get full）
+- **实际跑通过一次**（添加 heraldlinkhorn449@gmail.com，拉到 10 封邮件）
 
----
+#### **为什么弃用**
+用户反馈 test users 添加时 Google 拒绝 15 个批量账号，只接受了少数几个。核心原因：
+1. `gmail.readonly` 是 restricted scope，未审核应用 refresh_token **每 7 天过期**
+2. Test users 列表严格，大部分批量来源账号被 Google 标为 "not eligible"
 
-## P1：SQLite + 共享类型 🗄️（半天）
+没有"改下代码就能解决"的办法——要让这些账号能用，必须绕过 OAuth。
 
-**目标**：本地数据库就绪，能增删查改。
+### **架构重构：IMAP + 应用专用密码**
+- 删除 `src/main/oauth/*`、`src/main/gmail/*`、`SetupWizard.tsx`、`credentials.ts`
+- 卸载 `googleapis`，安装 `imapflow` + `mailparser`
+- Keychain service 改名 `MailViewer-imap-passwords`，value = 16 位应用密码
+- AddAccountDialog 重写：左表单 + 右内嵌 Google 应用密码页 webview
+- 主窗口 BrowserWindow 加 `webviewTag: true`
+- CSP meta 放宽 frame-src 允许 `myaccount.google.com` + `accounts.google.com`
+- IMAP 连接超时控制：connectionTimeout/greetingTimeout 10s、socketTimeout 30s
+- **性能优化**：一次 IMAP 会话批量拉 N 封邮件（而不是一封一连），30s → 3-5s
 
-**任务**：
-- [ ] 安装 `better-sqlite3`（注意 Electron 原生模块要用 `electron-rebuild` 或 `@electron-forge/plugin-webpack` 处理，简化方案：用 `electron-builder` 的 `buildDependenciesFromSource`）
-- [ ] `main/storage/db.ts`：初始化数据库、执行 schema migration
-- [ ] `main/storage/accounts-repo.ts`、`messages-repo.ts`：按 `backend_structure.md` 第 4 节的接口实现
-- [ ] `src/shared/types.ts`：`Account`、`MessageSummary`、`MessageDetail`、`Tokens`、`SyncStatus` 等类型
-- [ ] `src/shared/ipc-channels.ts`：所有 IPC channel 名常量
-- [ ] 单元测试：对 accounts-repo 和 messages-repo 各写 1–2 个 Vitest 用例
+### P4 + P3.5：正式 3 栏 UI + 自动刷新
+- Zustand store 全面接管 UI 状态
+- Toolbar（Logo + 账号计数 + 同步中徽章，支持 drag 拖窗）
+- LeftColumn / AccountItem（头像 + 状态徽章 + ⋯菜单）
+- MiddleColumn / MessageRow（发件人头像 + 摘要）
+- RightColumn / MessageBody（sandboxed iframe + CSP）
+- 自动刷新调度器：1 小时间隔，并发上限 5
+- refresh:progress IPC 事件推送给 UI
+- 修过几个 React bug：`<button>` 嵌套、Zustand selector 返回新数组引发的无限 rerender
 
-**验收**：
-- `pnpm test` 全绿
-- 手动在 main 进程里插入一条 account，重启 App 能查到
+### 辅助工具迭代
+- **TotpPanel**：本地 TOTP 生成器（`otpauth` 库，base32 或 otpauth:// URI，30 秒倒计时 + 一键复制）
+- **TranslationPanel**：邮件英转中
+  - 初版：直接调 translate.googleapis.com，但有 markdown 链接残骸 `[` `]` 散落
+  - 二版：预处理加上 `\[...\]\(url\)` → `text` 替换
+  - 三版：渲染时把 ≤40 字的短段落合并，减少稀疏排版
+- **粘贴解析**：支持两种格式（空格 / `----` 分隔），自动填 Gmail 和 2FA 密钥
+- **批量添加流程**：验证成功后自动清空表单 + 清空 TOTP + 登出 webview + 焦点回邮箱输入框
 
-**不做**：UI 不变，还是 Hello。
+### UI/UX 多轮打磨
+- 配额统一：`MESSAGES_PER_ACCOUNT = 20`（`src/shared/constants.ts`）
+- 对话框 3 段式结构（固定头 / 滚动区 / 固定尾）修复底部按钮被截
+- 登录辅助区：Google 登录密码 + 辅邮 + 链接，带复制按钮
+- "→ 应用密码页"按钮：强制跳转，Google 重定向时的兜底
+- 内存优化：DevTools 改为按需 ⌘⌥I，默认不弹（省 200MB）
+- 渐变按钮、卡片阴影、内嵌图片 cid: → data URL 等细节
 
----
+### 图标 + Logo 升级
+- 引入 `lucide-react` 替换所有 emoji / Unicode 字符
+- 自定义 SVG Logo（渐变信封 + 橙色通知点）
+- 账号选中态改为白底 + 阴影 + ring（Mac 卡片感）
+- 复制按钮带 "复制 → ✓ 已复制" 状态切换动画
+- 刷新中的头像：旋转小图标，不只是脉动绿点
 
-## P2：Keychain + Google Cloud 凭据引导 🔐（1 天）
-
-**目标**：用户能完成首次凭据配置，凭据存 Keychain。
-
-**任务**：
-- [ ] 安装 `keytar`
-- [ ] `main/keychain/index.ts`：按 `backend_structure.md` 第 5 节实现
-- [ ] `main/ipc/credentials.ts`：暴露 `credentials:get / set / clear`
-- [ ] `renderer/components/SetupWizard.tsx`：6 步向导，每步一页
-  - 每步准备一张参考截图（从 Google Cloud Console 实际截）放 `renderer/assets/setup/`
-  - 最后一步包含 Client ID、Client Secret 输入框 + JSON 导入按钮
-- [ ] `renderer/App.tsx` 启动时调 `credentials:get`，未配置时展示 SetupWizard
-- [ ] 凭据基础格式校验：`clientId.endsWith('.apps.googleusercontent.com')`
-
-**验收**：
-- 第一次启动显示向导
-- 填入真实凭据后进入空状态（下一阶段准备的）
-- 重启 App 不再显示向导
-- 在 macOS "钥匙串访问"里能看到 `MailViewer-gmail-credentials` 条目
-
-**不做**：还不能加账号。
-
----
-
-## P3：OAuth 流程 + 添加第一个账号 🔓（2 天）
-
-**目标**：点"添加账号"能跑完完整 OAuth，邮件拉下来存进 DB。
-
-**任务**：
-- [ ] `main/oauth/loopback-server.ts`：按文档实现
-- [ ] `main/oauth/flow.ts`：完整 authorize 流程
-- [ ] `main/oauth/tokens.ts`：token 读写 Keychain
-- [ ] `main/gmail/client.ts`：创建 authenticated gmail client，监听 tokens 事件
-- [ ] `main/gmail/fetch-messages.ts`：list + get 邮件
-- [ ] `main/ipc/accounts.ts`：`accounts:add`、`accounts:list`、`accounts:remove`、`accounts:reauth`
-- [ ] `main/ipc/messages.ts`：`messages:list`、`messages:detail`
-- [ ] 渲染层先做最朴素版：一个 "添加账号" 按钮 + 一个 `<select>` 选账号 + 一个 `<pre>` 显示拉到的邮件 JSON
-- [ ] 手工测完整流程：添加 → 看到 JSON → 删除 → revoke 生效
-
-**验收**：
-- 用一个真实 Gmail 账号走完授权，拉到最近 10 封的 subject
-- `accounts:remove` 后去 https://myaccount.google.com/permissions 确认应用被撤销
-- 再次添加同一个账号能正确触发"已存在，是否重新授权"流程
-
-**不做**：UI 还很丑，下个阶段美化。
+### 文档更新（此次提交）
+- 所有文档从"OAuth / Google Cloud 路线"切回"IMAP / 应用密码"现实
+- CLAUDE.md 记录弃用决策，防止未来 Claude 走回头路
+- PRD 补充"它顺便做的事"（翻译、TOTP、粘贴解析）
 
 ---
 
-## P3.5：自动刷新 + 7 天过期处理 ⏰（1 天，可和 P4 并行）
+## 当前状态
 
-**目标**：后台自动刷新不靠点按钮，过期账号有视觉反馈。
+**核心功能全部可用**，开发模式运行良好：
 
-**任务**：
-- [ ] `main/scheduler/auto-refresh.ts`：setInterval + p-limit 并发 5
-- [ ] 捕获 `invalid_grant`，转成 `TokenExpiredError`
-- [ ] 捕获 429，指数退避
-- [ ] 更新 `accounts.last_sync_status` / `last_sync_error`
-- [ ] IPC `refresh:progress` 广播给 renderer
-- [ ] `main/ipc/refresh.ts`：`refresh:one`、`refresh:all`
-- [ ] 写测试：模拟 `invalid_grant` 返回，验证账号被标 expired
-
-**验收**：
-- 留 App 开着 1 小时（或临时把间隔调到 1 分钟），日志里能看到自动刷新日志
-- 手动把某账号的 refresh token 改乱，下一次刷新该账号在 DB 里是 expired 状态
-- 429 场景用 mock 验证退避逻辑
-
-**不做**：不做 UI 层的 ⚠️ 图标（放 P4）。
+```bash
+pnpm install
+pnpm dev
+```
 
 ---
 
-## P4：完整三栏 UI 🎨（2–3 天）
+## 尚未完成
 
-**目标**：界面变成最终产品样子，Mac HIG 风格。
+### 打包分发（最后一步）
+- `electron-builder` 配置
+- 应用图标（`.icns` + `.ico`）
+- Mac `.dmg` / Windows `.exe`
+- 首次打开说明（未代码签名，Mac 右键打开 / Windows 仍要运行）
+- 测试朋友下载安装
 
-**任务**：按 `frontend_guideline.md` 逐个组件实现：
-- [ ] `LeftColumn` + `AccountList` + `AccountItem`（含状态点、未读徽章、"⋯" 菜单）
-- [ ] `MiddleColumn` + `MessageList` + `MessageRow` + `LoadMoreButton`
-- [ ] `RightColumn` + `MessageDetail` + `MessageHeader` + `MessageBody`（sandboxed iframe）
-- [ ] `EmptyState`
-- [ ] 过期账号的 ⚠️ 图标 + 重新授权对话框
-- [ ] 键盘快捷键
-- [ ] 深色模式跟随系统
-- [ ] 外部链接点击拦截 + 确认对话框
-- [ ] Titlebar 用 `hiddenInset`
-
-**验收**：
-- 添加 3 个真实账号，界面和 `frontend_guideline.md` 描述一致
-- 邮件正文的链接点击有拦截
-- 邮件里的外部图片默认不加载，点"显示图片"后才加载
-- ⌘R 刷新当前账号，有 loading 状态
-- 深色模式下所有文本对比度正常
-
-**不做**：不做测试套件（只写几个关键的），不做国际化。
+### 可选的后续打磨
+- 深色模式（跟随系统主题）
+- 快捷键（⌘R 刷新 / ⌘N 添加）
+- 搜索过滤（如果用户以后反悔）
+- 邮件搜索（如果用户以后反悔）
+- DeepL / OpenAI 翻译（如果免费 Google Translate 质量不够）
 
 ---
 
-## P5：打包分发 📦（半天）
+## 教训记录
 
-**目标**：产出一个能双击打开的 `.app`，放到 Applications 里能用。
-
-**任务**：
-- [ ] 配 `electron-builder.yml`
-- [ ] 应用图标：设计或用 AI 生成一个 1024×1024 的 icns
-- [ ] `Info.plist`：bundle id、版本号、最低 macOS 版本
-- [ ] `pnpm build` 出 `.app` 和 `.dmg`
-- [ ] 在一台未装过 node 的 Mac 上测试双击 `.dmg` 拖进 Applications → 打开
-- [ ] 第一次打开因为未签名会被 Gatekeeper 拦，写入 README 的"首次启动"说明
-- [ ] 写 CHANGELOG.md v1.0.0
-
-**验收**：
-- `.dmg` 能拖进 Applications
-- 首次启动（右键打开）能通过
-- 整个产品流程跑通：向导 → 添加 2 个账号 → 看邮件 → 删 1 个账号 → 重启还在
-
-**不做**：不做自动更新（Sparkle / electron-updater），v1 手动下载新版替换即可。
-
----
-
-## 何时交给用户验收
-
-每个 Phase 末尾，**跑一次端到端流程**给用户看：
-
-| Phase | 演示什么 |
+| 遇到的坑 | 学到的 |
 |---|---|
-| P0 | 空窗口打开、关闭 |
-| P1 | 跳过（内部阶段） |
-| P2 | 向导能跑完，凭据能保存 |
-| P3 | 添加真实账号拉到邮件（JSON） |
-| P3.5 | 过期处理（可快进间隔） |
-| P4 | 完整 UI，所有交互 |
-| P5 | `.dmg` 拖装使用 |
-
-用户是非开发者，演示方式统一为：
-- 录一段 30 秒屏幕录像 / GIF
-- 说明这一步做到了什么、跟 PRD 里哪一条对应
-- 等待用户确认后进入下一阶段
-
----
-
-## 每个阶段开工前必做的三件事
-
-1. **重读一次 PRD 对应条款** — 确认没偏题
-2. **画一下这阶段会改的文件列表** — 控制爆炸半径
-3. **先写类型 / 接口** — 类型先行，实现后填
-
-每个阶段结束必做：
-
-1. **跑 `pnpm build`** —— 生产打包不能坏
-2. **手动验收端到端** —— 不是"单元测试过了" 就算过
-3. **更新 CHANGELOG** —— 写了什么、改了什么
-
----
-
-## 风险回顾（从 PRD 里复制过来提醒）
-
-每个阶段结束问自己：
-
-- 用户拒绝过的功能，有没有偷偷加进去？
-- 有没有在 renderer 里直接调 Gmail？
-- token、client secret 有没有落盘明文？
-- 自动刷新的间隔是否 ≥ 1 小时？
-- 遇到过期账号是不是停下等用户，而不是反复重试？
-
-任何一条答错，停下修。
-
----
-
-## 不在此计划内的事
-
-明确不做的后续工作：
-
-- Windows / Linux 版
-- 代码签名 + 公证（需要 Apple Developer 账号）
-- 应用自动更新
-- 多用户 / 云同步
-- 任何 PRD 非目标里的功能
-
-做完 P5 就算 v1.0 完结。再开新东西之前先回 PRD 重新讨论。
+| OAuth 7-day refresh token 过期 | 未审核应用用 restricted scope 有硬上限，不要轻信"测试模式先用着" |
+| Test users 加不进来 | Google 有隐性账号风控，批量来源的账号绕不过 |
+| 每封邮件一个 IMAP 连接 | TLS 握手贵，必须一次会话做完批量操作 |
+| p-limit v7 ESM-only | Electron main 还是 CJS，新包不一定兼容 |
+| `<button>` 嵌套 `<button>` | HTML 合法性导致 React 崩溃，不是 CSS 问题 |
+| Zustand selector 返回新数组 | React 18 的 `useSyncExternalStore` 会检测引用变化，返回新 `[]` = 无限 rerender |
+| 邮件正文手写 MIME parser | 中文乱码，专业领域就用 mailparser 这种成熟库 |
+| Google Translate 翻译 markdown 链接 | 翻译前必须预处理掉 URL / 链接残骸 |
