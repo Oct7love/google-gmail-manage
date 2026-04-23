@@ -1,5 +1,10 @@
 import { app, BrowserWindow, powerMonitor, shell } from 'electron';
 import { join } from 'node:path';
+
+// 在 app.whenReady 之前关掉 GPU 硬件加速：
+// 我们 UI 是静态三栏 + 偶尔滚动，不需要 GPU 合成。
+// 关掉能去掉一整个独立的 GPU 进程（省约 80MB）。
+app.disableHardwareAcceleration();
 import { getDb, closeDb } from './storage/db';
 import { registerAccountsIpc } from './ipc/accounts';
 import { registerMessagesIpc } from './ipc/messages';
@@ -26,6 +31,8 @@ function createWindow(): void {
       nodeIntegration: false,
       sandbox: false,
       webviewTag: true, // 让 AddAccountDialog 里能内嵌 Google 密码生成页
+      spellcheck: false, // 我们不做输入，省字典缓存
+      backgroundThrottling: false, // 窗口不在前台时保持 IDLE 连接活跃
     },
   });
 

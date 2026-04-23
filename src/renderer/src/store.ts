@@ -7,6 +7,9 @@ import type {
 } from '../../shared/types';
 import { MESSAGES_PER_ACCOUNT } from '../../shared/constants';
 
+/** 邮件正文详情缓存上限：避免用户读了几百封后占用过多内存 */
+const MESSAGE_DETAIL_CACHE_MAX = 50;
+
 type AppStatus = 'loading' | 'ready';
 
 /**
@@ -93,7 +96,16 @@ export const useStore = create<State>((set, get) => ({
     const key = detailKey(email, id);
     if (get().messageDetail[key]) return;
     const d = await window.api.messages.detail(email, id);
-    if (d) set((s) => ({ messageDetail: { ...s.messageDetail, [key]: d } }));
+    if (!d) return;
+    set((s) => {
+      const entries = Object.entries(s.messageDetail);
+      // LRU 淘汰：超过上限时丢掉最早的几条
+      const over = entries.length + 1 - MESSAGE_DETAIL_CACHE_MAX;
+      const kept = over > 0 ? entries.slice(over) : entries;
+      return {
+        messageDetail: { ...Object.fromEntries(kept), [key]: d },
+      };
+    });
   },
 
   clearSelectedMessage: () => set({ selectedMessageId: null }),
