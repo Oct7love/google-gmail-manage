@@ -141,8 +141,16 @@ google-mail-manage/
 - **内嵌图片（cid:）默认加载**（它们是邮件附件，不是追踪）
 - **邮件正文用 sandboxed `<iframe srcDoc>`**，CSP 禁 JS / 禁外部资源，防钓鱼
 - **添加账号对话框**：左表单 + 右 webview（内嵌 `myaccount.google.com/apppasswords`）。webview 登录用户"要添加的那个 Gmail"，生成应用密码，回来粘到左边
-- **TotpPanel**：本地计算 TOTP，不联网，不持久化密钥（关对话框就没了）
+- **TotpPanel**：本地计算 TOTP，**受控组件**（secret 由父级管理）。支持在对话框里直接编辑密钥（显示"已改动"徽章 + "还原"按钮），提交时保存当前值
 - **粘贴解析**：支持 `账号 密码 辅邮 2fa` 和 `账号----密码----辅邮----2fa----链接` 两种格式，自动填入邮箱 + 2FA 密钥，登录密码和辅邮放"登录辅助"区供复制
+- **凭据抽屉（CredentialsDrawer）**：中栏顶部 🔑 按钮，显示该账号的完整凭据（应用密码 / Google 密码 / 2FA 密钥 + 实时码 / 辅邮 / 链接）。默认打码、按需单独或全部显示。可编辑保存
+- **存储分层**：
+  - Keychain service `MailViewer-imap-passwords`：应用专用密码（IMAP 必需）
+  - Keychain service `MailViewer-account-info`：Google 密码 / 2FA / 辅邮 / 链接（JSON，可选）
+  - 删账号时两边同步清掉
+- **webview 代理**：添加账号对话框右侧有齿轮按钮，可配置 webview 专用代理（如 `http://127.0.0.1:7890`），存 `userData/settings.json`，仅影响 webview 不影响 IMAP / 翻译
+- **连不上 Google 兜底**：webview `did-fail-load` 监听 → 覆盖错误卡（重试 / 配代理 / 系统浏览器打开）
+- **2FA 设置快捷跳转**：webview 头部除了"→ 应用密码页"还有"→ 2FA 设置"按钮（直达 `/signinoptions/two-step-verification`）
 
 ## 如果你要开始写代码
 
@@ -158,6 +166,31 @@ google-mail-manage/
 - **Windows**：`.exe` 安装包，Credential Manager 存应用密码（keytar 自动切换）
 - 代码层面基本无差异；只有 `titleBarStyle: 'hiddenInset'` 是 Mac 专有（Windows 自动忽略）
 - 用户有 Mac + Windows 两种朋友，打包时两个都要出
+
+## 打包相关
+
+- **electron-builder.yml** 是打包配置
+- `pnpm package:mac` 出 `release/*.dmg` + `release/mac-arm64/*.app`
+- `pnpm package:win` 出 `release/*.exe`
+- **未做代码签名**（Apple Developer $99/年 + Windows EV $300/年 不划算）
+- Mac 首次打开需要**右键 → 打开**绕过 Gatekeeper；Windows 首次运行需要点"更多信息 → 仍要运行"
+- **关键**：`.npmrc` 必须有 `node-linker=hoisted`，否则 pnpm 的嵌套 `node_modules` 会让 electron-builder 漏掉 transitive 依赖（典型踩坑：parseley 是 mailparser → html-to-text → selderee 的孙依赖）
+
+## 资源占用（生产模式实测）
+
+- Electron 主 + 渲染 + GPU Helper + 网络 Helper ≈ 4 个进程
+- 总内存：**~412 MB**（已经接近 Electron 下限；Spark Mail ~600MB、Slack ~800MB）
+- 30 个 IMAP IDLE 持久连接占约 60 MB，是实时推送的代价
+- 已做的优化：关 GPU 硬件加速、关拼写检查、TotpPanel 和 messageDetail LRU（上限 50）、邮件一次会话批拉、Vite 压缩
+- 再降只能换 Tauri（Rust 重写，~50 MB）—— 代价太大不值
+
+## 应用图标
+
+- **蓝色渐变信封 + 右上橙色通知点**，和顶部工具栏 Logo 同款
+- 源文件：`build/icon.svg`
+- 生成脚本：`build/make-icon.mjs`（需要 `sharp` + `png-to-ico` + macOS `iconutil`）
+- 产物：`build/icon.png`（1024×1024）、`build/icon.icns`（Mac）、`build/icon.ico`（Windows）
+- 想换图标：改 SVG → 跑 `node build/make-icon.mjs` → 重打包
 
 ## 如果你要改文档
 

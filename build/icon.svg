@@ -1,0 +1,32 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 信封蓝色渐变（顶栏 Logo 同款配色）-->
+    <linearGradient id="mv-env" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <!-- 背景细渐变 -->
+    <linearGradient id="mv-bg" x1="0" y1="0" x2="0" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#f3f4f6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 圆角白色底（macOS 会自己裁圆角，这里留一层保证背景是白的）-->
+  <rect width="1024" height="1024" rx="208" ry="208" fill="url(#mv-bg)"/>
+
+  <!-- 信封主体 -->
+  <rect x="144" y="272" width="736" height="544" rx="112" ry="112" fill="url(#mv-env)"/>
+
+  <!-- 信封内部 V 形封口线（白色半透明，和 Logo 同款）-->
+  <path d="M 192 336 L 512 576 L 832 336"
+        stroke="#ffffff"
+        stroke-width="52"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        fill="none"
+        opacity="0.92"/>
+
+  <!-- 右上角橙色通知点（和 Logo 同款）-->
+  <circle cx="784" cy="272" r="124" fill="#F97316" stroke="#ffffff" stroke-width="36"/>
+</svg>

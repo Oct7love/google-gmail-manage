@@ -44,6 +44,9 @@
 | **内置 2FA 码生成器** | 粘贴 2FA 密钥 → 本地生成 6 位码，不用再切换其他 App |
 | **应用密码页内嵌浏览器** | 添加账号时右侧直接显示 Google 应用密码生成页，边看边操作 |
 | **粘贴一行解析** | 粘贴 `账号 密码 辅邮 2fa` 一行，自动填入邮箱和 2FA |
+| **凭据抽屉** | 中栏顶部钥匙图标，显示当前账号完整凭据（密码 / 2FA 实时码 / 辅邮），可编辑保存 |
+| **2FA 设置快捷跳转** | 添加对话框 webview 工具栏内一键跳 Google 两步验证设置页 |
+| **webview 代理** | Google 连不上时可配置专用代理，仅影响内嵌浏览器，不影响邮件接收 |
 | **睡眠唤醒自动重连** | 电脑休眠后醒来，所有 IDLE 连接自动恢复 + 追赶同步 |
 
 ## 技术栈
@@ -98,6 +101,21 @@
 - [`docs/frontend_guideline.md`](docs/frontend_guideline.md) — 界面规范
 - [`docs/implementation_plan.md`](docs/implementation_plan.md) — 开发阶段回顾
 
+## 打包分发
+
+已接入 `electron-builder`：
+
+```bash
+pnpm package:mac    # 出 .dmg (arm64) + .app
+pnpm package:win    # 出 .exe (x64)
+```
+
+产物在 `release/` 目录。首次打开：Mac 右键→"打开"绕过 Gatekeeper；Windows 点"更多信息→仍要运行"绕过 SmartScreen（未做代码签名，朋友之间分享用无所谓）。
+
+## 资源占用
+
+生产模式 `.app` 实测 **~412 MB**（主 + 渲染 + GPU + 网络 4 个进程），已接近 Electron 下限。参考：Spark Mail ~600MB、Slack ~800MB。想更轻量需要换 Tauri 重写。
+
 ## 状态
 
-✅ **核心功能可用**，未打包。开发中运行 `pnpm dev`；打包成 `.app`/`.exe` 待做。
+✅ **功能完整，已打包**。Mac `.dmg` 可直接分发；Windows `.exe` 支持交叉编译。

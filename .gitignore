@@ -6,11 +6,13 @@ node_modules/
 dist/
 out/
 release/
-build/
+# build/ 存图标资源，要提交，不忽略
 *.app
 *.dmg
 *.exe
 *.blockmap
+# 保留图标源，但运行时产出的临时文件忽略
+build/icon.iconset/
 
 # Local / IDE
 .DS_Store

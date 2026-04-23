@@ -19,6 +19,7 @@ asarUnpack:
 
 mac:
   category: public.app-category.productivity
+  icon: build/icon.icns
   target:
     - target: dmg
       arch: [arm64]
@@ -42,6 +43,7 @@ dmg:
 
 # Windows（将来交叉编译时启用）：
 win:
+  icon: build/icon.ico
   target:
     - target: nsis
       arch: [x64]

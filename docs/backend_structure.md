@@ -157,14 +157,21 @@ CREATE INDEX idx_messages_date ON messages(account_email, date_ts DESC);
 ### `main/keychain/index.ts`
 
 ```ts
-getPassword(email: string): Promise<string | null>
-setPassword(email: string, password: string): Promise<void>
-deletePassword(email: string): Promise<void>
+// 应用专用密码（IMAP 必需）
+getPassword(email): Promise<string | null>
+setPassword(email, password): Promise<void>
+deletePassword(email): Promise<void>
+
+// 账号附加信息（可选，用于凭据抽屉显示）
+getAccountInfo(email): Promise<AccountInfo | null>
+setAccountInfo(email, info): Promise<void>    // 合并更新，保留已有非空字段
+deleteAccountInfo(email): Promise<void>
 ```
 
-- service: `MailViewer-imap-passwords`
-- account: 用户 Gmail 地址
-- 值：16 位应用密码（空格会在 IMAP 连接前去掉）
+- **service 1**: `MailViewer-imap-passwords`（IMAP 密码，必需）
+- **service 2**: `MailViewer-account-info`（Google 密码 / 2FA / 辅邮 / 链接，JSON 序列化，可选）
+- account（两个 service 共用）: 用户 Gmail 地址
+- 删账号时两个 service 都要清
 
 ---
 
