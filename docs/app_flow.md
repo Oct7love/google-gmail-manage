@@ -163,15 +163,33 @@ Header 工具栏：
 
 ## Flow 6：后台自动刷新
 
-**规则**：App 开着，每 1 小时触发一次。
+### 主通道：IMAP IDLE 实时推送
+
+**原理**：每个账号一个持久 IMAP 连接，`mailboxOpen('INBOX')` 后 imapflow 自动进入 IDLE 模式。Gmail 服务器收到新邮件后通过该连接推送 EXISTS 响应。
+
+**流程**：
+1. App 启动 → 为所有账号逐一开 IDLE 连接（每个之间错峰 250ms 避免爆发）
+2. Gmail 推送 EXISTS → imapflow 触发 `exists` 事件 → 1.5s 防抖 → `syncAccount(email)`
+3. 同步完成后 broadcast `refresh:progress` 事件（含 `newCount`）
+4. UI 收到事件：更新账号状态点 + 若为当前选中账号则刷新邮件列表 + 弹出橙色 "+N" 徽章
+
+**延迟**：5-60 秒（Gmail 服务器端批量推送的自然节奏，不可控）。
+
+**异常处理**：
+- 连接断（网络/睡眠） → 指数退避重连（2s → 5s → 15s → 30s → 60s → 120s）
+- AUTHENTICATIONFAILED → 标为 `expired`，**不反复重试**，等用户更新密码
+- 电脑唤醒（`powerMonitor.on('resume')`） → 强制所有 session 重连 + 立即追赶同步
+
+### 兜底通道：1 小时轮询
+
+**规则**：定时器每 1 小时触发 `refreshAll()`，防 IDLE 漏推。
 
 **行为**：
 - 按 5 并发分批同步所有账号
 - 每个账号 = 一次 IMAP 会话 + 拉最近 20 封 + upsert 本地库
-- 遇 AUTHENTICATIONFAILED → 标记为 `expired`，**不重试**
-- 通过 IPC `refresh:progress` 推送进度给 UI
+- 同 IDLE 共用 `syncAccount` + `refresh:progress` broadcast
 
-**用户感受**：不打扰。下次点过来时，邮件列表已经是新的。
+**用户感受**：不打扰。新邮件 ~30s 到，偶尔 IDLE 漏推的情况下最坏 1 小时内也到。
 
 ---
 

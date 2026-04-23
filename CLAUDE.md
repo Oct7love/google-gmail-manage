@@ -46,6 +46,14 @@
 - 一次 IMAP 会话拉完最近 20 封邮件（不要一封一连）
 - Keychain service: `MailViewer-imap-passwords`，account = 用户邮箱
 
+**实时推送（IMAP IDLE）**：
+- 每个账号一个持久 IMAP 连接（见 `src/main/imap/idle-manager.ts`）
+- `mailboxOpen('INBOX')` 后 imapflow 自动进入 IDLE；Gmail 推送 → `exists` 事件 → 1.5s 防抖 → `syncAccount`
+- 延迟实测 5-60 秒，这是 Gmail 服务器端批量推送行为，客户端无法控制
+- 电脑睡眠/唤醒：`powerMonitor.on('resume')` → `reconnectAll()` 强制重连所有 session
+- 1h 轮询保留做兜底，防 IDLE 漏推
+- 启动错峰 250ms 逐一连接，避免 30 个连接同时爆发
+
 **绝对不要做**：
 - 再接入 Gmail API / googleapis
 - 加"Sign in with Google" OAuth 流程
@@ -101,10 +109,10 @@ google-mail-manage/
 ├── src/
 │   ├── main/                         # Electron 主进程
 │   │   ├── index.ts                  # 入口
-│   │   ├── imap/                     # IMAP 连接 + 邮件获取
+│   │   ├── imap/                     # IMAP 连接 / 邮件获取 / IDLE 管理器
 │   │   ├── ipc/                      # IPC handlers
 │   │   ├── keychain/                 # Keychain 封装
-│   │   ├── scheduler/                # 1h 自动刷新
+│   │   ├── scheduler/                # 1h 兜底轮询
 │   │   ├── storage/                  # SQLite repos
 │   │   ├── sync.ts                   # 单账号同步逻辑
 │   │   └── translation/              # Google Translate 调用

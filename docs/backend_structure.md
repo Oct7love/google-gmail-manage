@@ -50,7 +50,8 @@ src/main/
 │   └── translation.ts       # 翻译
 ├── imap/                    # IMAP 封装
 │   ├── client.ts            # 连接 imap.gmail.com:993 + 认证
-│   └── fetch-messages.ts    # 一次会话批量拉邮件 + mailparser 解析
+│   ├── fetch-messages.ts    # 一次会话批量拉邮件 + mailparser 解析
+│   └── idle-manager.ts      # 每账号持久 IDLE 连接 + 实时推送
 ├── keychain/
 │   └── index.ts             # keytar 薄封装
 ├── scheduler/
@@ -175,9 +176,47 @@ stopAutoRefresh(): void
 refreshAll(): Promise<SyncResult[]>
 ```
 
-- 默认间隔 1 小时
+- 默认间隔 1 小时（IDLE 漏推的兜底）
 - `refreshAll` 使用自写的 `runWithConcurrency(emails, 5, syncAccount)`（p-limit v7 ESM-only 和 Electron CJS 不兼容，自写 10 行代替）
 - 进度通过 `BrowserWindow.webContents.send('refresh:progress', event)` 推给 renderer
+
+---
+
+### `main/imap/idle-manager.ts`（实时推送核心）
+
+```ts
+startIdleFor(email: string): Promise<void>
+stopIdleFor(email: string): Promise<void>
+restartIdleFor(email: string): Promise<void>
+startAllIdle(): void
+stopAllIdle(): Promise<void>
+reconnectAll(): void   // 电脑唤醒时调用
+```
+
+**工作原理**：
+- 每个账号维护一个 `IdleSession`：包含持久 ImapFlow 客户端、重连状态、同步防抖 timer
+- `buildClient` 用 Keychain 密码创建 ImapFlow，`logger: false` 静音（连接多，噪声大）
+- `openSession`：`client.connect()` → `mailboxOpen('INBOX')` → imapflow 自动进入 IDLE
+- `exists` 事件 → `triggerSync`（1.5s 防抖）→ `syncAccount` → broadcast `{ phase, newCount }`
+
+**错误 & 重连**：
+- `close` 事件（网络断 / 服务器踢 / 睡眠） → 指数退避（`RECONNECT_BACKOFF_MS`）
+- `AUTHENTICATIONFAILED` → 标 `expired`，`session.active = false`，不再自动重试
+- `buildClient` 返回 null（无密码） → 标 `expired`
+
+**启动节奏**：
+- `startAllIdle` 错峰 250ms 逐一启动，避免 30 个连接同时爆发
+- 连接成功后立即 `triggerSync` 一次，捕获"连接前积压的邮件"
+
+**与 `main/index.ts` 的集成**：
+- `app.whenReady` → `startAllIdle()`
+- `powerMonitor.on('resume')` → `reconnectAll()`（Mac 唤醒）
+- `app.on('before-quit')` → `await stopAllIdle()`
+
+**与 `main/ipc/accounts.ts` 的集成**：
+- `accounts:add` 成功后 → `startIdleFor(email)`
+- `accounts:updatePassword` 成功后 → `restartIdleFor(email)`
+- `accounts:remove` 前 → `stopIdleFor(email)`
 
 ---
 

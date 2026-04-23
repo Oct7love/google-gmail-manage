@@ -82,6 +82,7 @@
 - 不需要 Google Cloud Console 项目、不需要审核、不需要 test users
 - 应用密码**永不过期**（只要主密码不改、2FA 不关）
 - 行为上和 Mac Mail、Thunderbird、Outlook 完全一样，**不会触发异常检测**
+- **IMAP IDLE** 支持实时推送，Gmail 有新邮件 ~30 秒内到达（Gmail 服务器端有批量推送节奏）
 
 ### imapflow vs node-imap vs imap-simple
 - `imapflow`：现代、Promise-based、TypeScript 类型齐全、活跃维护（postalsys 公司）
