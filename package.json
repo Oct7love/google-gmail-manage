@@ -38,6 +38,7 @@
     "lucide-react": "^1.8.0",
     "mailparser": "^3.9.8",
     "otpauth": "^9.5.0",
+    "parseley": "^0.13.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "zustand": "^5.0.0"
