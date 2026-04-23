@@ -25,6 +25,8 @@ interface State {
   messageDetail: Record<string, MessageDetail>;
   selectedMessageId: string | null;
   refreshingEmails: Set<string>;
+  /** 最近一次同步新收到的邮件数（按账号），5 秒后自动清除 */
+  recentNewByEmail: Record<string, number>;
   dialogMode: DialogMode;
 
   init: () => Promise<void>;
@@ -63,6 +65,7 @@ export const useStore = create<State>((set, get) => ({
   messageDetail: {},
   selectedMessageId: null,
   refreshingEmails: new Set(),
+  recentNewByEmail: {},
   dialogMode: null,
 
   init: async () => {
@@ -73,7 +76,12 @@ export const useStore = create<State>((set, get) => ({
   },
 
   selectAccount: async (email: string) => {
-    set({ selectedEmail: email, selectedMessageId: null });
+    // 切到此账号时清掉它的"新邮件"徽章
+    set((s) => {
+      const next = { ...s.recentNewByEmail };
+      delete next[email];
+      return { selectedEmail: email, selectedMessageId: null, recentNewByEmail: next };
+    });
     const list = await window.api.messages.list(email, MESSAGES_PER_ACCOUNT);
     set((s) => ({ messagesByEmail: { ...s.messagesByEmail, [email]: list } }));
   },
@@ -164,12 +172,42 @@ export const useStore = create<State>((set, get) => ({
     }
   },
 
-  onRefreshProgress: (evt) => {
+  onRefreshProgress: async (evt) => {
     set((s) => {
       const next = new Set(s.refreshingEmails);
       if (evt.phase === 'start') next.add(evt.email);
       else next.delete(evt.email);
       return { refreshingEmails: next };
     });
+
+    if (evt.phase === 'start') return;
+
+    // 同步结束：刷新账号状态（状态点） + 当前选中账号的邮件列表
+    const accounts = await window.api.accounts.list();
+    set({ accounts });
+
+    if (evt.phase === 'done') {
+      // 更新 selected 账号的邮件列表（这样视图里能立刻看到新邮件）
+      if (get().selectedEmail === evt.email) {
+        const list = await window.api.messages.list(evt.email, MESSAGES_PER_ACCOUNT);
+        set((s) => ({ messagesByEmail: { ...s.messagesByEmail, [evt.email]: list } }));
+      }
+      // 有新邮件：设置"最近新邮件数"，5 秒后自动清除
+      if (evt.newCount && evt.newCount > 0) {
+        set((s) => ({
+          recentNewByEmail: {
+            ...s.recentNewByEmail,
+            [evt.email]: (s.recentNewByEmail[evt.email] ?? 0) + evt.newCount!,
+          },
+        }));
+        setTimeout(() => {
+          set((s) => {
+            const next = { ...s.recentNewByEmail };
+            delete next[evt.email];
+            return { recentNewByEmail: next };
+          });
+        }, 5000);
+      }
+    }
   },
 }));

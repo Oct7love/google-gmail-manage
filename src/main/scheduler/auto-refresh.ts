@@ -43,7 +43,7 @@ export async function refreshAll(): Promise<SyncResult[]> {
   return runWithConcurrency(emails, CONCURRENCY, async (email) => {
     broadcast({ email, phase: 'start' });
     const r = await syncAccount(email, MESSAGES_PER_ACCOUNT);
-    if (r.status === 'ok') broadcast({ email, phase: 'done' });
+    if (r.status === 'ok') broadcast({ email, phase: 'done', newCount: r.fetched });
     else if (r.status === 'expired') broadcast({ email, phase: 'expired' });
     else broadcast({ email, phase: 'error', error: r.error });
     return r;

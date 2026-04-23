@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, powerMonitor, shell } from 'electron';
 import { join } from 'node:path';
 import { getDb, closeDb } from './storage/db';
 import { registerAccountsIpc } from './ipc/accounts';
@@ -7,6 +7,7 @@ import { registerRefreshIpc } from './ipc/refresh';
 import { registerSystemIpc } from './ipc/system';
 import { registerTranslationIpc } from './ipc/translation';
 import { startAutoRefresh, stopAutoRefresh } from './scheduler/auto-refresh';
+import { startAllIdle, stopAllIdle, reconnectAll } from './imap/idle-manager';
 
 const isDev = !app.isPackaged;
 
@@ -62,7 +63,15 @@ app.whenReady().then(() => {
   getDb();
   registerIpc();
   createWindow();
-  startAutoRefresh();
+  startAutoRefresh(); // 1h 兜底轮询
+  startAllIdle(); // 实时 IMAP IDLE 推送
+
+  // 电脑睡眠/唤醒时强制重连所有 IDLE 连接
+  powerMonitor.on('resume', () => {
+    // eslint-disable-next-line no-console
+    console.log('[main] system resume → reconnecting all idle sessions');
+    reconnectAll();
+  });
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -73,7 +82,8 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
-app.on('before-quit', () => {
+app.on('before-quit', async () => {
   stopAutoRefresh();
+  await stopAllIdle();
   closeDb();
 });

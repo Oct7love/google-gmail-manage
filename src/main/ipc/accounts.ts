@@ -5,6 +5,7 @@ import * as repo from '../storage/accounts-repo';
 import * as keychain from '../keychain';
 import { verifyCredentials } from '../imap/client';
 import { syncAccount } from '../sync';
+import { startIdleFor, stopIdleFor, restartIdleFor } from '../imap/idle-manager';
 
 export interface AddAccountInput {
   email: string;
@@ -59,6 +60,7 @@ async function handleAdd(input: AddAccountInput): Promise<AddAccountResult> {
   await keychain.setPassword(email, password);
 
   await syncAccount(email, MESSAGES_PER_ACCOUNT);
+  void startIdleFor(email); // 启动实时 IDLE 连接
   return { ok: true, email };
 }
 
@@ -76,10 +78,12 @@ async function handleUpdatePassword(input: AddAccountInput): Promise<AddAccountR
   await keychain.setPassword(email, password);
   repo.updateSyncStatus(email, 'ok');
   await syncAccount(email, MESSAGES_PER_ACCOUNT);
+  void restartIdleFor(email); // 用新密码重连 IDLE
   return { ok: true, email };
 }
 
 async function handleRemove(email: string): Promise<void> {
+  await stopIdleFor(email); // 先断 IDLE 连接
   await keychain.deletePassword(email);
   repo.deleteAccount(email);
 }

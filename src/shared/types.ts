@@ -35,5 +35,7 @@ export interface MessageDetail extends MessageSummary {
 export interface RefreshEvent {
   email: string;
   phase: 'start' | 'done' | 'error' | 'expired';
+  /** 本次同步新拉到的邮件数（仅 phase='done' 时有值） */
+  newCount?: number;
   error?: string;
 }

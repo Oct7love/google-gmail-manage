@@ -11,6 +11,7 @@ interface Props {
 export default function AccountItem({ account }: Props): JSX.Element {
   const selectedEmail = useStore((s) => s.selectedEmail);
   const refreshing = useStore((s) => s.refreshingEmails.has(account.email));
+  const newCount = useStore((s) => s.recentNewByEmail[account.email] ?? 0);
   const selectAccount = useStore((s) => s.selectAccount);
   const removeAccount = useStore((s) => s.removeAccount);
   const openUpdateDialog = useStore((s) => s.openUpdateDialog);
@@ -68,6 +69,14 @@ export default function AccountItem({ account }: Props): JSX.Element {
             </div>
             <div className="truncate text-[11px] text-muted">@{domain}</div>
           </div>
+          {newCount > 0 && (
+            <span
+              className="shrink-0 rounded-full bg-gradient-to-b from-orange-400 to-orange-500 px-1.5 text-[10px] font-semibold text-white shadow-sm animate-pulse"
+              title={`${newCount} 封新邮件`}
+            >
+              +{newCount}
+            </span>
+          )}
         </button>
         <button
           type="button"
