@@ -6,8 +6,11 @@ node_modules/
 dist/
 out/
 release/
+build/
 *.app
 *.dmg
+*.exe
+*.blockmap
 
 # Local / IDE
 .DS_Store

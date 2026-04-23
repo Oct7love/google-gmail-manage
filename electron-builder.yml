@@ -1,0 +1,53 @@
+appId: com.rickey.mailviewer
+productName: Mail Viewer
+copyright: Copyright © 2026 Rickey
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - out/**/*
+  - package.json
+  - "!**/node_modules/**/{CHANGELOG.md,README.md,README,readme.md,readme,test,__tests__,tests,powered-test,example,examples}"
+  - "!**/node_modules/**/*.d.ts"
+  - "!**/node_modules/**/*.map"
+
+asarUnpack:
+  - "**/node_modules/better-sqlite3/**"
+  - "**/node_modules/keytar/**"
+
+mac:
+  category: public.app-category.productivity
+  target:
+    - target: dmg
+      arch: [arm64]
+    - target: dir
+      arch: [arm64]
+  # 未做代码签名：首次打开需要右键 → 打开
+  identity: null
+  gatekeeperAssess: false
+  hardenedRuntime: false
+
+dmg:
+  title: "${productName} ${version}"
+  writeUpdateInfo: false
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
+# Windows（将来交叉编译时启用）：
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  artifactName: "${productName}-${version}-setup-${arch}.${ext}"
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  perMachine: false
