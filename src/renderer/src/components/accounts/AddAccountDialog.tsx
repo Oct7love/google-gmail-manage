@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useStore } from '../../store';
 import TotpPanel from './TotpPanel';
+import SmsCodeBox from './SmsCodeBox';
 import { parseAccountLine, ParsedAccount } from '../../lib/parseAccount';
 import {
   X,
@@ -76,6 +77,33 @@ export default function AddAccountDialog(): JSX.Element | null {
       if (s.webviewProxy) setProxyInput(s.webviewProxy);
     });
   }, []);
+
+  // 更新模式下，把该账号已保存的附加信息（Google 密码 / 2FA / 辅邮 / 链接）拉出来预填
+  // 省得用户每次更新都要重粘一遍
+  useEffect(() => {
+    if (!isUpdate || !lockedEmail) return;
+    let cancelled = false;
+    void window.api.accounts.getCredentials(lockedEmail).then((creds) => {
+      if (cancelled) return;
+      const hasExtra = creds.googlePassword || creds.recoveryEmail || creds.link || creds.totpSecret;
+      if (hasExtra) {
+        setImported({
+          email: lockedEmail,
+          googlePassword: creds.googlePassword ?? '',
+          recoveryEmail: creds.recoveryEmail ?? '',
+          totpSecret: creds.totpSecret ?? '',
+          link: creds.link,
+        });
+      }
+      if (creds.totpSecret) {
+        setTotpSecret(creds.totpSecret);
+        setOriginalTotpSecret(creds.totpSecret);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isUpdate, lockedEmail]);
 
   // webview 事件监听（did-fail-load / did-finish-load）
   const webviewRefCallback = useCallback((el: HTMLElement | null) => {
@@ -303,6 +331,10 @@ export default function AddAccountDialog(): JSX.Element | null {
                   />
                 )}
               </div>
+            )}
+
+            {imported?.link && /^https?:\/\//i.test(imported.link) && (
+              <SmsCodeBox url={imported.link} />
             )}
 
             {/* 帮助（默认折叠，点开看步骤） */}

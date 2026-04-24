@@ -5,6 +5,7 @@ export const IpcChannels = {
     OpenAppPasswordPage: 'system:openAppPasswordPage',
     GetSettings: 'system:getSettings',
     SetSettings: 'system:setSettings',
+    FetchSmsCode: 'system:fetchSmsCode',
   },
   Accounts: {
     List: 'accounts:list',

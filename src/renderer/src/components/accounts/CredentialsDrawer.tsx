@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { TOTP, URI } from 'otpauth';
 import type { AccountCredentials, AccountInfo } from '../../../../shared/types';
 import { useStore } from '../../store';
+import SmsCodeBox from './SmsCodeBox';
 import {
   X,
   Eye,
@@ -147,6 +148,9 @@ export default function CredentialsDrawer({ email, onClose }: Props): JSX.Elemen
                 value={creds.link}
                 emptyHint="未保存"
               />
+              {creds.link && /^https?:\/\//i.test(creds.link) && (
+                <SmsCodeBox url={creds.link} />
+              )}
             </div>
           )}
         </div>

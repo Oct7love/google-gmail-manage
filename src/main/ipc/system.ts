@@ -29,4 +29,33 @@ export function registerSystemIpc(): void {
       return merged;
     },
   );
+
+  // 拉取短信验证码代收 URL 的返回（给账号绑定的 link 字段用）
+  ipcMain.handle(
+    IpcChannels.System.FetchSmsCode,
+    async (_e, url: string): Promise<{ ok: boolean; code?: string; raw?: string; error?: string }> => {
+      try {
+        if (!/^https?:\/\//i.test(url)) return { ok: false, error: 'URL 必须是 http:// 或 https://' };
+        const res = await fetch(url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+            Accept: '*/*',
+          },
+          redirect: 'follow',
+        });
+        if (!res.ok) return { ok: false, error: `HTTP ${res.status}` };
+        const text = (await res.text()).trim();
+        // 提取第一个 4-8 位连续数字作为验证码
+        const match = text.match(/\b(\d{4,8})\b/);
+        return {
+          ok: true,
+          code: match ? match[1] : undefined,
+          raw: text.slice(0, 200),
+        };
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        return { ok: false, error: msg };
+      }
+    },
+  );
 }
