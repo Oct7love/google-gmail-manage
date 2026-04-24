@@ -78,6 +78,12 @@ export default function AddAccountDialog(): JSX.Element | null {
     });
   }, []);
 
+  // 切换到更新模式 or 切换到不同账号 → 把锁定邮箱同步到输入框
+  // （组件常驻 App 不 unmount，useState 初始值只用一次，所以需要 effect）
+  useEffect(() => {
+    if (lockedEmail) setEmail(lockedEmail);
+  }, [lockedEmail]);
+
   // 更新模式下，把该账号已保存的附加信息（Google 密码 / 2FA / 辅邮 / 链接）拉出来预填
   // 省得用户每次更新都要重粘一遍
   useEffect(() => {
@@ -368,20 +374,25 @@ export default function AddAccountDialog(): JSX.Element | null {
             {/* 表单字段 */}
             <label className="block">
               <span className="text-[12.5px] font-medium">Gmail 地址</span>
-              <input
-                ref={emailInputRef}
-                type="email"
-                value={email}
-                disabled={isUpdate}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (lastAdded) setLastAdded(null);
-                }}
-                placeholder="xxx@gmail.com"
-                className="mt-0.5 w-full rounded-md border border-border bg-white px-3 py-1.5 text-[13px] focus:border-accent focus:outline-none disabled:bg-sidebar"
-                required
-                autoFocus={!isUpdate}
-              />
+              <div className="relative mt-0.5 flex items-center gap-1.5">
+                <input
+                  ref={emailInputRef}
+                  type="email"
+                  value={email}
+                  disabled={isUpdate}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (lastAdded) setLastAdded(null);
+                  }}
+                  placeholder="xxx@gmail.com"
+                  className="min-w-0 flex-1 rounded-md border border-border bg-white px-3 py-1.5 text-[13px] focus:border-accent focus:outline-none disabled:bg-sidebar"
+                  required
+                  autoFocus={!isUpdate}
+                />
+                {email && (
+                  <CopyButton value={email} onCopy={copyToClipboard} />
+                )}
+              </div>
             </label>
 
             <label className="block">
