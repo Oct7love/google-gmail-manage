@@ -2,6 +2,7 @@ import type { ImapFlow, FetchMessageObject } from 'imapflow';
 import { simpleParser, ParsedMail, Attachment } from 'mailparser';
 import type { MessageDetail } from '../../shared/types';
 import { AuthError, NoPasswordError, openImap } from './client';
+import { log } from '../logger';
 
 export class IMAPExpiredError extends Error {
   code = 'TOKEN_EXPIRED' as const;
@@ -19,11 +20,15 @@ export async function fetchLatestMessages(
   try {
     const lock = await c.getMailboxLock('INBOX');
     try {
-      const status = await c.status('INBOX', { messages: true });
-      const total = status.messages ?? 0;
+      // 直接读 client.mailbox.exists（lock 打开时已经填充）
+      const mailbox = c.mailbox;
+      const total =
+        mailbox && typeof mailbox !== 'boolean' ? mailbox.exists ?? 0 : 0;
+      log(`[fetch] ${email} mailbox.exists=${total}`);
       if (total === 0) return [];
       const start = Math.max(1, total - max + 1);
       const range = `${start}:${total}`;
+      log(`[fetch] ${email} fetching range ${range}`);
 
       const raws: { uid: number; source: Buffer; internalDate?: Date }[] = [];
       for await (const msg of c.fetch(
@@ -39,6 +44,7 @@ export async function fetchLatestMessages(
           });
         }
       }
+      log(`[fetch] ${email} got ${raws.length} raw messages`);
 
       // 解析放在锁外（CPU 密集，不占 IMAP 连接）
       lock.release();

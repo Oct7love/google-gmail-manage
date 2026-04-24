@@ -6,7 +6,7 @@ import { IpcChannels } from '../../shared/ipc-channels';
 import { MESSAGES_PER_ACCOUNT } from '../../shared/constants';
 
 const DEFAULT_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
-const CONCURRENCY = 5;
+const CONCURRENCY = 3; // Gmail 并发 IMAP 不能太多，避免 AUTH 限流
 
 let timer: NodeJS.Timeout | null = null;
 

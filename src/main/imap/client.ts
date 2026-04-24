@@ -65,9 +65,16 @@ export async function openImap(email: string, password?: string): Promise<ImapFl
     return client;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    log('CONNECT_FAIL', msg);
-    if (/AUTHENTICATIONFAILED|invalid credentials|Application-specific password required/i.test(msg)) {
-      throw new AuthError(email, msg);
+    // imapflow 把真实的 IMAP 返回放在 err.responseText，message 通常只是 "Command failed"
+    const e = err as { responseText?: string; responseStatus?: string };
+    const combined = `${msg} ${e.responseText ?? ''} ${e.responseStatus ?? ''}`;
+    log('CONNECT_FAIL', combined);
+    if (
+      /AUTHENTICATIONFAILED|invalid credentials|Application-specific password required|Web login required/i.test(
+        combined,
+      )
+    ) {
+      throw new AuthError(email, e.responseText ?? msg);
     }
     throw err;
   }

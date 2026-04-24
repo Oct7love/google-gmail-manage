@@ -5,6 +5,7 @@ import * as accountsRepo from '../storage/accounts-repo';
 import { syncAccount } from '../sync';
 import type { RefreshEvent } from '../../shared/types';
 import { IpcChannels } from '../../shared/ipc-channels';
+import { log as fileLog } from '../logger';
 
 /**
  * IMAP IDLE 管理器：为每个账号维持一个持久 IMAP 连接，监听 Gmail 服务器推送。
@@ -21,6 +22,9 @@ const PORT = 993;
 const RECONNECT_BACKOFF_MS = [2000, 5000, 15000, 30000, 60000, 120000];
 const STAGGER_MS = 250; // 初始启动时每个账号之间隔 250ms，避免 30 连接爆发
 const SYNC_DEBOUNCE_MS = 1500; // exists 事件合并窗口
+const HEALTH_CHECK_INTERVAL_MS = 10 * 60 * 1000; // 每 10 分钟巡检，拉起掉线的 session
+
+let healthCheckTimer: NodeJS.Timeout | null = null;
 
 interface IdleSession {
   email: string;
@@ -40,8 +44,7 @@ function broadcast(evt: RefreshEvent): void {
 }
 
 function log(email: string, msg: string): void {
-  // eslint-disable-next-line no-console
-  console.log(`[idle ${new Date().toISOString().slice(11, 19)} ${email}] ${msg}`);
+  fileLog(`[idle] ${email} ${msg}`);
 }
 
 async function buildClient(email: string): Promise<ImapFlow | null> {
@@ -90,7 +93,13 @@ async function openSession(session: IdleSession): Promise<void> {
   client.on('error', (err: unknown) => {
     const msg = err instanceof Error ? err.message : String(err);
     log(session.email, `ERROR: ${msg}`);
-    // 'close' 事件会紧跟着触发，重连在 close 里处理
+    // 强制关闭 client，保证 close 事件触发 → 走重连逻辑
+    // （有些错误 imapflow 自己不会把 socket 关干净）
+    try {
+      client.close();
+    } catch {
+      /* noop */
+    }
   });
 
   client.on('close', () => {
@@ -115,10 +124,17 @@ async function openSession(session: IdleSession): Promise<void> {
     triggerSync(session);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    log(session.email, `connect failed: ${msg}`);
+    // imapflow 把真实 IMAP 响应放在 err.responseText，err.message 只是 "Command failed"
+    const e = err as { responseText?: string; responseStatus?: string };
+    const combined = `${msg} ${e.responseText ?? ''}`;
+    log(session.email, `connect failed: ${combined}`);
 
-    if (/AUTHENTICATIONFAILED|invalid credentials|Application-specific password required/i.test(msg)) {
-      accountsRepo.updateSyncStatus(session.email, 'expired', msg);
+    if (
+      /AUTHENTICATIONFAILED|invalid credentials|Application-specific password required|Web login required/i.test(
+        combined,
+      )
+    ) {
+      accountsRepo.updateSyncStatus(session.email, 'expired', e.responseText ?? msg);
       broadcast({ email: session.email, phase: 'expired' });
       session.active = false; // 认证失败不再重试
       return;
@@ -205,11 +221,29 @@ export function startAllIdle(): void {
       void startIdleFor(a.email);
     }, i * STAGGER_MS);
   });
+  // 启动健康检查：每 10 分钟扫一次，拉起死掉的 session（防 close 事件漏派）
+  if (healthCheckTimer) clearInterval(healthCheckTimer);
+  healthCheckTimer = setInterval(healthCheck, HEALTH_CHECK_INTERVAL_MS);
 }
 
 export async function stopAllIdle(): Promise<void> {
+  if (healthCheckTimer) {
+    clearInterval(healthCheckTimer);
+    healthCheckTimer = null;
+  }
   const emails = [...sessions.keys()];
   await Promise.all(emails.map(stopIdleFor));
+}
+
+/** 健康检查：active 但 client=null（连接断了）的 session 立即重连 */
+function healthCheck(): void {
+  for (const session of sessions.values()) {
+    if (!session.active) continue;
+    if (session.client) continue; // 正常连着
+    if (session.reconnectTimer) continue; // 已经在重连倒计时里
+    log(session.email, 'health check: session 无活跃连接且无重连计划，立即拉起');
+    void openSession(session);
+  }
 }
 
 /** App 从睡眠唤醒时调用：强制重连所有活跃 session */
