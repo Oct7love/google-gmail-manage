@@ -5,6 +5,18 @@ import { join } from 'node:path';
 // 我们 UI 是静态三栏 + 偶尔滚动，不需要 GPU 合成。
 // 关掉能去掉一整个独立的 GPU 进程（省约 80MB）。
 app.disableHardwareAcceleration();
+
+// 防崩：IMAP 持久连接偶尔会抛异步错误（socket timeout / TLS 断开等），
+// imapflow 在 setTimeout 回调里 emit，没走 await 链，没人接就变成 Uncaught Exception。
+// 已经给每个 client 加了 'error' 监听，这里是兜底，防止任何遗漏导致弹窗。
+process.on('uncaughtException', (err) => {
+  // eslint-disable-next-line no-console
+  console.error('[uncaughtException]', err);
+});
+process.on('unhandledRejection', (reason) => {
+  // eslint-disable-next-line no-console
+  console.error('[unhandledRejection]', reason);
+});
 import { getDb, closeDb } from './storage/db';
 import { registerAccountsIpc } from './ipc/accounts';
 import { registerMessagesIpc } from './ipc/messages';

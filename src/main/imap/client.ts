@@ -51,6 +51,13 @@ export async function openImap(email: string, password?: string): Promise<ImapFl
     },
   });
 
+  // 非常重要：给所有 ImapFlow 实例挂 error 监听，防止异步 socket 错误变成未捕获异常
+  // （比如 socket timeout、TLS 断开、对端关闭等在 setTimeout 回调里 emit 的 error）
+  client.on('error', (err: unknown) => {
+    const msg = err instanceof Error ? err.message : String(err);
+    log('SOCKET_ERROR', msg);
+  });
+
   try {
     log('CONNECT', `连接 ${HOST}:${PORT} …`);
     await client.connect();
