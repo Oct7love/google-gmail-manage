@@ -57,4 +57,6 @@ export interface RefreshEvent {
   /** 本次同步新拉到的邮件数（仅 phase='done' 时有值） */
   newCount?: number;
   error?: string;
+  /** 本次同步是否静默触发（启动追赶、睡眠唤醒等），主进程用于决定是否播提示音 */
+  silent?: boolean;
 }

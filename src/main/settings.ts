@@ -9,6 +9,8 @@ import { join, dirname } from 'node:path';
 export interface AppSettings {
   /** 仅用于添加账号对话框的内嵌 Google webview。格式如 http://127.0.0.1:7890 或 socks5://127.0.0.1:1080 */
   webviewProxy?: string;
+  /** 新邮件提示音总开关。undefined 视为 true（首次未设置时默认开启）。 */
+  soundEnabled?: boolean;
 }
 
 const WEBVIEW_PARTITION = 'persist:google-apppasswords';
