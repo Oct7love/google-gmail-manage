@@ -31,6 +31,8 @@ interface State {
   /** 最近一次同步新收到的邮件数（按账号），5 秒后自动清除 */
   recentNewByEmail: Record<string, number>;
   dialogMode: DialogMode;
+  /** 新邮件提示音开关（true=开，默认 true） */
+  soundEnabled: boolean;
 
   init: () => Promise<void>;
   selectAccount: (email: string) => Promise<void>;
@@ -40,6 +42,7 @@ interface State {
   openAddDialog: () => void;
   openUpdateDialog: (email: string) => void;
   closeDialog: () => void;
+  toggleSound: () => Promise<void>;
 
   submitAdd: (
     email: string,
@@ -72,11 +75,20 @@ export const useStore = create<State>((set, get) => ({
   refreshingEmails: new Set(),
   recentNewByEmail: {},
   dialogMode: null,
+  soundEnabled: true,
 
   init: async () => {
-    const accounts = await window.api.accounts.list();
+    const [accounts, settings] = await Promise.all([
+      window.api.accounts.list(),
+      window.api.system.getSettings(),
+    ]);
     const first = accounts[0]?.email ?? null;
-    set({ accounts, status: 'ready', selectedEmail: first });
+    set({
+      accounts,
+      status: 'ready',
+      selectedEmail: first,
+      soundEnabled: settings.soundEnabled !== false, // undefined 视为 true
+    });
     if (first) await get().selectAccount(first);
   },
 
@@ -115,6 +127,12 @@ export const useStore = create<State>((set, get) => ({
   openAddDialog: () => set({ dialogMode: 'new' }),
   openUpdateDialog: (email: string) => set({ dialogMode: { update: email } }),
   closeDialog: () => set({ dialogMode: null }),
+
+  toggleSound: async () => {
+    const next = !get().soundEnabled;
+    set({ soundEnabled: next });
+    await window.api.system.setSettings({ soundEnabled: next });
+  },
 
   submitAdd: async (email, password, info) => {
     const res = await window.api.accounts.add({ email, password, info });
