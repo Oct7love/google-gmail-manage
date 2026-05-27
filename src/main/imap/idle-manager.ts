@@ -6,6 +6,8 @@ import { syncAccount } from '../sync';
 import type { RefreshEvent } from '../../shared/types';
 import { IpcChannels } from '../../shared/ipc-channels';
 import { log as fileLog } from '../logger';
+import { playNotification } from '../sound';
+import { loadSettings } from '../settings';
 
 /**
  * IMAP IDLE 管理器：为每个账号维持一个持久 IMAP 连接，监听 Gmail 服务器推送。
@@ -62,18 +64,26 @@ async function buildClient(email: string): Promise<ImapFlow | null> {
   });
 }
 
-function triggerSync(session: IdleSession): void {
+function triggerSync(session: IdleSession, opts: { silent?: boolean } = {}): void {
+  const silent = opts.silent ?? false;
   if (session.syncDebounceTimer) clearTimeout(session.syncDebounceTimer);
   session.syncDebounceTimer = setTimeout(async () => {
     session.syncDebounceTimer = null;
-    broadcast({ email: session.email, phase: 'start' });
+    broadcast({ email: session.email, phase: 'start', silent });
     const res = await syncAccount(session.email);
     if (res.status === 'ok') {
-      broadcast({ email: session.email, phase: 'done', newCount: res.fetched });
+      broadcast({ email: session.email, phase: 'done', newCount: res.fetched, silent });
+      // 仅在「非静默 + 真有新邮件 + 开关未关」时响
+      if (!silent && res.fetched > 0) {
+        const s = loadSettings();
+        if (s.soundEnabled !== false) {
+          playNotification(res.fetched);
+        }
+      }
     } else if (res.status === 'expired') {
-      broadcast({ email: session.email, phase: 'expired' });
+      broadcast({ email: session.email, phase: 'expired', silent });
     } else {
-      broadcast({ email: session.email, phase: 'error', error: res.error });
+      broadcast({ email: session.email, phase: 'error', error: res.error, silent });
     }
   }, SYNC_DEBOUNCE_MS);
 }
@@ -120,8 +130,9 @@ async function openSession(session: IdleSession): Promise<void> {
     session.reconnectAttempts = 0;
     log(session.email, 'idle active');
 
-    // 连上后做一次追赶同步，捕获连接前的新邮件
-    triggerSync(session);
+    // 连上后做一次追赶同步，捕获连接前的新邮件——静默，不播提示音
+    // （启动 / 睡眠唤醒后重连都走这里）
+    triggerSync(session, { silent: true });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     // imapflow 把真实 IMAP 响应放在 err.responseText，err.message 只是 "Command failed"
