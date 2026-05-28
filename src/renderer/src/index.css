@@ -2,6 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 默认主题：cream（米白·靛蓝） */
+:root,
+:root[data-theme="cream"] {
+  --c-bg:            250 249 247;
+  --c-surface:       255 255 255;
+  --c-surface-2:     253 252 250;
+  --c-sidebar:       243 241 236;
+  --c-border:        232 229 223;
+  --c-border-strong: 214 210 201;
+  --c-text:          29 29 31;
+  --c-text-2:        60 60 63;
+  --c-muted:         110 110 114;
+  --c-muted-2:       142 142 147;
+  --c-accent:        79 70 229;
+  --c-accent-soft:   238 242 255;
+}
+
+/* stock：Apple HIG 经典 */
+:root[data-theme="stock"] {
+  --c-bg:            245 245 247;
+  --c-surface:       255 255 255;
+  --c-surface-2:     251 251 253;
+  --c-sidebar:       236 236 239;
+  --c-border:        224 224 227;
+  --c-border-strong: 208 208 212;
+  --c-text:          29 29 31;
+  --c-text-2:        60 60 63;
+  --c-muted:         110 110 114;
+  --c-muted-2:       142 142 147;
+  --c-accent:        0 122 255;
+  --c-accent-soft:   232 241 255;
+}
+
+/* onyx：黑·克制（Things 3 风） */
+:root[data-theme="onyx"] {
+  --c-bg:            250 250 250;
+  --c-surface:       255 255 255;
+  --c-surface-2:     245 245 245;
+  --c-sidebar:       240 240 240;
+  --c-border:        228 228 228;
+  --c-border-strong: 212 212 212;
+  --c-text:          10 10 10;
+  --c-text-2:        38 38 38;
+  --c-muted:         82 82 82;
+  --c-muted-2:       115 115 115;
+  --c-accent:        10 10 10;
+  --c-accent-soft:   235 235 235;
+}
+
 html,
 body,
 #root {
