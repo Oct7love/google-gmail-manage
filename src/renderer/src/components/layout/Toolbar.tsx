@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useStore } from '../../store';
 import Logo from '../common/Logo';
-import { Bell, BellOff, Loader2 } from 'lucide-react';
+import { Bell, BellOff, Loader2, Palette } from 'lucide-react';
+import ThemePicker from './ThemePicker';
 
 /**
  * 顶部工具栏：Mac hiddenInset 交通灯下方的品牌区 + 状态。
@@ -10,6 +12,9 @@ export default function Toolbar(): JSX.Element {
   const accountsCount = useStore((s) => s.accounts.length);
   const soundEnabled = useStore((s) => s.soundEnabled);
   const toggleSound = useStore((s) => s.toggleSound);
+  const themeId = useStore((s) => s.themeId);
+  const setTheme = useStore((s) => s.setTheme);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   return (
     <div
@@ -27,7 +32,7 @@ export default function Toolbar(): JSX.Element {
       </div>
 
       <div
-        className="flex w-20 shrink-0 items-center justify-end gap-2"
+        className="relative flex w-28 shrink-0 items-center justify-end gap-2"
         style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
       >
         {refreshingCount > 0 && (
@@ -38,12 +43,30 @@ export default function Toolbar(): JSX.Element {
         )}
         <button
           type="button"
+          onClick={() => setPickerOpen((o) => !o)}
+          title="切换主题"
+          className="rounded p-1 text-muted transition hover:bg-surface-2 hover:text-text"
+        >
+          <Palette size={15} />
+        </button>
+        <button
+          type="button"
           onClick={() => void toggleSound()}
           title={soundEnabled ? '提示音已开（点击关闭）' : '提示音已关（点击开启）'}
           className="rounded p-1 text-muted transition hover:bg-surface-2 hover:text-text"
         >
           {soundEnabled ? <Bell size={15} /> : <BellOff size={15} />}
         </button>
+        {pickerOpen && (
+          <ThemePicker
+            current={themeId}
+            onSelect={(id) => {
+              void setTheme(id);
+              setPickerOpen(false);
+            }}
+            onClose={() => setPickerOpen(false)}
+          />
+        )}
       </div>
     </div>
   );
