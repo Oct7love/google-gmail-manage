@@ -5,24 +5,24 @@ export default {
   theme: {
     extend: {
       colors: {
-        // 表面层级（米白系，Notion 风温暖）
-        bg: '#faf9f7',
-        surface: '#ffffff',
-        'surface-2': '#fdfcfa',
-        sidebar: '#f3f1ec',
-        // 边框（暖灰）
-        border: '#e8e5df',
-        'border-strong': '#d6d2c9',
+        // 表面层级（CSS 变量驱动，跨主题切换）
+        bg:            'rgb(var(--c-bg) / <alpha-value>)',
+        surface:       'rgb(var(--c-surface) / <alpha-value>)',
+        'surface-2':   'rgb(var(--c-surface-2) / <alpha-value>)',
+        sidebar:       'rgb(var(--c-sidebar) / <alpha-value>)',
+        // 边框
+        border:        'rgb(var(--c-border) / <alpha-value>)',
+        'border-strong':'rgb(var(--c-border-strong) / <alpha-value>)',
         // 文字
-        text: '#1d1d1f',
-        'text-2': '#3c3c3f',
-        muted: '#6e6e72',
-        'muted-2': '#8e8e93',
-        // 强调（Linear / Vercel 同款靛蓝）
-        accent: '#4f46e5',
-        'accent-soft': '#eef2ff',
-        // 语义
-        danger: '#ff3b30',
+        text:          'rgb(var(--c-text) / <alpha-value>)',
+        'text-2':      'rgb(var(--c-text-2) / <alpha-value>)',
+        muted:         'rgb(var(--c-muted) / <alpha-value>)',
+        'muted-2':     'rgb(var(--c-muted-2) / <alpha-value>)',
+        // 强调
+        accent:        'rgb(var(--c-accent) / <alpha-value>)',
+        'accent-soft': 'rgb(var(--c-accent-soft) / <alpha-value>)',
+        // 语义色（跨主题统一，不进变量）
+        danger:  '#ff3b30',
         success: '#34c759',
         warning: '#ff9500',
       },
