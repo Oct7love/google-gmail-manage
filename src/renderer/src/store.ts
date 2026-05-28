@@ -238,7 +238,8 @@ export const useStore = create<State>((set, get) => ({
         const list = await window.api.messages.list(evt.email, MESSAGES_PER_ACCOUNT);
         set((s) => ({ messagesByEmail: { ...s.messagesByEmail, [evt.email]: list } }));
       }
-      // 有新邮件：设置"最近新邮件数"，5 秒后自动清除
+      // 有新邮件：累加"最近新邮件数"，持续显示直到用户点击该账号才清除
+      // （清除逻辑在 selectAccount action 里）
       if (evt.newCount && evt.newCount > 0) {
         set((s) => ({
           recentNewByEmail: {
@@ -246,13 +247,6 @@ export const useStore = create<State>((set, get) => ({
             [evt.email]: (s.recentNewByEmail[evt.email] ?? 0) + evt.newCount!,
           },
         }));
-        setTimeout(() => {
-          set((s) => {
-            const next = { ...s.recentNewByEmail };
-            delete next[evt.email];
-            return { recentNewByEmail: next };
-          });
-        }, 5000);
       }
     }
   },
