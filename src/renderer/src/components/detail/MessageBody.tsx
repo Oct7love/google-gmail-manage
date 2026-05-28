@@ -29,16 +29,16 @@ function buildSrcDoc(detail: MessageDetail, allowImages: boolean): string {
   const style = `
     body{
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
-      font-size: 14px;
+      font-size: 15px;
       line-height: 1.65;
-      color: #1a1a1a;
-      padding: 20px 24px;
+      color: #1d1d1f;
+      padding: 24px 28px;
       margin: 0;
       background: #ffffff;
       word-break: break-word;
       overflow-wrap: break-word;
     }
-    a{ color:#2563eb; }
+    a{ color:#007aff; }
     pre{ white-space: pre-wrap; word-break: break-word; }
     table{ max-width: 100%; }
     ${imgStyle}
