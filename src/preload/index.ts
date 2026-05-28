@@ -38,12 +38,20 @@ const api = {
     ping: (): Promise<string> => ipcRenderer.invoke(IpcChannels.System.Ping),
     openAppPasswordPage: (): Promise<void> =>
       ipcRenderer.invoke(IpcChannels.System.OpenAppPasswordPage),
-    getSettings: (): Promise<{ webviewProxy?: string; soundEnabled?: boolean }> =>
-      ipcRenderer.invoke(IpcChannels.System.GetSettings),
-    setSettings: (
-      next: { webviewProxy?: string; soundEnabled?: boolean },
-    ): Promise<{ webviewProxy?: string; soundEnabled?: boolean }> =>
-      ipcRenderer.invoke(IpcChannels.System.SetSettings, next),
+    getSettings: (): Promise<{
+      webviewProxy?: string;
+      soundEnabled?: boolean;
+      themeId?: import('../shared/types').ThemeId;
+    }> => ipcRenderer.invoke(IpcChannels.System.GetSettings),
+    setSettings: (next: {
+      webviewProxy?: string;
+      soundEnabled?: boolean;
+      themeId?: import('../shared/types').ThemeId;
+    }): Promise<{
+      webviewProxy?: string;
+      soundEnabled?: boolean;
+      themeId?: import('../shared/types').ThemeId;
+    }> => ipcRenderer.invoke(IpcChannels.System.SetSettings, next),
     fetchSmsCode: (url: string): Promise<{ ok: boolean; code?: string; raw?: string; error?: string }> =>
       ipcRenderer.invoke(IpcChannels.System.FetchSmsCode, url),
   },

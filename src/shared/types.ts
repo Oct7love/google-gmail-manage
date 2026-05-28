@@ -60,3 +60,6 @@ export interface RefreshEvent {
   /** 本次同步是否静默触发（启动追赶、睡眠唤醒等），主进程用于决定是否播提示音 */
   silent?: boolean;
 }
+
+/** 可选主题预设。默认 'cream'。 */
+export type ThemeId = 'cream' | 'stock' | 'onyx';
