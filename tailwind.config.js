@@ -5,15 +5,26 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg: '#fafafa',
-        sidebar: '#f0f0f0',
-        border: '#e5e5e5',
-        text: '#1a1a1a',
-        muted: '#888888',
-        accent: '#2563eb',
-        danger: '#dc2626',
-        success: '#059669',
-        warning: '#d97706',
+        // 表面层级
+        bg: '#f5f5f7',
+        surface: '#ffffff',
+        'surface-2': '#fbfbfd',
+        sidebar: '#ececef',
+        // 边框
+        border: '#e0e0e3',
+        'border-strong': '#d0d0d4',
+        // 文字
+        text: '#1d1d1f',
+        'text-2': '#3c3c3f',
+        muted: '#6e6e72',
+        'muted-2': '#8e8e93',
+        // 强调
+        accent: '#007aff',
+        'accent-soft': '#e8f1ff',
+        // 语义
+        danger: '#ff3b30',
+        success: '#34c759',
+        warning: '#ff9500',
       },
       fontFamily: {
         sans: [
@@ -23,6 +34,23 @@ export default {
           'Helvetica Neue',
           'sans-serif',
         ],
+      },
+      fontSize: {
+        xs: '11px',
+        sm: '12.5px',
+        base: '13.5px',
+        lg: '15px',
+        xl: '17px',
+      },
+      borderRadius: {
+        DEFAULT: '8px',
+        sm: '4px',
+        lg: '12px',
+      },
+      boxShadow: {
+        card: '0 1px 2px rgba(0,0,0,0.04), 0 0 0 0.5px rgba(0,0,0,0.05)',
+        'card-hover': '0 2px 6px rgba(0,0,0,0.08), 0 0 0 0.5px rgba(0,0,0,0.06)',
+        popover: '0 8px 24px rgba(0,0,0,0.12), 0 0 0 0.5px rgba(0,0,0,0.05)',
       },
     },
   },
