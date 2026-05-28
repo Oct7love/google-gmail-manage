@@ -231,7 +231,7 @@ export default function AddAccountDialog(): JSX.Element | null {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-6">
       <div className="flex h-[660px] w-full max-w-[1100px] overflow-hidden rounded-lg bg-white shadow-2xl">
         {/* 左：表单（3 段：header / scroll / footer） */}
         <div className="flex w-[440px] shrink-0 flex-col border-r border-border">
@@ -345,7 +345,7 @@ export default function AddAccountDialog(): JSX.Element | null {
 
             {/* 帮助（默认折叠，点开看步骤） */}
             {!isUpdate && (
-              <div className="rounded-md border border-border bg-blue-50/40">
+              <div className="rounded-md border border-border bg-accent-soft/50">
                 <button
                   type="button"
                   onClick={() => setHelpOpen((o) => !o)}
@@ -415,7 +415,7 @@ export default function AddAccountDialog(): JSX.Element | null {
             />
 
             {error && (
-              <div className="whitespace-pre-wrap rounded-md bg-red-50 px-3 py-2 text-[12px] text-danger">
+              <div className="whitespace-pre-wrap rounded-md border border-[#ffd5d2] bg-[#fff4f3] px-3 py-2 text-[12px] text-danger">
                 {error}
               </div>
             )}
@@ -512,7 +512,7 @@ export default function AddAccountDialog(): JSX.Element | null {
             </header>
 
             {proxyPanelOpen && (
-              <div className="border-b border-border bg-blue-50/40 px-3 py-2 text-[11px]">
+              <div className="border-b border-border bg-accent-soft/50 px-3 py-2 text-[11px]">
                 <div className="mb-1 flex items-center gap-1.5 text-accent">
                   <Globe size={11} />
                   <span className="font-medium">webview 代理</span>
@@ -549,7 +549,7 @@ export default function AddAccountDialog(): JSX.Element | null {
                 allowpopups="true"
               />
               {webviewError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-white/95 p-8">
+                <div className="absolute inset-0 flex items-center justify-center bg-surface/95 p-8">
                   <div className="max-w-sm text-center">
                     <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
                       <AlertTriangle size={24} className="text-warning" />
@@ -647,7 +647,7 @@ function CopyButton({ value, onCopy }: { value: string; onCopy: (s: string) => v
     <button
       type="button"
       onClick={onClick}
-      className="flex shrink-0 items-center gap-0.5 rounded border border-border bg-white px-1.5 py-0.5 text-[10px] text-muted hover:bg-white/80"
+      className="flex shrink-0 items-center gap-0.5 rounded border border-border bg-surface px-1.5 py-0.5 text-[10px] text-muted hover:bg-surface-2"
     >
       {copied ? (
         <>

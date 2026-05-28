@@ -28,49 +28,51 @@ export default function RightColumn(): JSX.Element {
   const senderEmail = detail.fromAddr.match(/<(.+?)>/)?.[1] ?? detail.fromAddr;
 
   return (
-    <section className="flex flex-1 flex-col overflow-hidden bg-white">
-      <header className="border-b border-border px-6 py-4">
-        <h2 className="mb-3 text-[17px] font-semibold leading-snug text-text">
-          {detail.subject || '(无主题)'}
-        </h2>
-        <div className="flex items-start gap-3">
-          <Avatar identityKey={detail.fromAddr || 'unknown'} label={senderName} size={36} />
-          <div className="min-w-0 flex-1">
-            <div className="flex items-baseline justify-between gap-2">
-              <div className="min-w-0">
-                <span className="text-[13px] font-medium text-text">{senderName}</span>
-                {senderEmail !== senderName && (
-                  <span className="ml-1.5 text-[12px] text-muted">&lt;{senderEmail}&gt;</span>
-                )}
+    <section className="flex flex-1 flex-col overflow-hidden bg-bg">
+      <div className="m-4 flex flex-1 flex-col overflow-hidden rounded-lg bg-surface shadow-card">
+        <header className="border-b border-border px-6 py-4">
+          <h2 className="mb-3 text-xl font-semibold leading-snug text-text">
+            {detail.subject || '(无主题)'}
+          </h2>
+          <div className="flex items-start gap-3">
+            <Avatar identityKey={detail.fromAddr || 'unknown'} label={senderName} size={36} />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-baseline justify-between gap-2">
+                <div className="min-w-0">
+                  <span className="text-[13px] font-medium text-text">{senderName}</span>
+                  {senderEmail !== senderName && (
+                    <span className="ml-1.5 text-[11.5px] text-muted-2">&lt;{senderEmail}&gt;</span>
+                  )}
+                </div>
+                <time className="shrink-0 text-[12px] text-muted-2">
+                  {new Date(detail.dateTs).toLocaleString('zh-CN')}
+                </time>
               </div>
-              <time className="shrink-0 text-[11px] text-muted">
-                {new Date(detail.dateTs).toLocaleString('zh-CN')}
-              </time>
+              <div className="mt-0.5 text-[11px] text-muted">发给 {detail.accountEmail}</div>
             </div>
-            <div className="mt-0.5 text-[11px] text-muted">发给 {detail.accountEmail}</div>
           </div>
+          {detail.bodyHtml && (
+            <div className="mt-3 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowImages((s) => !s)}
+                className={`flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] transition ${
+                  showImages
+                    ? 'border-transparent bg-accent-soft text-accent'
+                    : 'border-border bg-surface text-muted hover:bg-surface-2'
+                }`}
+              >
+                {showImages ? <ImageIcon size={12} /> : <ImageOff size={12} />}
+                {showImages ? '已加载外部图片' : '加载外部图片'}
+              </button>
+            </div>
+          )}
+        </header>
+        <div className="border-b border-border px-6 pt-3 pb-3">
+          <TranslationPanel detail={detail} />
         </div>
-        {detail.bodyHtml && (
-          <div className="mt-3 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setShowImages((s) => !s)}
-              className={`flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] transition ${
-                showImages
-                  ? 'border-accent/40 bg-accent/5 text-accent'
-                  : 'border-border bg-white text-muted hover:bg-sidebar'
-              }`}
-            >
-              {showImages ? <ImageIcon size={12} /> : <ImageOff size={12} />}
-              {showImages ? '已加载外部图片' : '加载外部图片'}
-            </button>
-          </div>
-        )}
-      </header>
-      <div className="border-b border-border px-6 pt-3 pb-3">
-        <TranslationPanel detail={detail} />
+        <MessageBody detail={detail} allowImages={showImages} />
       </div>
-      <MessageBody detail={detail} allowImages={showImages} />
     </section>
   );
 }

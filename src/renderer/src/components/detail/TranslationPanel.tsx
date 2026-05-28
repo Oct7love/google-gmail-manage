@@ -33,7 +33,7 @@ export default function TranslationPanel({ detail }: Props): JSX.Element | null 
 
   if (state.kind === 'idle') {
     return (
-      <div className="flex items-center justify-between rounded-md border border-border bg-gradient-to-r from-sidebar/40 to-sidebar/20 px-3 py-2 text-xs">
+      <div className="flex items-center justify-between rounded-md border border-border bg-surface-2 px-3 py-2 text-xs">
         <span className="flex items-center gap-1.5 text-muted">
           <Languages size={13} className="text-accent" />
           英文邮件？一键翻译成中文
@@ -41,7 +41,7 @@ export default function TranslationPanel({ detail }: Props): JSX.Element | null 
         <button
           type="button"
           onClick={() => void translate()}
-          className="rounded-md bg-accent px-2.5 py-1 text-xs font-medium text-white hover:bg-accent/90"
+          className="rounded-md bg-accent px-2.5 py-1 text-xs font-medium text-white hover:bg-accent/95"
         >
           翻译为中文
         </button>
@@ -51,7 +51,7 @@ export default function TranslationPanel({ detail }: Props): JSX.Element | null 
 
   if (state.kind === 'loading') {
     return (
-      <div className="flex items-center gap-2 rounded-md border border-border bg-bg px-3 py-2 text-xs text-muted">
+      <div className="flex items-center gap-2 rounded-md border border-border bg-surface-2 px-3 py-2 text-xs text-muted">
         <Loader2 size={13} className="animate-spin text-accent" />
         翻译中…
       </div>
@@ -60,12 +60,12 @@ export default function TranslationPanel({ detail }: Props): JSX.Element | null 
 
   if (state.kind === 'error') {
     return (
-      <div className="flex items-center justify-between rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-danger">
+      <div className="flex items-center justify-between rounded-md border border-[#ffd5d2] bg-[#fff4f3] px-3 py-2 text-xs text-danger">
         <span>翻译失败：{state.error}</span>
         <button
           type="button"
           onClick={() => void translate()}
-          className="rounded-md border border-red-300 bg-white px-2 py-0.5 hover:bg-red-50"
+          className="rounded-md border border-[#ffd5d2] bg-surface px-2 py-0.5 hover:bg-[#fff4f3]"
         >
           重试
         </button>
@@ -74,7 +74,7 @@ export default function TranslationPanel({ detail }: Props): JSX.Element | null 
   }
 
   return (
-    <div className="overflow-hidden rounded-md border border-border bg-bg">
+    <div className="overflow-hidden rounded-md border border-border bg-surface-2">
       <header className="flex items-center justify-between border-b border-border px-3 py-1.5 text-[11px] text-muted">
         <span className="flex items-center gap-1.5">
           <Languages size={12} className="text-accent" />
@@ -84,7 +84,7 @@ export default function TranslationPanel({ detail }: Props): JSX.Element | null 
           <button
             type="button"
             onClick={() => setExpanded((e) => !e)}
-            className="flex items-center gap-0.5 rounded px-1.5 py-0.5 hover:bg-sidebar"
+            className="flex items-center gap-0.5 rounded px-1.5 py-0.5 hover:bg-surface-2"
           >
             {expanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
             {expanded ? '折叠' : '展开'}
@@ -92,7 +92,7 @@ export default function TranslationPanel({ detail }: Props): JSX.Element | null 
           <button
             type="button"
             onClick={() => void translate()}
-            className="flex items-center gap-0.5 rounded px-1.5 py-0.5 hover:bg-sidebar"
+            className="flex items-center gap-0.5 rounded px-1.5 py-0.5 hover:bg-surface-2"
           >
             <RotateCcw size={11} />
             重新翻译

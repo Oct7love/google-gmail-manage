@@ -11,6 +11,8 @@ export interface AppSettings {
   webviewProxy?: string;
   /** 新邮件提示音总开关。undefined 视为 true（首次未设置时默认开启）。 */
   soundEnabled?: boolean;
+  /** UI 主题预设 ID。undefined 视为 'cream'。 */
+  themeId?: import('../shared/types').ThemeId;
 }
 
 const WEBVIEW_PARTITION = 'persist:google-apppasswords';

@@ -19,7 +19,7 @@ export default function LeftColumn(): JSX.Element {
           type="button"
           onClick={() => void refreshAll()}
           disabled={accounts.length === 0}
-          className="flex h-7 w-7 items-center justify-center rounded-md text-muted transition hover:bg-black/5 disabled:opacity-30"
+          className="flex h-7 w-7 items-center justify-center rounded-md text-muted transition hover:bg-surface-2 disabled:opacity-30"
           title="全部刷新"
           aria-label="全部刷新"
         >

@@ -46,7 +46,7 @@ export default function AccountItem({ account }: Props): JSX.Element {
     <li className="relative">
       <div
         className={`group flex items-center gap-2.5 rounded-lg pl-2 pr-1 py-1.5 transition-colors ${
-          isSelected ? 'bg-white shadow-sm ring-1 ring-accent/15' : 'hover:bg-black/5'
+          isSelected ? 'bg-surface shadow-card ring-1 ring-accent/15' : 'hover:bg-surface-2'
         }`}
       >
         <button
@@ -71,7 +71,7 @@ export default function AccountItem({ account }: Props): JSX.Element {
           </div>
           {newCount > 0 && (
             <span
-              className="shrink-0 rounded-full bg-gradient-to-b from-orange-400 to-orange-500 px-1.5 text-[10px] font-semibold text-white shadow-sm animate-pulse"
+              className="shrink-0 rounded-full bg-warning px-1.5 text-[10px] font-semibold text-white shadow-card animate-pulse"
               title={`${newCount} 封新邮件`}
             >
               +{newCount}
@@ -81,7 +81,7 @@ export default function AccountItem({ account }: Props): JSX.Element {
         <button
           type="button"
           onClick={() => setMenuOpen((o) => !o)}
-          className="flex h-6 w-6 items-center justify-center rounded-md text-muted opacity-0 transition hover:bg-black/10 group-hover:opacity-100"
+          className="flex h-6 w-6 items-center justify-center rounded-md text-muted opacity-0 transition hover:bg-surface-2 group-hover:opacity-100"
           aria-label="更多操作"
         >
           <MoreHorizontal size={14} />
@@ -91,11 +91,11 @@ export default function AccountItem({ account }: Props): JSX.Element {
       {menuOpen && (
         <>
           <div className="fixed inset-0 z-30" onClick={() => setMenuOpen(false)} />
-          <div className="absolute right-2 top-11 z-40 w-44 overflow-hidden rounded-lg border border-border bg-white shadow-xl ring-1 ring-black/5">
+          <div className="absolute right-2 top-11 z-40 w-44 overflow-hidden rounded-lg border border-border bg-surface shadow-popover">
             <button
               type="button"
               onClick={onUpdate}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-sidebar"
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-surface-2"
             >
               <KeyRound size={12} className="text-muted" />
               更新应用密码
@@ -103,7 +103,7 @@ export default function AccountItem({ account }: Props): JSX.Element {
             <button
               type="button"
               onClick={() => void onRemove()}
-              className="flex w-full items-center gap-2 border-t border-border px-3 py-2 text-left text-xs text-danger hover:bg-red-50"
+              className="flex w-full items-center gap-2 border-t border-border px-3 py-2 text-left text-xs text-danger hover:bg-[#fff4f3]"
             >
               <Trash2 size={12} />
               移除账号

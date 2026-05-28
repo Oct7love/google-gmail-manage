@@ -4,6 +4,7 @@ import type {
   MessageDetail,
   MessageSummary,
   RefreshEvent,
+  ThemeId,
 } from '../../shared/types';
 import { MESSAGES_PER_ACCOUNT } from '../../shared/constants';
 
@@ -33,6 +34,8 @@ interface State {
   dialogMode: DialogMode;
   /** 新邮件提示音开关（true=开，默认 true） */
   soundEnabled: boolean;
+  /** 当前主题 ID。默认 'cream'。 */
+  themeId: ThemeId;
 
   init: () => Promise<void>;
   selectAccount: (email: string) => Promise<void>;
@@ -43,6 +46,7 @@ interface State {
   openUpdateDialog: (email: string) => void;
   closeDialog: () => void;
   toggleSound: () => Promise<void>;
+  setTheme: (id: ThemeId) => Promise<void>;
 
   submitAdd: (
     email: string,
@@ -76,6 +80,7 @@ export const useStore = create<State>((set, get) => ({
   recentNewByEmail: {},
   dialogMode: null,
   soundEnabled: true,
+  themeId: 'cream',
 
   init: async () => {
     const [accounts, settings] = await Promise.all([
@@ -83,11 +88,17 @@ export const useStore = create<State>((set, get) => ({
       window.api.system.getSettings(),
     ]);
     const first = accounts[0]?.email ?? null;
+    // 防御：旧版本可能存了 'stock' 等已废弃值；只接受当前 3 个有效 ID
+    const stored = settings.themeId as string | undefined;
+    const themeId: ThemeId =
+      stored === 'cream' || stored === 'slate' || stored === 'onyx' ? stored : 'cream';
+    document.documentElement.dataset.theme = themeId;
     set({
       accounts,
       status: 'ready',
       selectedEmail: first,
       soundEnabled: settings.soundEnabled !== false, // undefined 视为 true
+      themeId,
     });
     if (first) await get().selectAccount(first);
   },
@@ -132,6 +143,12 @@ export const useStore = create<State>((set, get) => ({
     const next = !get().soundEnabled;
     set({ soundEnabled: next });
     await window.api.system.setSettings({ soundEnabled: next });
+  },
+
+  setTheme: async (id: ThemeId) => {
+    document.documentElement.dataset.theme = id;
+    set({ themeId: id });
+    await window.api.system.setSettings({ themeId: id });
   },
 
   submitAdd: async (email, password, info) => {
@@ -224,7 +241,8 @@ export const useStore = create<State>((set, get) => ({
         const list = await window.api.messages.list(evt.email, MESSAGES_PER_ACCOUNT);
         set((s) => ({ messagesByEmail: { ...s.messagesByEmail, [evt.email]: list } }));
       }
-      // 有新邮件：设置"最近新邮件数"，5 秒后自动清除
+      // 有新邮件：累加"最近新邮件数"，持续显示直到用户点击该账号才清除
+      // （清除逻辑在 selectAccount action 里）
       if (evt.newCount && evt.newCount > 0) {
         set((s) => ({
           recentNewByEmail: {
@@ -232,13 +250,6 @@ export const useStore = create<State>((set, get) => ({
             [evt.email]: (s.recentNewByEmail[evt.email] ?? 0) + evt.newCount!,
           },
         }));
-        setTimeout(() => {
-          set((s) => {
-            const next = { ...s.recentNewByEmail };
-            delete next[evt.email];
-            return { recentNewByEmail: next };
-          });
-        }, 5000);
       }
     }
   },
