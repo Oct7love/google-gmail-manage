@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type { ThemeId } from '../../../../shared/types';
 import { Check, X } from 'lucide-react';
 
@@ -84,7 +85,9 @@ export default function ThemePicker({ current, onSelect, onClose }: Props): JSX.
     return () => document.removeEventListener('keydown', onEsc);
   }, [onClose]);
 
-  return (
+  // Toolbar 有 backdrop-blur 创建新 stacking context，会让内部的 fixed 元素失效。
+  // 用 Portal 把模态渲染到 document.body 跳出该 context。
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-6 backdrop-blur-sm"
       onClick={onClose}
@@ -117,7 +120,8 @@ export default function ThemePicker({ current, onSelect, onClose }: Props): JSX.
           ))}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
