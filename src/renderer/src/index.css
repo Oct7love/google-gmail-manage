@@ -2,53 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 默认主题：cream（米白·靛蓝） */
+/* 默认主题：cream（暖米白·靛蓝） */
 :root,
 :root[data-theme="cream"] {
-  --c-bg:            250 249 247;
-  --c-surface:       255 255 255;
-  --c-surface-2:     253 252 250;
-  --c-sidebar:       243 241 236;
-  --c-border:        232 229 223;
-  --c-border-strong: 214 210 201;
+  --c-bg:            250 247 242;   /* #faf7f2 暖米白 */
+  --c-surface:       255 255 255;   /* #ffffff */
+  --c-surface-2:     244 239 229;   /* #f4efe5 米黄次级 */
+  --c-sidebar:       237 230 216;   /* #ede6d8 深米黄 */
+  --c-border:        232 227 213;   /* #e8e3d5 暖边 */
+  --c-border-strong: 214 206 185;   /* #d6ceb9 */
   --c-text:          29 29 31;
   --c-text-2:        60 60 63;
   --c-muted:         110 110 114;
   --c-muted-2:       142 142 147;
-  --c-accent:        79 70 229;
-  --c-accent-soft:   238 242 255;
+  --c-accent:        79 70 229;     /* #4f46e5 靛蓝 */
+  --c-accent-soft:   238 242 255;   /* #eef2ff */
 }
 
-/* stock：Apple HIG 经典 */
-:root[data-theme="stock"] {
-  --c-bg:            245 245 247;
+/* slate：冷青灰·系统蓝 */
+:root[data-theme="slate"] {
+  --c-bg:            238 240 243;   /* #eef0f3 冷青灰 */
   --c-surface:       255 255 255;
-  --c-surface-2:     251 251 253;
-  --c-sidebar:       236 236 239;
-  --c-border:        224 224 227;
-  --c-border-strong: 208 208 212;
+  --c-surface-2:     227 230 235;   /* #e3e6eb */
+  --c-sidebar:       220 224 230;   /* #dce0e6 显著冷灰 */
+  --c-border:        210 214 221;   /* #d2d6dd 冷边 */
+  --c-border-strong: 184 190 200;
   --c-text:          29 29 31;
   --c-text-2:        60 60 63;
   --c-muted:         110 110 114;
   --c-muted-2:       142 142 147;
-  --c-accent:        0 122 255;
-  --c-accent-soft:   232 241 255;
+  --c-accent:        0 122 255;     /* #007aff Apple 系统蓝 */
+  --c-accent-soft:   224 235 255;   /* #e0ebff */
 }
 
-/* onyx：黑·克制（Things 3 风） */
+/* onyx：深灰·克制黑 */
 :root[data-theme="onyx"] {
-  --c-bg:            250 250 250;
+  --c-bg:            233 233 233;   /* #e9e9e9 中性深灰 */
   --c-surface:       255 255 255;
-  --c-surface-2:     245 245 245;
-  --c-sidebar:       240 240 240;
-  --c-border:        228 228 228;
-  --c-border-strong: 212 212 212;
+  --c-surface-2:     224 224 224;   /* #e0e0e0 */
+  --c-sidebar:       204 204 204;   /* #cccccc 显著深灰 */
+  --c-border:        200 200 200;   /* #c8c8c8 */
+  --c-border-strong: 170 170 170;
   --c-text:          10 10 10;
   --c-text-2:        38 38 38;
   --c-muted:         82 82 82;
   --c-muted-2:       115 115 115;
-  --c-accent:        10 10 10;
-  --c-accent-soft:   235 235 235;
+  --c-accent:        10 10 10;      /* #0a0a0a 黑 */
+  --c-accent-soft:   222 222 222;   /* #dedede */
 }
 
 html,
@@ -63,4 +63,28 @@ body {
   font-size: 13px;
   -webkit-font-smoothing: antialiased;
   user-select: none;
+}
+
+/* 主题切换全局过渡：让色变平滑 200ms */
+*,
+*::before,
+*::after {
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+
+/* 例外：交互态 (hover/focus) 保持快速响应，不要被 200ms 拖慢 */
+button:hover,
+button:focus,
+a:hover,
+a:focus,
+[role="button"]:hover {
+  transition-duration: 100ms;
+}
+
+/* 例外：iframe / 视频 / 加载动画 不参与色变过渡（避免卡顿） */
+iframe,
+video,
+.animate-spin,
+.animate-pulse {
+  transition: none;
 }

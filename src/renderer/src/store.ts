@@ -88,7 +88,10 @@ export const useStore = create<State>((set, get) => ({
       window.api.system.getSettings(),
     ]);
     const first = accounts[0]?.email ?? null;
-    const themeId: ThemeId = settings.themeId ?? 'cream';
+    // 防御：旧版本可能存了 'stock' 等已废弃值；只接受当前 3 个有效 ID
+    const stored = settings.themeId as string | undefined;
+    const themeId: ThemeId =
+      stored === 'cream' || stored === 'slate' || stored === 'onyx' ? stored : 'cream';
     document.documentElement.dataset.theme = themeId;
     set({
       accounts,

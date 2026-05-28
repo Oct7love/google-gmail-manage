@@ -62,4 +62,4 @@ export interface RefreshEvent {
 }
 
 /** 可选主题预设。默认 'cream'。 */
-export type ThemeId = 'cream' | 'stock' | 'onyx';
+export type ThemeId = 'cream' | 'slate' | 'onyx';
