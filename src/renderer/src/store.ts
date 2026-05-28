@@ -4,6 +4,7 @@ import type {
   MessageDetail,
   MessageSummary,
   RefreshEvent,
+  ThemeId,
 } from '../../shared/types';
 import { MESSAGES_PER_ACCOUNT } from '../../shared/constants';
 
@@ -33,6 +34,8 @@ interface State {
   dialogMode: DialogMode;
   /** 新邮件提示音开关（true=开，默认 true） */
   soundEnabled: boolean;
+  /** 当前主题 ID。默认 'cream'。 */
+  themeId: ThemeId;
 
   init: () => Promise<void>;
   selectAccount: (email: string) => Promise<void>;
@@ -43,6 +46,7 @@ interface State {
   openUpdateDialog: (email: string) => void;
   closeDialog: () => void;
   toggleSound: () => Promise<void>;
+  setTheme: (id: ThemeId) => Promise<void>;
 
   submitAdd: (
     email: string,
@@ -76,6 +80,7 @@ export const useStore = create<State>((set, get) => ({
   recentNewByEmail: {},
   dialogMode: null,
   soundEnabled: true,
+  themeId: 'cream',
 
   init: async () => {
     const [accounts, settings] = await Promise.all([
@@ -83,11 +88,14 @@ export const useStore = create<State>((set, get) => ({
       window.api.system.getSettings(),
     ]);
     const first = accounts[0]?.email ?? null;
+    const themeId: ThemeId = settings.themeId ?? 'cream';
+    document.documentElement.dataset.theme = themeId;
     set({
       accounts,
       status: 'ready',
       selectedEmail: first,
       soundEnabled: settings.soundEnabled !== false, // undefined 视为 true
+      themeId,
     });
     if (first) await get().selectAccount(first);
   },
@@ -132,6 +140,12 @@ export const useStore = create<State>((set, get) => ({
     const next = !get().soundEnabled;
     set({ soundEnabled: next });
     await window.api.system.setSettings({ soundEnabled: next });
+  },
+
+  setTheme: async (id: ThemeId) => {
+    document.documentElement.dataset.theme = id;
+    set({ themeId: id });
+    await window.api.system.setSettings({ themeId: id });
   },
 
   submitAdd: async (email, password, info) => {
