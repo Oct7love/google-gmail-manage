@@ -5,22 +5,22 @@ export default {
   theme: {
     extend: {
       colors: {
-        // 表面层级
-        bg: '#f5f5f7',
+        // 表面层级（米白系，Notion 风温暖）
+        bg: '#faf9f7',
         surface: '#ffffff',
-        'surface-2': '#fbfbfd',
-        sidebar: '#ececef',
-        // 边框
-        border: '#e0e0e3',
-        'border-strong': '#d0d0d4',
+        'surface-2': '#fdfcfa',
+        sidebar: '#f3f1ec',
+        // 边框（暖灰）
+        border: '#e8e5df',
+        'border-strong': '#d6d2c9',
         // 文字
         text: '#1d1d1f',
         'text-2': '#3c3c3f',
         muted: '#6e6e72',
         'muted-2': '#8e8e93',
-        // 强调
-        accent: '#007aff',
-        'accent-soft': '#e8f1ff',
+        // 强调（Linear / Vercel 同款靛蓝）
+        accent: '#4f46e5',
+        'accent-soft': '#eef2ff',
         // 语义
         danger: '#ff3b30',
         success: '#34c759',

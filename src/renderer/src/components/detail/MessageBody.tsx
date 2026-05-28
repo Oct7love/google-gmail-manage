@@ -38,7 +38,7 @@ function buildSrcDoc(detail: MessageDetail, allowImages: boolean): string {
       word-break: break-word;
       overflow-wrap: break-word;
     }
-    a{ color:#007aff; }
+    a{ color:#4f46e5; }
     pre{ white-space: pre-wrap; word-break: break-word; }
     table{ max-width: 100%; }
     ${imgStyle}
