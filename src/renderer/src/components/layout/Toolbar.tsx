@@ -40,7 +40,7 @@ export default function Toolbar(): JSX.Element {
           type="button"
           onClick={() => void toggleSound()}
           title={soundEnabled ? '提示音已开（点击关闭）' : '提示音已关（点击开启）'}
-          className="rounded p-1 text-muted transition hover:bg-black/5 hover:text-text"
+          className="rounded p-1 text-muted transition hover:bg-surface-2 hover:text-text"
         >
           {soundEnabled ? <Bell size={15} /> : <BellOff size={15} />}
         </button>

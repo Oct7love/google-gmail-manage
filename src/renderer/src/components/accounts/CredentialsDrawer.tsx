@@ -62,7 +62,7 @@ export default function CredentialsDrawer({ email, onClose }: Props): JSX.Elemen
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-6"
       onClick={onClose}
     >
       <div
