@@ -63,9 +63,10 @@
 
 Header 工具栏：
 - **→ 应用密码页**（直接跳转 `myaccount.google.com/apppasswords`）
-- 登出 / 刷新 / 折叠 / 系统浏览器打开
+- **退出所有账号并清空登录** / 刷新 / 折叠 / 系统浏览器打开
+  - 退出按钮点一下就地变成"确定清空 / 取消"两步确认，确认后清空内嵌浏览器全部 Google 登录与缓存，**不影响左栏已添加的邮箱**
 
-内容：Electron `<webview>` 加载 `https://myaccount.google.com/apppasswords`，用户可以在里面登录、操作、复制。
+内容：Electron `<webview>` 加载 `https://myaccount.google.com/apppasswords`，用户可以在里面登录、操作、复制。webview 用伪装成普通 Chrome 的 UA（去掉 Electron 标识）降低 Google 风控。
 
 ### 操作流程
 
@@ -73,7 +74,7 @@ Header 工具栏：
 
 1. 在右侧 webview 登录 Gmail → 生成 16 位应用密码 → 复制
 2. 左侧填 Gmail 地址 + 粘贴应用密码
-3. 点"验证并添加" → App 用 IMAP 验证 → 成功入库 → 表单清空 + 右侧自动登出 → 可以继续加下一个
+3. 点"验证并添加" → App 用 IMAP 验证 → 成功入库 → 表单清空（右侧**保持登录，不再自动登出**）→ 可用 Google 账号切换器连续加下一个；全部加完后再点头部"退出所有账号并清空登录"清场
 
 **场景 B：粘贴一行信息解析**
 

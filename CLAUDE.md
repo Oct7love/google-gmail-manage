@@ -141,6 +141,7 @@ google-mail-manage/
 - **内嵌图片（cid:）默认加载**（它们是邮件附件，不是追踪）
 - **邮件正文用 sandboxed `<iframe srcDoc>`**，CSP 禁 JS / 禁外部资源，防钓鱼
 - **添加账号对话框**：左表单 + 右 webview（内嵌 `myaccount.google.com/apppasswords`）。webview 登录用户"要添加的那个 Gmail"，生成应用密码，回来粘到左边
+- **添加成功后保持登录**：提交成功**不再自动登出** webview（持久分区 `persist:google-apppasswords`，名字集中在 `src/shared/constants.ts` 的 `GOOGLE_WEBVIEW_PARTITION`）。登录态保留，可用 Google 自带账号切换器连续添加多个账号
 - **TotpPanel**：本地计算 TOTP，**受控组件**（secret 由父级管理）。支持在对话框里直接编辑密钥（显示"已改动"徽章 + "还原"按钮），提交时保存当前值
 - **粘贴解析**：支持 `账号 密码 辅邮 2fa` 和 `账号----密码----辅邮----2fa----链接` 两种格式，自动填入邮箱 + 2FA 密钥，登录密码和辅邮放"登录辅助"区供复制
 - **凭据抽屉（CredentialsDrawer）**：中栏顶部 🔑 按钮，显示该账号的完整凭据（应用密码 / Google 密码 / 2FA 密钥 + 实时码 / 辅邮 / 链接）。默认打码、按需单独或全部显示。可编辑保存
@@ -151,6 +152,8 @@ google-mail-manage/
 - **webview 代理**：添加账号对话框右侧有齿轮按钮，可配置 webview 专用代理（如 `http://127.0.0.1:7890`），存 `userData/settings.json`，仅影响 webview 不影响 IMAP / 翻译
 - **连不上 Google 兜底**：webview `did-fail-load` 监听 → 覆盖错误卡（重试 / 配代理 / 系统浏览器打开）
 - **2FA 设置快捷跳转**：webview 头部除了"→ 应用密码页"还有"→ 2FA 设置"按钮（直达 `/signinoptions/two-step-verification`）
+- **一键退出并清空登录**：webview 头部 LogOut 按钮 → 就地两步确认（"确定清空 / 取消"，不弹原生 confirm）→ 走 IPC `system:clearWebviewSession` 把 `GOOGLE_WEBVIEW_PARTITION` 分区的 `clearStorageData()` + `clearCache()` 清掉 → reload。**只清右侧内嵌浏览器的 Google 登录，不动左栏已添加邮箱及其 Keychain 凭据**
+- **webview Chrome UA 伪装（降风控）**：webview 套 `useragent`，取值是从当前 `navigator.userAgent` 去掉 ` Electron/x.x.x` 段和 Chrome 前的应用名段（见 `AddAccountDialog.tsx` 的 `CHROME_UA`），得到匹配真实系统、版本永不过期的干净 Chrome UA，去掉 Google 最敏感的"嵌入式应用"信号。**不做无痕方向**（与"保持登录连续加号"冲突，且全新无历史会话连登多号反而更像批量薅号）
 
 ## 如果你要开始写代码
 
