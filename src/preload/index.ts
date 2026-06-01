@@ -54,6 +54,8 @@ const api = {
     }> => ipcRenderer.invoke(IpcChannels.System.SetSettings, next),
     fetchSmsCode: (url: string): Promise<{ ok: boolean; code?: string; raw?: string; error?: string }> =>
       ipcRenderer.invoke(IpcChannels.System.FetchSmsCode, url),
+    clearWebviewSession: (): Promise<void> =>
+      ipcRenderer.invoke(IpcChannels.System.ClearWebviewSession),
   },
   accounts: {
     list: (): Promise<Account[]> => ipcRenderer.invoke(IpcChannels.Accounts.List),

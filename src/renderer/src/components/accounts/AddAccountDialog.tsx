@@ -3,6 +3,7 @@ import { useStore } from '../../store';
 import TotpPanel from './TotpPanel';
 import SmsCodeBox from './SmsCodeBox';
 import { parseAccountLine, ParsedAccount } from '../../lib/parseAccount';
+import { GOOGLE_WEBVIEW_PARTITION } from '../../../../shared/constants';
 import {
   X,
   ChevronRight,
@@ -33,7 +34,14 @@ const WebView = 'webview' as unknown as React.FC<Record<string, unknown>>;
 
 const APP_PASSWORD_URL = 'https://myaccount.google.com/apppasswords';
 const TWO_FA_URL = 'https://myaccount.google.com/signinoptions/two-step-verification';
-const LOGOUT_URL = `https://accounts.google.com/Logout?continue=${encodeURIComponent(APP_PASSWORD_URL)}`;
+
+// 降风控：把内嵌 webview 的 UA 伪装成普通 Chrome。
+// Electron 的 navigator.userAgent 本身就含真实系统和 Chromium 版本，
+// 只需去掉 " Electron/x.x.x" 段和 Chrome 前的应用名段，剩下即一个
+// 匹配真实系统、版本永不过期的干净 Chrome UA（自动跨 Mac/Windows 正确）。
+const CHROME_UA = navigator.userAgent
+  .replace(/ Electron\/[\d.]+/i, '')
+  .replace(/(like Gecko\) )\S+ (Chrome\/)/i, '$1$2');
 
 export default function AddAccountDialog(): JSX.Element | null {
   const mode = useStore((s) => s.dialogMode);
@@ -49,6 +57,9 @@ export default function AddAccountDialog(): JSX.Element | null {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [showWebView, setShowWebView] = useState(true);
+  // 「退出所有账号并清空登录」的两步确认 + 清空中状态
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const [lastAdded, setLastAdded] = useState<string | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
 
@@ -77,6 +88,11 @@ export default function AddAccountDialog(): JSX.Element | null {
       if (s.webviewProxy) setProxyInput(s.webviewProxy);
     });
   }, []);
+
+  // 对话框关闭/重开时复位「清空登录」的两步确认，避免下次打开还停在确认态
+  useEffect(() => {
+    setConfirmClear(false);
+  }, [mode]);
 
   // 切换到更新模式 or 切换到不同账号 → 把锁定邮箱同步到输入框
   // （组件常驻 App 不 unmount，useState 初始值只用一次，所以需要 effect）
@@ -156,14 +172,20 @@ export default function AddAccountDialog(): JSX.Element | null {
 
   const title = isUpdate ? `更新 ${lockedEmail} 的应用密码` : '添加 Gmail 账号';
 
-  const logoutWebview = (): void => {
-    const v = webviewRef.current;
-    if (!v) return;
+  // 退出右侧所有 Google 登录并清空登录缓存，然后 reload 回干净登录页。
+  // 只清内嵌浏览器的会话，不动左栏已添加的邮箱。
+  const clearWebviewSession = async (): Promise<void> => {
     try {
-      v.loadURL(LOGOUT_URL);
+      await window.api.system.clearWebviewSession();
     } catch {
       /* noop */
     }
+    try {
+      webviewRef.current?.loadURL(APP_PASSWORD_URL);
+    } catch {
+      /* noop */
+    }
+    setWebviewError(null);
   };
 
   const onSubmit = async (e: React.FormEvent): Promise<void> => {
@@ -203,7 +225,7 @@ export default function AddAccountDialog(): JSX.Element | null {
     setTotpSecret('');
     setOriginalTotpSecret('');
     setImportText('');
-    logoutWebview();
+    // 不再自动登出，保留右侧 Google 登录态，方便连续添加下一个账号
     setTimeout(() => emailInputRef.current?.focus(), 30);
   };
 
@@ -466,14 +488,42 @@ export default function AddAccountDialog(): JSX.Element | null {
                   <ArrowRight size={11} />
                   2FA 设置
                 </button>
-                <button
-                  type="button"
-                  onClick={logoutWebview}
-                  className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-white hover:bg-sidebar"
-                  title="登出侧边 Google"
-                >
-                  <LogOut size={11} />
-                </button>
+                {confirmClear ? (
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      disabled={clearing}
+                      onClick={async () => {
+                        setClearing(true);
+                        await clearWebviewSession();
+                        setClearing(false);
+                        setConfirmClear(false);
+                      }}
+                      className="flex items-center gap-1 rounded-md bg-danger px-2 py-1 font-medium text-white hover:bg-danger/90 disabled:opacity-50"
+                      title="退出右侧所有 Google 登录并清空缓存，不影响已添加的邮箱"
+                    >
+                      <LogOut size={11} />
+                      {clearing ? '清空中…' : '确定清空'}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={clearing}
+                      onClick={() => setConfirmClear(false)}
+                      className="rounded-md border border-border bg-white px-2 py-1 text-muted hover:bg-sidebar disabled:opacity-50"
+                    >
+                      取消
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmClear(true)}
+                    className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-white hover:bg-sidebar"
+                    title="退出所有 Google 账号并清空登录（不影响已添加的邮箱）"
+                  >
+                    <LogOut size={11} />
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => webviewRef.current?.reload()}
@@ -545,7 +595,8 @@ export default function AddAccountDialog(): JSX.Element | null {
                 src={APP_PASSWORD_URL}
                 className="flex-1 w-full"
                 style={{ display: 'flex' }}
-                partition="persist:google-apppasswords"
+                partition={GOOGLE_WEBVIEW_PARTITION}
+                useragent={CHROME_UA}
                 allowpopups="true"
               />
               {webviewError && (

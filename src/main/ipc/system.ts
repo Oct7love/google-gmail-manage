@@ -1,5 +1,6 @@
-import { ipcMain, shell } from 'electron';
+import { ipcMain, shell, session } from 'electron';
 import { IpcChannels } from '../../shared/ipc-channels';
+import { GOOGLE_WEBVIEW_PARTITION } from '../../shared/constants';
 import { loadSettings, saveSettings, applyWebviewProxy, AppSettings } from '../settings';
 import { getLogPath } from '../logger';
 
@@ -13,6 +14,14 @@ export function registerSystemIpc(): void {
   ipcMain.handle('system:openLogFolder', () => {
     const path = getLogPath();
     if (path) shell.showItemInFolder(path);
+  });
+
+  // 退出右侧内嵌浏览器的所有 Google 登录：清空该 webview 分区的 cookie/缓存等。
+  // 只影响内嵌浏览器的登录会话，不动已添加的邮箱及其 Keychain 凭据。
+  ipcMain.handle(IpcChannels.System.ClearWebviewSession, async (): Promise<void> => {
+    const s = session.fromPartition(GOOGLE_WEBVIEW_PARTITION);
+    await s.clearStorageData();
+    await s.clearCache();
   });
 
   ipcMain.handle(IpcChannels.System.GetSettings, (): AppSettings => loadSettings());
