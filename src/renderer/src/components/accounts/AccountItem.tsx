@@ -57,7 +57,13 @@ export default function AccountItem({ account }: Props): JSX.Element {
         >
           <div className="relative shrink-0">
             <Avatar identityKey={account.email} label={account.email} size={28} />
-            <StatusBadge refreshing={refreshing} expired={isExpired} error={isError} />
+            <StatusBadge
+              refreshing={refreshing}
+              expired={isExpired}
+              error={isError}
+              ok={account.lastSyncStatus === 'ok'}
+              selected={isSelected}
+            />
           </div>
           <div className="min-w-0 flex-1">
             <div
@@ -71,7 +77,7 @@ export default function AccountItem({ account }: Props): JSX.Element {
           </div>
           {newCount > 0 && (
             <span
-              className="shrink-0 rounded-full bg-warning px-1.5 text-[10px] font-semibold text-white shadow-card animate-pulse"
+              className="shrink-0 rounded-full bg-accent px-1.5 text-[10px] font-semibold text-white shadow-card"
               title={`${newCount} 封新邮件`}
             >
               +{newCount}
@@ -103,7 +109,7 @@ export default function AccountItem({ account }: Props): JSX.Element {
             <button
               type="button"
               onClick={() => void onRemove()}
-              className="flex w-full items-center gap-2 border-t border-border px-3 py-2 text-left text-xs text-danger hover:bg-[#fff4f3]"
+              className="flex w-full items-center gap-2 border-t border-border px-3 py-2 text-left text-xs text-danger hover:bg-surface-2"
             >
               <Trash2 size={12} />
               移除账号
@@ -119,25 +125,39 @@ function StatusBadge({
   refreshing,
   expired,
   error,
+  ok,
+  selected,
 }: {
   refreshing: boolean;
   expired: boolean;
   error: boolean;
+  ok: boolean;
+  selected: boolean;
 }): JSX.Element | null {
-  if (!expired && !error && !refreshing) return null;
+  if (!expired && !error && !refreshing && !ok) return null;
   if (refreshing) {
     return (
-      <span className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-white shadow ring-1 ring-border">
+      <span className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-surface shadow ring-1 ring-border">
         <RefreshCw size={8} className="animate-spin text-accent" />
       </span>
     );
   }
+  // 正常态(ok)用收敛的小绿点；异常(expired/error)稍大更跳。描边色跟随所在行底色：
+  // 选中行底是 bg-surface(白)，未选中是 bg-sidebar——否则选中行会出现一圈脏色描边环。
   let color = 'bg-success';
-  if (expired) color = 'bg-warning';
-  else if (error) color = 'bg-danger';
+  let size = 'h-2 w-2';
+  if (expired) {
+    color = 'bg-warning';
+    size = 'h-2.5 w-2.5';
+  } else if (error) {
+    color = 'bg-danger';
+    size = 'h-2.5 w-2.5';
+  }
   return (
     <span
-      className={`absolute -bottom-0.5 -right-0.5 inline-block h-2.5 w-2.5 rounded-full border-2 border-sidebar ${color}`}
+      className={`absolute -bottom-0.5 -right-0.5 inline-block ${size} rounded-full border-2 ${
+        selected ? 'border-surface' : 'border-sidebar'
+      } ${color}`}
     />
   );
 }

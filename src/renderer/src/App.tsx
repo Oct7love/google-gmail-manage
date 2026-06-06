@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
 import { useStore } from './store';
 import MainLayout from './components/layout/MainLayout';
 import AddAccountDialog from './components/accounts/AddAccountDialog';
@@ -13,7 +14,10 @@ export default function App(): JSX.Element {
 
   if (status === 'loading') {
     return (
-      <div className="flex h-screen items-center justify-center text-muted">加载中…</div>
+      <div className="flex h-screen flex-col items-center justify-center gap-3 bg-bg text-sm text-muted">
+        <Loader2 size={16} className="animate-spin text-muted-2" />
+        加载中…
+      </div>
     );
   }
 

@@ -18,23 +18,21 @@ export default function MessageRow({ message }: Props): JSX.Element {
       <button
         type="button"
         onClick={() => void selectMessage(message.messageId)}
-        className={`flex w-full items-start gap-3 border-l-[3px] px-4 py-2.5 text-left transition-colors ${
-          isSelected
-            ? 'border-accent bg-accent-soft'
-            : 'border-transparent hover:bg-surface-2'
+        className={`flex w-full items-start gap-3 px-4 py-2.5 text-left transition-colors ${
+          isSelected ? 'bg-accent-soft' : 'hover:bg-surface-2'
         }`}
       >
         <Avatar identityKey={message.fromAddr || 'unknown'} label={name} size={32} />
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="truncate text-base font-semibold text-text">{name}</span>
-            <span className="shrink-0 text-[12px] text-muted-2">{formatDate(message.dateTs)}</span>
+            <span className="truncate text-sm font-medium text-text-2">{name}</span>
+            <span className="shrink-0 text-sm text-muted">{formatDate(message.dateTs)}</span>
           </div>
-          <div className="mt-0.5 truncate text-sm text-text">
+          <div className="mt-0.5 truncate text-base font-medium text-text">
             {message.subject || '(无主题)'}
           </div>
           {message.snippet && (
-            <div className="mt-0.5 truncate text-[12px] text-muted-2">{message.snippet}</div>
+            <div className="mt-0.5 truncate text-sm text-muted">{message.snippet}</div>
           )}
         </div>
       </button>

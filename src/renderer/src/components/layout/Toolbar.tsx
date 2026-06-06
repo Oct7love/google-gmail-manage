@@ -18,7 +18,7 @@ export default function Toolbar(): JSX.Element {
 
   return (
     <div
-      className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-white/70 px-4 backdrop-blur-xl"
+      className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-surface/70 px-4 backdrop-blur-xl"
       style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
     >
       <div className="w-20 shrink-0" />

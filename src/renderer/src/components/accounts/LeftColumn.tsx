@@ -10,7 +10,7 @@ export default function LeftColumn(): JSX.Element {
   const refreshingCount = useStore((s) => s.refreshingEmails.size);
 
   return (
-    <aside className="flex w-64 shrink-0 flex-col border-r border-border bg-sidebar">
+    <aside className="flex w-64 shrink-0 flex-col border-r border-border-strong bg-sidebar">
       <header className="flex items-center justify-between px-3 pt-4 pb-2">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-muted">
           账号

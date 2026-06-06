@@ -32,20 +32,16 @@ export default function TranslationPanel({ detail }: Props): JSX.Element | null 
   };
 
   if (state.kind === 'idle') {
+    // 未翻译时收成一个 ghost 小按钮，近零占位——不再用整宽横幅恒占正文上方一行
     return (
-      <div className="flex items-center justify-between rounded-md border border-border bg-surface-2 px-3 py-2 text-xs">
-        <span className="flex items-center gap-1.5 text-muted">
-          <Languages size={13} className="text-accent" />
-          英文邮件？一键翻译成中文
-        </span>
-        <button
-          type="button"
-          onClick={() => void translate()}
-          className="rounded-md bg-accent px-2.5 py-1 text-xs font-medium text-white hover:bg-accent/95"
-        >
-          翻译为中文
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => void translate()}
+        className="flex items-center gap-1.5 rounded-md border border-transparent bg-transparent px-2 py-1 text-[11px] text-text-2 hover:bg-surface-2 hover:text-text"
+      >
+        <Languages size={13} className="text-accent" />
+        翻译为中文
+      </button>
     );
   }
 
@@ -60,12 +56,12 @@ export default function TranslationPanel({ detail }: Props): JSX.Element | null 
 
   if (state.kind === 'error') {
     return (
-      <div className="flex items-center justify-between rounded-md border border-[#ffd5d2] bg-[#fff4f3] px-3 py-2 text-xs text-danger">
+      <div className="flex items-center justify-between rounded-md border border-danger/30 bg-danger/5 px-3 py-2 text-xs text-danger">
         <span>翻译失败：{state.error}</span>
         <button
           type="button"
           onClick={() => void translate()}
-          className="rounded-md border border-[#ffd5d2] bg-surface px-2 py-0.5 hover:bg-[#fff4f3]"
+          className="rounded-md border border-danger/30 bg-surface px-2 py-0.5 text-danger hover:bg-danger/5"
         >
           重试
         </button>

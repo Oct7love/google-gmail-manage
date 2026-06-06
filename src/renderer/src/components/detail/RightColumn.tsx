@@ -59,7 +59,7 @@ export default function RightColumn(): JSX.Element {
                 className={`flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] transition ${
                   showImages
                     ? 'border-transparent bg-accent-soft text-accent'
-                    : 'border-border bg-surface text-muted hover:bg-surface-2'
+                    : 'border-transparent bg-transparent text-text-2 hover:bg-surface-2 hover:text-text'
                 }`}
               >
                 {showImages ? <ImageIcon size={12} /> : <ImageOff size={12} />}
@@ -68,7 +68,7 @@ export default function RightColumn(): JSX.Element {
             </div>
           )}
         </header>
-        <div className="border-b border-border px-6 pt-3 pb-3">
+        <div className="px-6 pt-2 pb-3">
           <TranslationPanel detail={detail} />
         </div>
         <MessageBody detail={detail} allowImages={showImages} />

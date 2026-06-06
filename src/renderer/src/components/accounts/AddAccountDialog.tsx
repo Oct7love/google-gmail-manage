@@ -273,7 +273,7 @@ export default function AddAccountDialog(): JSX.Element | null {
 
           {/* 成功提示：固定横条（不占滚动区空间） */}
           {lastAdded && !isUpdate && (
-            <div className="flex shrink-0 items-center gap-1.5 border-b border-emerald-200 bg-emerald-50 px-5 py-1.5 text-[11.5px] text-success">
+            <div className="flex shrink-0 items-center gap-1.5 border-b border-border bg-surface-2 px-5 py-1.5 text-[11.5px] text-success">
               <CheckCircle2 size={13} />
               已添加 <span className="font-mono">{lastAdded}</span>，可继续下一个
             </div>
@@ -437,7 +437,7 @@ export default function AddAccountDialog(): JSX.Element | null {
             />
 
             {error && (
-              <div className="whitespace-pre-wrap rounded-md border border-[#ffd5d2] bg-[#fff4f3] px-3 py-2 text-[12px] text-danger">
+              <div className="whitespace-pre-wrap rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-[12px] text-danger">
                 {error}
               </div>
             )}
@@ -457,7 +457,7 @@ export default function AddAccountDialog(): JSX.Element | null {
               type="submit"
               form="add-account-form"
               disabled={busy}
-              className="rounded-md bg-accent px-4 py-1.5 text-[13px] font-medium text-white hover:bg-accent/90 disabled:opacity-50"
+              className="rounded-md bg-accent px-4 py-1.5 text-[13px] font-medium text-white shadow-sm hover:bg-accent/90 disabled:opacity-50"
             >
               {busy ? '验证中…' : isUpdate ? '更新' : '验证并添加'}
             </button>

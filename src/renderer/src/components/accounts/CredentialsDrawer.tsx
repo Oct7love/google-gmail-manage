@@ -66,7 +66,7 @@ export default function CredentialsDrawer({ email, onClose }: Props): JSX.Elemen
       onClick={onClose}
     >
       <div
-        className="flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-lg bg-white shadow-2xl"
+        className="flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-lg bg-surface shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <header className="flex items-center justify-between border-b border-border px-5 py-3">
@@ -104,7 +104,7 @@ export default function CredentialsDrawer({ email, onClose }: Props): JSX.Elemen
         </header>
 
         <div className="flex-1 overflow-y-auto px-5 py-4">
-          <div className="mb-3 rounded-md bg-amber-50 px-3 py-2 text-[11.5px] text-warning">
+          <div className="mb-3 rounded-md bg-surface-2 px-3 py-2 text-[11.5px] text-warning">
             <div className="flex items-start gap-1.5">
               <AlertTriangle size={12} className="mt-0.5 shrink-0" />
               <span>敏感信息，勿随意截图。凭据仅存在本机 Keychain，不上传任何地方。</span>
