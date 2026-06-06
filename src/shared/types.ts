@@ -16,6 +16,8 @@ export interface Account {
   lastSyncError: string | null;
   /** 用户业务标记：已退款 / 有警告 / 未标记 */
   mark: AccountMark | null;
+  /** 标记为已退款的时刻（毫秒），用于冻结"已上号天数"；非退款时为 null */
+  refundedAt: number | null;
   /** 是否归档（归档=断持久连接、不自动收信，但可手动刷新、缓存只读可看） */
   archived: boolean;
   /** 手动记录的"上号时间"，毫秒时间戳，null=未填 */

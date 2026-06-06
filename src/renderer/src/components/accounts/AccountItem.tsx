@@ -116,10 +116,16 @@ export default function AccountItem({ account }: Props): JSX.Element {
             <div className="flex items-center gap-1">
               <span className="min-w-0 truncate text-[11px] text-muted">@{domain}</span>
               {account.startedAt != null && (
-                <span className="inline-flex shrink-0 items-center gap-0.5 rounded bg-accent-soft px-1 text-[10px] font-medium leading-tight text-accent">
-                  <Clock size={9} />
-                  {formatStartedAt(account.startedAt)}
-                </span>
+                <>
+                  <span className="inline-flex shrink-0 items-center gap-0.5 rounded bg-accent-soft px-1 text-[10px] font-medium leading-tight text-accent">
+                    <Clock size={9} />
+                    {formatStartedAt(account.startedAt)}
+                  </span>
+                  <ElapsedPill
+                    startedAt={account.startedAt}
+                    frozenAt={account.mark === 'refunded' ? account.refundedAt : null}
+                  />
+                </>
               )}
             </div>
           </div>
@@ -224,6 +230,35 @@ function formatStartedAt(ts: number): string {
   const dd = d.getDate();
   const hh = String(d.getHours()).padStart(2, '0');
   return `${mm}/${dd} ${hh}点`;
+}
+
+/** 已上号天数小标：≤2.5 天绿、2.5~5 天黄、≥5 天红。
+ *  frozenAt 非 null（已退款）时，天数冻结在 frozenAt−startedAt，不再随时间累积。 */
+function ElapsedPill({
+  startedAt,
+  frozenAt,
+}: {
+  startedAt: number;
+  frozenAt: number | null;
+}): JSX.Element {
+  const end = frozenAt != null ? frozenAt : Date.now();
+  const days = Math.max(0, (end - startedAt) / 86_400_000);
+  let cls = 'bg-success/15 text-success';
+  if (days >= 5) cls = 'bg-danger/15 text-danger';
+  else if (days > 2.5) cls = 'bg-warning/15 text-warning';
+  const text = days < 1 ? '今天' : `${Math.floor(days)}天`;
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center rounded px-1 text-[10px] font-medium leading-tight ${cls}`}
+      title={
+        frozenAt != null
+          ? `已退款，已上号天数冻结在 ${days.toFixed(1)} 天`
+          : `已上号 ${days.toFixed(1)} 天`
+      }
+    >
+      {text}
+    </span>
+  );
 }
 
 function MarkPill({ mark }: { mark: AccountMark }): JSX.Element {

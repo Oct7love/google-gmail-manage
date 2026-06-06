@@ -73,6 +73,7 @@ function migrate(db: Database.Database): void {
   addColumnIfMissing(db, 'accounts', 'mark', 'TEXT');
   addColumnIfMissing(db, 'accounts', 'archived', 'INTEGER NOT NULL DEFAULT 0');
   addColumnIfMissing(db, 'accounts', 'started_at', 'INTEGER');
+  addColumnIfMissing(db, 'accounts', 'refunded_at', 'INTEGER');
 }
 
 /** 幂等加列：列已存在则跳过。本仓库没有版本化 migration，用 PRAGMA 探测即可。 */
