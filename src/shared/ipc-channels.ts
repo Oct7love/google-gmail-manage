@@ -16,6 +16,7 @@ export const IpcChannels = {
     UpdatePassword: 'accounts:updatePassword',
     GetCredentials: 'accounts:getCredentials',
     SetInfo: 'accounts:setInfo',
+    SetMark: 'accounts:setMark',
   },
   Messages: {
     List: 'messages:list',

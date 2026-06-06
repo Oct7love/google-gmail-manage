@@ -68,4 +68,19 @@ function migrate(db: Database.Database): void {
     CREATE INDEX IF NOT EXISTS idx_messages_date
       ON messages(account_email, date_ts DESC);
   `);
+
+  // 增量迁移：给老库补列（CREATE TABLE IF NOT EXISTS 不会给已存在的表加列）
+  addColumnIfMissing(db, 'accounts', 'mark', 'TEXT');
+}
+
+/** 幂等加列：列已存在则跳过。本仓库没有版本化 migration，用 PRAGMA 探测即可。 */
+function addColumnIfMissing(
+  db: Database.Database,
+  table: string,
+  column: string,
+  type: string,
+): void {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+  if (cols.some((c) => c.name === column)) return;
+  db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
 }

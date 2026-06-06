@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type {
   Account,
+  AccountMark,
   MessageDetail,
   MessageSummary,
   RefreshEvent,
@@ -60,6 +61,7 @@ interface State {
   ) => Promise<{ ok: boolean; error?: string }>;
 
   removeAccount: (email: string) => Promise<void>;
+  setMark: (email: string, mark: AccountMark | null) => Promise<void>;
   refreshOne: (email: string) => Promise<void>;
   refreshAll: () => Promise<void>;
   onRefreshProgress: (evt: RefreshEvent) => void;
@@ -190,6 +192,12 @@ export const useStore = create<State>((set, get) => ({
       };
     });
     if (nextSelected) await get().selectAccount(nextSelected);
+  },
+
+  setMark: async (email: string, mark: AccountMark | null) => {
+    await window.api.accounts.setMark(email, mark);
+    const accounts = await window.api.accounts.list();
+    set({ accounts });
   },
 
   refreshOne: async (email: string) => {

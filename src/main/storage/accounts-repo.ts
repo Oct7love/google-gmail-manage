@@ -1,5 +1,5 @@
 import type Database from 'better-sqlite3';
-import type { Account, SyncStatus } from '../../shared/types';
+import type { Account, AccountMark, SyncStatus } from '../../shared/types';
 import { getDb } from './db';
 
 interface AccountRow {
@@ -9,6 +9,7 @@ interface AccountRow {
   last_synced_at: number | null;
   last_sync_status: string | null;
   last_sync_error: string | null;
+  mark: string | null;
 }
 
 function rowToAccount(r: AccountRow): Account {
@@ -19,13 +20,14 @@ function rowToAccount(r: AccountRow): Account {
     lastSyncedAt: r.last_synced_at,
     lastSyncStatus: r.last_sync_status as SyncStatus | null,
     lastSyncError: r.last_sync_error,
+    mark: (r.mark as AccountMark | null) ?? null,
   };
 }
 
 export function listAccounts(db: Database.Database = getDb()): Account[] {
   const rows = db
     .prepare<[], AccountRow>(
-      `SELECT email, display_order, added_at, last_synced_at, last_sync_status, last_sync_error
+      `SELECT email, display_order, added_at, last_synced_at, last_sync_status, last_sync_error, mark
        FROM accounts
        ORDER BY display_order ASC, added_at ASC`,
     )
@@ -36,7 +38,7 @@ export function listAccounts(db: Database.Database = getDb()): Account[] {
 export function getAccount(email: string, db: Database.Database = getDb()): Account | null {
   const row = db
     .prepare<[string], AccountRow>(
-      `SELECT email, display_order, added_at, last_synced_at, last_sync_status, last_sync_error
+      `SELECT email, display_order, added_at, last_synced_at, last_sync_status, last_sync_error, mark
        FROM accounts WHERE email = ?`,
     )
     .get(email);
@@ -71,6 +73,15 @@ export function updateSyncStatus(
      SET last_synced_at = ?, last_sync_status = ?, last_sync_error = ?
      WHERE email = ?`,
   ).run(Date.now(), status, error, email);
+}
+
+/** 设置/清除账号业务标记（mark=null 表示清除）。 */
+export function setMark(
+  email: string,
+  mark: AccountMark | null,
+  db: Database.Database = getDb(),
+): void {
+  db.prepare(`UPDATE accounts SET mark = ? WHERE email = ?`).run(mark, email);
 }
 
 export function deleteAccount(email: string, db: Database.Database = getDb()): void {

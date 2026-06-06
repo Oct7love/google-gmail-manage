@@ -1,8 +1,17 @@
 import { useState } from 'react';
-import type { Account } from '../../../../shared/types';
+import type { Account, AccountMark } from '../../../../shared/types';
 import { useStore } from '../../store';
 import Avatar from '../common/Avatar';
-import { MoreHorizontal, RefreshCw, Trash2, KeyRound } from 'lucide-react';
+import {
+  MoreHorizontal,
+  RefreshCw,
+  Trash2,
+  KeyRound,
+  BadgeCheck,
+  AlertTriangle,
+  Tag,
+  Check,
+} from 'lucide-react';
 
 interface Props {
   account: Account;
@@ -15,6 +24,7 @@ export default function AccountItem({ account }: Props): JSX.Element {
   const selectAccount = useStore((s) => s.selectAccount);
   const removeAccount = useStore((s) => s.removeAccount);
   const openUpdateDialog = useStore((s) => s.openUpdateDialog);
+  const setMark = useStore((s) => s.setMark);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const isSelected = selectedEmail === account.email;
@@ -42,6 +52,11 @@ export default function AccountItem({ account }: Props): JSX.Element {
     openUpdateDialog(account.email);
   };
 
+  const onMark = (mark: AccountMark | null): void => {
+    setMenuOpen(false);
+    void setMark(account.email, mark);
+  };
+
   return (
     <li className="relative">
       <div
@@ -66,12 +81,15 @@ export default function AccountItem({ account }: Props): JSX.Element {
             />
           </div>
           <div className="min-w-0 flex-1">
-            <div
-              className={`truncate text-[13px] font-medium leading-tight ${
-                isSelected ? 'text-accent' : 'text-text'
-              }`}
-            >
-              {username}
+            <div className="flex items-center gap-1">
+              <span
+                className={`min-w-0 truncate text-[13px] font-medium leading-tight ${
+                  isSelected ? 'text-accent' : 'text-text'
+                }`}
+              >
+                {username}
+              </span>
+              {account.mark && <MarkPill mark={account.mark} />}
             </div>
             <div className="truncate text-[11px] text-muted">@{domain}</div>
           </div>
@@ -100,8 +118,36 @@ export default function AccountItem({ account }: Props): JSX.Element {
           <div className="absolute right-2 top-11 z-40 w-44 overflow-hidden rounded-lg border border-border bg-surface shadow-popover">
             <button
               type="button"
-              onClick={onUpdate}
+              onClick={() => onMark('refunded')}
               className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-surface-2"
+            >
+              <BadgeCheck size={12} className="text-success" />
+              标记已退款
+              {account.mark === 'refunded' && <Check size={12} className="ml-auto text-accent" />}
+            </button>
+            <button
+              type="button"
+              onClick={() => onMark('warning')}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-surface-2"
+            >
+              <AlertTriangle size={12} className="text-warning" />
+              标记有警告
+              {account.mark === 'warning' && <Check size={12} className="ml-auto text-accent" />}
+            </button>
+            {account.mark && (
+              <button
+                type="button"
+                onClick={() => onMark(null)}
+                className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-muted hover:bg-surface-2"
+              >
+                <Tag size={12} />
+                清除标记
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onUpdate}
+              className="flex w-full items-center gap-2 border-t border-border px-3 py-2 text-left text-xs hover:bg-surface-2"
             >
               <KeyRound size={12} className="text-muted" />
               更新应用密码
@@ -118,6 +164,22 @@ export default function AccountItem({ account }: Props): JSX.Element {
         </>
       )}
     </li>
+  );
+}
+
+function MarkPill({ mark }: { mark: AccountMark }): JSX.Element {
+  if (mark === 'refunded') {
+    return (
+      <span className="shrink-0 rounded-full bg-success/15 px-1.5 py-px text-[10px] font-medium leading-tight text-success">
+        已退款
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-warning/15 px-1.5 py-px text-[10px] font-medium leading-tight text-warning">
+      <AlertTriangle size={9} />
+      警告
+    </span>
   );
 }
 

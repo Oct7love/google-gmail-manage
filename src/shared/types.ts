@@ -3,6 +3,9 @@
 /** 账号同步状态 */
 export type SyncStatus = 'ok' | 'expired' | 'error';
 
+/** 用户给账号打的业务标记（互斥单状态，null=未标记）。与同步状态无关。 */
+export type AccountMark = 'refunded' | 'warning';
+
 /** 单个已绑定 Gmail 账号（暴露给 UI 的形态） */
 export interface Account {
   email: string;
@@ -11,6 +14,8 @@ export interface Account {
   lastSyncedAt: number | null;
   lastSyncStatus: SyncStatus | null;
   lastSyncError: string | null;
+  /** 用户业务标记：已退款 / 有警告 / 未标记 */
+  mark: AccountMark | null;
 }
 
 /** 邮件列表项（中栏显示用，无正文） */

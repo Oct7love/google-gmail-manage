@@ -1,7 +1,7 @@
 import { dialog, ipcMain } from 'electron';
 import { IpcChannels } from '../../shared/ipc-channels';
 import { MESSAGES_PER_ACCOUNT } from '../../shared/constants';
-import type { AccountCredentials, AccountInfo } from '../../shared/types';
+import type { AccountCredentials, AccountInfo, AccountMark } from '../../shared/types';
 import * as repo from '../storage/accounts-repo';
 import * as keychain from '../keychain';
 import { verifyCredentials } from '../imap/client';
@@ -129,6 +129,9 @@ export function registerAccountsIpc(): void {
   );
   ipcMain.handle(IpcChannels.Accounts.SetInfo, (_e, email: string, info: AccountInfo) =>
     handleSetInfo(email, info),
+  );
+  ipcMain.handle(IpcChannels.Accounts.SetMark, (_e, email: string, mark: AccountMark | null) =>
+    repo.setMark(email, mark),
   );
   ipcMain.handle(IpcChannels.Accounts.Remove, async (_e, email: string) => {
     const confirmed = await dialog.showMessageBox({

@@ -4,6 +4,7 @@ import type {
   Account,
   AccountCredentials,
   AccountInfo,
+  AccountMark,
   MessageDetail,
   MessageSummary,
   RefreshEvent,
@@ -71,6 +72,8 @@ const api = {
       ipcRenderer.invoke(IpcChannels.Accounts.GetCredentials, email),
     setInfo: (email: string, info: AccountInfo): Promise<void> =>
       ipcRenderer.invoke(IpcChannels.Accounts.SetInfo, email, info),
+    setMark: (email: string, mark: AccountMark | null): Promise<void> =>
+      ipcRenderer.invoke(IpcChannels.Accounts.SetMark, email, mark),
   },
   messages: {
     list: (email: string, limit: number): Promise<MessageSummary[]> =>
