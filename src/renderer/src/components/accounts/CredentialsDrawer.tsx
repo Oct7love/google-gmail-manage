@@ -31,6 +31,8 @@ export default function CredentialsDrawer({ email, onClose }: Props): JSX.Elemen
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<AccountInfo>({});
   const [saving, setSaving] = useState(false);
+  const account = useStore((s) => s.accounts.find((a) => a.email === email) ?? null);
+  const setStartedAt = useStore((s) => s.setStartedAt);
   const refresh = async (): Promise<void> => {
     const c = await window.api.accounts.getCredentials(email);
     setCreds(c);
@@ -109,6 +111,28 @@ export default function CredentialsDrawer({ email, onClose }: Props): JSX.Elemen
               <AlertTriangle size={12} className="mt-0.5 shrink-0" />
               <span>敏感信息，勿随意截图。凭据仅存在本机 Keychain，不上传任何地方。</span>
             </div>
+          </div>
+
+          <div className="mb-3 flex items-center gap-2 rounded-md border border-border bg-surface-2 px-3 py-2 text-[12px]">
+            <span className="shrink-0 text-muted">上号时间</span>
+            <input
+              type="datetime-local"
+              value={toDatetimeLocal(account?.startedAt ?? null)}
+              onChange={(e) => {
+                const ts = fromDatetimeLocal(e.target.value);
+                void setStartedAt(email, ts);
+              }}
+              className="min-w-0 flex-1 rounded border border-border bg-surface px-2 py-1 text-[12px] focus:border-accent focus:outline-none"
+            />
+            {account?.startedAt != null && (
+              <button
+                type="button"
+                onClick={() => void setStartedAt(email, null)}
+                className="shrink-0 rounded px-1.5 py-0.5 text-[11px] text-muted hover:bg-surface"
+              >
+                清除
+              </button>
+            )}
           </div>
 
           {!creds ? (
@@ -422,4 +446,17 @@ function buildTotp(input: string): TOTP {
     digits: 6,
     period: TOTP_PERIOD,
   });
+}
+
+function toDatetimeLocal(ts: number | null): string {
+  if (ts == null) return '';
+  const d = new Date(ts);
+  const pad = (n: number): string => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function fromDatetimeLocal(v: string): number | null {
+  if (!v) return null;
+  const ms = new Date(v).getTime();
+  return Number.isNaN(ms) ? null : ms;
 }

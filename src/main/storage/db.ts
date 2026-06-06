@@ -71,6 +71,8 @@ function migrate(db: Database.Database): void {
 
   // 增量迁移：给老库补列（CREATE TABLE IF NOT EXISTS 不会给已存在的表加列）
   addColumnIfMissing(db, 'accounts', 'mark', 'TEXT');
+  addColumnIfMissing(db, 'accounts', 'archived', 'INTEGER NOT NULL DEFAULT 0');
+  addColumnIfMissing(db, 'accounts', 'started_at', 'INTEGER');
 }
 
 /** 幂等加列：列已存在则跳过。本仓库没有版本化 migration，用 PRAGMA 探测即可。 */

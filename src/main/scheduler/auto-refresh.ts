@@ -39,7 +39,11 @@ async function runWithConcurrency<T, R>(
  * 刷新所有账号。并发上限 5，过期账号跳过不重试，汇总发给 renderer。
  */
 export async function refreshAll(): Promise<SyncResult[]> {
-  const emails = accountsRepo.listAccounts().map((a) => a.email);
+  // 归档账号不进自动轮询 / "全部刷新"（仅手动单账号刷新可触达，见 messages:sync）
+  const emails = accountsRepo
+    .listAccounts()
+    .filter((a) => !a.archived)
+    .map((a) => a.email);
   return runWithConcurrency(emails, CONCURRENCY, async (email) => {
     broadcast({ email, phase: 'start' });
     const r = await syncAccount(email, MESSAGES_PER_ACCOUNT);

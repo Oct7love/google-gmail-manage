@@ -74,6 +74,10 @@ const api = {
       ipcRenderer.invoke(IpcChannels.Accounts.SetInfo, email, info),
     setMark: (email: string, mark: AccountMark | null): Promise<void> =>
       ipcRenderer.invoke(IpcChannels.Accounts.SetMark, email, mark),
+    setArchived: (email: string, archived: boolean): Promise<void> =>
+      ipcRenderer.invoke(IpcChannels.Accounts.SetArchived, email, archived),
+    setStartedAt: (email: string, ts: number | null): Promise<void> =>
+      ipcRenderer.invoke(IpcChannels.Accounts.SetStartedAt, email, ts),
   },
   messages: {
     list: (email: string, limit: number): Promise<MessageSummary[]> =>

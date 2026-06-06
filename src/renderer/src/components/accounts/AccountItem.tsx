@@ -11,6 +11,9 @@ import {
   AlertTriangle,
   Tag,
   Check,
+  Archive,
+  ArchiveRestore,
+  Clock,
 } from 'lucide-react';
 
 interface Props {
@@ -25,6 +28,8 @@ export default function AccountItem({ account }: Props): JSX.Element {
   const removeAccount = useStore((s) => s.removeAccount);
   const openUpdateDialog = useStore((s) => s.openUpdateDialog);
   const setMark = useStore((s) => s.setMark);
+  const setArchived = useStore((s) => s.setArchived);
+  const setStartedAt = useStore((s) => s.setStartedAt);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const isSelected = selectedEmail === account.email;
@@ -57,6 +62,16 @@ export default function AccountItem({ account }: Props): JSX.Element {
     void setMark(account.email, mark);
   };
 
+  const onToggleArchive = (): void => {
+    setMenuOpen(false);
+    void setArchived(account.email, !account.archived);
+  };
+
+  const onRecordStartedAt = (): void => {
+    setMenuOpen(false);
+    void setStartedAt(account.email, Date.now());
+  };
+
   return (
     <li className="relative">
       <div
@@ -72,13 +87,20 @@ export default function AccountItem({ account }: Props): JSX.Element {
         >
           <div className="relative shrink-0">
             <Avatar identityKey={account.email} label={account.email} size={28} />
-            <StatusBadge
-              refreshing={refreshing}
-              expired={isExpired}
-              error={isError}
-              ok={account.lastSyncStatus === 'ok'}
-              selected={isSelected}
-            />
+            {account.archived ? (
+              <span
+                className="absolute -bottom-0.5 -right-0.5 inline-block h-2.5 w-2.5 rounded-full border-2 border-sidebar bg-muted-2"
+                title="已归档"
+              />
+            ) : (
+              <StatusBadge
+                refreshing={refreshing}
+                expired={isExpired}
+                error={isError}
+                ok={account.lastSyncStatus === 'ok'}
+                selected={isSelected}
+              />
+            )}
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1">
@@ -91,7 +113,12 @@ export default function AccountItem({ account }: Props): JSX.Element {
               </span>
               {account.mark && <MarkPill mark={account.mark} />}
             </div>
-            <div className="truncate text-[11px] text-muted">@{domain}</div>
+            <div className="truncate text-[11px] text-muted">
+              @{domain}
+              {account.startedAt != null && (
+                <span className="text-muted-2"> · 上 {formatStartedAt(account.startedAt)}</span>
+              )}
+            </div>
           </div>
           {newCount > 0 && (
             <span
@@ -146,6 +173,26 @@ export default function AccountItem({ account }: Props): JSX.Element {
             )}
             <button
               type="button"
+              onClick={onToggleArchive}
+              className="flex w-full items-center gap-2 border-t border-border px-3 py-2 text-left text-xs hover:bg-surface-2"
+            >
+              {account.archived ? (
+                <ArchiveRestore size={12} className="text-muted" />
+              ) : (
+                <Archive size={12} className="text-muted" />
+              )}
+              {account.archived ? '取消归档' : '归档账号'}
+            </button>
+            <button
+              type="button"
+              onClick={onRecordStartedAt}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-surface-2"
+            >
+              <Clock size={12} className="text-muted" />
+              记录上号时间
+            </button>
+            <button
+              type="button"
               onClick={onUpdate}
               className="flex w-full items-center gap-2 border-t border-border px-3 py-2 text-left text-xs hover:bg-surface-2"
             >
@@ -165,6 +212,15 @@ export default function AccountItem({ account }: Props): JSX.Element {
       )}
     </li>
   );
+}
+
+function formatStartedAt(ts: number): string {
+  const d = new Date(ts);
+  const mm = d.getMonth() + 1;
+  const dd = d.getDate();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mi = String(d.getMinutes()).padStart(2, '0');
+  return `${mm}/${dd} ${hh}:${mi}`;
 }
 
 function MarkPill({ mark }: { mark: AccountMark }): JSX.Element {

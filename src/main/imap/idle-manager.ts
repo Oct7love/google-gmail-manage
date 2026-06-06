@@ -226,7 +226,8 @@ export async function restartIdleFor(email: string): Promise<void> {
 }
 
 export function startAllIdle(): void {
-  const accounts = accountsRepo.listAccounts();
+  // 归档账号不维持持久 IDLE 连接（腾出连接名额、不自动收信）
+  const accounts = accountsRepo.listAccounts().filter((a) => !a.archived);
   accounts.forEach((a, i) => {
     setTimeout(() => {
       void startIdleFor(a.email);

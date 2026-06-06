@@ -62,6 +62,8 @@ interface State {
 
   removeAccount: (email: string) => Promise<void>;
   setMark: (email: string, mark: AccountMark | null) => Promise<void>;
+  setArchived: (email: string, archived: boolean) => Promise<void>;
+  setStartedAt: (email: string, ts: number | null) => Promise<void>;
   refreshOne: (email: string) => Promise<void>;
   refreshAll: () => Promise<void>;
   onRefreshProgress: (evt: RefreshEvent) => void;
@@ -200,6 +202,18 @@ export const useStore = create<State>((set, get) => ({
     set({ accounts });
   },
 
+  setArchived: async (email: string, archived: boolean) => {
+    await window.api.accounts.setArchived(email, archived);
+    const accounts = await window.api.accounts.list();
+    set({ accounts });
+  },
+
+  setStartedAt: async (email: string, ts: number | null) => {
+    await window.api.accounts.setStartedAt(email, ts);
+    const accounts = await window.api.accounts.list();
+    set({ accounts });
+  },
+
   refreshOne: async (email: string) => {
     set((s) => ({ refreshingEmails: new Set([...s.refreshingEmails, email]) }));
     await window.api.messages.sync(email, MESSAGES_PER_ACCOUNT);
@@ -217,7 +231,9 @@ export const useStore = create<State>((set, get) => ({
   },
 
   refreshAll: async () => {
-    const emails = get().accounts.map((a) => a.email);
+    // 只标记在用账号——后端 refreshAll 跳过归档账号，归档账号不会收到 done 事件，
+    // 若把它们也加进 refreshingEmails 会导致"同步中"状态永久卡住
+    const emails = get().accounts.filter((a) => !a.archived).map((a) => a.email);
     set((s) => ({ refreshingEmails: new Set([...s.refreshingEmails, ...emails]) }));
     await window.api.refresh.all();
     const accounts = await window.api.accounts.list();

@@ -10,6 +10,8 @@ interface AccountRow {
   last_sync_status: string | null;
   last_sync_error: string | null;
   mark: string | null;
+  archived: number;
+  started_at: number | null;
 }
 
 function rowToAccount(r: AccountRow): Account {
@@ -21,13 +23,15 @@ function rowToAccount(r: AccountRow): Account {
     lastSyncStatus: r.last_sync_status as SyncStatus | null,
     lastSyncError: r.last_sync_error,
     mark: (r.mark as AccountMark | null) ?? null,
+    archived: r.archived === 1,
+    startedAt: r.started_at,
   };
 }
 
 export function listAccounts(db: Database.Database = getDb()): Account[] {
   const rows = db
     .prepare<[], AccountRow>(
-      `SELECT email, display_order, added_at, last_synced_at, last_sync_status, last_sync_error, mark
+      `SELECT email, display_order, added_at, last_synced_at, last_sync_status, last_sync_error, mark, archived, started_at
        FROM accounts
        ORDER BY display_order ASC, added_at ASC`,
     )
@@ -38,7 +42,7 @@ export function listAccounts(db: Database.Database = getDb()): Account[] {
 export function getAccount(email: string, db: Database.Database = getDb()): Account | null {
   const row = db
     .prepare<[string], AccountRow>(
-      `SELECT email, display_order, added_at, last_synced_at, last_sync_status, last_sync_error, mark
+      `SELECT email, display_order, added_at, last_synced_at, last_sync_status, last_sync_error, mark, archived, started_at
        FROM accounts WHERE email = ?`,
     )
     .get(email);
@@ -82,6 +86,24 @@ export function setMark(
   db: Database.Database = getDb(),
 ): void {
   db.prepare(`UPDATE accounts SET mark = ? WHERE email = ?`).run(mark, email);
+}
+
+/** 设置/取消归档。 */
+export function setArchived(
+  email: string,
+  archived: boolean,
+  db: Database.Database = getDb(),
+): void {
+  db.prepare(`UPDATE accounts SET archived = ? WHERE email = ?`).run(archived ? 1 : 0, email);
+}
+
+/** 设置/清除手动"上号时间"（ts=null 表示清除）。 */
+export function setStartedAt(
+  email: string,
+  ts: number | null,
+  db: Database.Database = getDb(),
+): void {
+  db.prepare(`UPDATE accounts SET started_at = ? WHERE email = ?`).run(ts, email);
 }
 
 export function deleteAccount(email: string, db: Database.Database = getDb()): void {

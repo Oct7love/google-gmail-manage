@@ -16,6 +16,10 @@ export interface Account {
   lastSyncError: string | null;
   /** 用户业务标记：已退款 / 有警告 / 未标记 */
   mark: AccountMark | null;
+  /** 是否归档（归档=断持久连接、不自动收信，但可手动刷新、缓存只读可看） */
+  archived: boolean;
+  /** 手动记录的"上号时间"，毫秒时间戳，null=未填 */
+  startedAt: number | null;
 }
 
 /** 邮件列表项（中栏显示用，无正文） */

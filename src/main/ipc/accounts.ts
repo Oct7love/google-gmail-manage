@@ -133,6 +133,17 @@ export function registerAccountsIpc(): void {
   ipcMain.handle(IpcChannels.Accounts.SetMark, (_e, email: string, mark: AccountMark | null) =>
     repo.setMark(email, mark),
   );
+  ipcMain.handle(IpcChannels.Accounts.SetArchived, async (_e, email: string, archived: boolean) => {
+    repo.setArchived(email, archived);
+    if (archived) {
+      await stopIdleFor(email); // 断持久连接，腾名额
+    } else {
+      void startIdleFor(email); // 恢复实时（openSession 内置静默追赶同步）
+    }
+  });
+  ipcMain.handle(IpcChannels.Accounts.SetStartedAt, (_e, email: string, ts: number | null) =>
+    repo.setStartedAt(email, ts),
+  );
   ipcMain.handle(IpcChannels.Accounts.Remove, async (_e, email: string) => {
     const confirmed = await dialog.showMessageBox({
       type: 'warning',
