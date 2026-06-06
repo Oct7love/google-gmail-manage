@@ -113,10 +113,13 @@ export default function AccountItem({ account }: Props): JSX.Element {
               </span>
               {account.mark && <MarkPill mark={account.mark} />}
             </div>
-            <div className="truncate text-[11px] text-muted">
-              @{domain}
+            <div className="flex items-center gap-1">
+              <span className="min-w-0 truncate text-[11px] text-muted">@{domain}</span>
               {account.startedAt != null && (
-                <span className="text-muted-2"> · 上 {formatStartedAt(account.startedAt)}</span>
+                <span className="inline-flex shrink-0 items-center gap-0.5 rounded bg-accent-soft px-1 text-[10px] font-medium leading-tight text-accent">
+                  <Clock size={9} />
+                  {formatStartedAt(account.startedAt)}
+                </span>
               )}
             </div>
           </div>
@@ -215,12 +218,12 @@ export default function AccountItem({ account }: Props): JSX.Element {
 }
 
 function formatStartedAt(ts: number): string {
+  // 只精确到小时（向下取整到整点显示）
   const d = new Date(ts);
   const mm = d.getMonth() + 1;
   const dd = d.getDate();
   const hh = String(d.getHours()).padStart(2, '0');
-  const mi = String(d.getMinutes()).padStart(2, '0');
-  return `${mm}/${dd} ${hh}:${mi}`;
+  return `${mm}/${dd} ${hh}点`;
 }
 
 function MarkPill({ mark }: { mark: AccountMark }): JSX.Element {
