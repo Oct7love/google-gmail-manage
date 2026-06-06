@@ -35,13 +35,9 @@ const WebView = 'webview' as unknown as React.FC<Record<string, unknown>>;
 const APP_PASSWORD_URL = 'https://myaccount.google.com/apppasswords';
 const TWO_FA_URL = 'https://myaccount.google.com/signinoptions/two-step-verification';
 
-// 降风控：把内嵌 webview 的 UA 伪装成普通 Chrome。
-// Electron 的 navigator.userAgent 本身就含真实系统和 Chromium 版本，
-// 只需去掉 " Electron/x.x.x" 段和 Chrome 前的应用名段，剩下即一个
-// 匹配真实系统、版本永不过期的干净 Chrome UA（自动跨 Mac/Windows 正确）。
-const CHROME_UA = navigator.userAgent
-  .replace(/ Electron\/[\d.]+/i, '')
-  .replace(/(like Gecko\) )\S+ (Chrome\/)/i, '$1$2');
+// 注意：不要给 webview 伪装 UA！实测把 UA 改成"纯 Chrome"会触发 Google
+// "此浏览器或应用可能不安全"拦截——因为 UA 字符串与 Sec-CH-UA 客户端提示头对不上，
+// 被判为篡改。Electron 默认 UA（老实带 Electron 字样）反而能正常登录，保持默认。
 
 export default function AddAccountDialog(): JSX.Element | null {
   const mode = useStore((s) => s.dialogMode);
@@ -596,7 +592,6 @@ export default function AddAccountDialog(): JSX.Element | null {
                 className="flex-1 w-full"
                 style={{ display: 'flex' }}
                 partition={GOOGLE_WEBVIEW_PARTITION}
-                useragent={CHROME_UA}
                 allowpopups="true"
               />
               {webviewError && (

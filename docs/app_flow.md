@@ -66,7 +66,7 @@ Header 工具栏：
 - **退出所有账号并清空登录** / 刷新 / 折叠 / 系统浏览器打开
   - 退出按钮点一下就地变成"确定清空 / 取消"两步确认，确认后清空内嵌浏览器全部 Google 登录与缓存，**不影响左栏已添加的邮箱**
 
-内容：Electron `<webview>` 加载 `https://myaccount.google.com/apppasswords`，用户可以在里面登录、操作、复制。webview 用伪装成普通 Chrome 的 UA（去掉 Electron 标识）降低 Google 风控。
+内容：Electron `<webview>` 加载 `https://myaccount.google.com/apppasswords`，用户可以在里面登录、操作、复制。**用 Electron 默认 UA，不要伪装成 Chrome**——实测伪装会触发 Google"此浏览器或应用可能不安全"拦截（UA 与客户端提示头对不上被判篡改）。
 
 ### 操作流程
 

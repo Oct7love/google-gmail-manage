@@ -153,7 +153,7 @@ google-mail-manage/
 - **连不上 Google 兜底**：webview `did-fail-load` 监听 → 覆盖错误卡（重试 / 配代理 / 系统浏览器打开）
 - **2FA 设置快捷跳转**：webview 头部除了"→ 应用密码页"还有"→ 2FA 设置"按钮（直达 `/signinoptions/two-step-verification`）
 - **一键退出并清空登录**：webview 头部 LogOut 按钮 → 就地两步确认（"确定清空 / 取消"，不弹原生 confirm）→ 走 IPC `system:clearWebviewSession` 把 `GOOGLE_WEBVIEW_PARTITION` 分区的 `clearStorageData()` + `clearCache()` 清掉 → reload。**只清右侧内嵌浏览器的 Google 登录，不动左栏已添加邮箱及其 Keychain 凭据**
-- **webview Chrome UA 伪装（降风控）**：webview 套 `useragent`，取值是从当前 `navigator.userAgent` 去掉 ` Electron/x.x.x` 段和 Chrome 前的应用名段（见 `AddAccountDialog.tsx` 的 `CHROME_UA`），得到匹配真实系统、版本永不过期的干净 Chrome UA，去掉 Google 最敏感的"嵌入式应用"信号。**不做无痕方向**（与"保持登录连续加号"冲突，且全新无历史会话连登多号反而更像批量薅号）
+- **绝对不要给 webview 伪装 UA（血泪教训）**：曾试图把 webview 的 `useragent` 改成"纯 Chrome"（去掉 Electron 字样）以为能降风控，**实测彻底翻车**——Google 直接弹"此浏览器或应用可能不安全"拒绝登录。原因：只改了 UA 字符串、没改 `Sec-CH-UA` 客户端提示头，Google 看到 UA 自称 Chrome 但客户端提示暴露是 Electron/Chromium，**判为篡改**，比老实报 Electron 更可疑。**Electron 默认 UA 反而能正常登录**，保持默认、不要动 `useragent`。**不做无痕方向**（与"保持登录连续加号"冲突，且全新无历史会话连登多号反而更像批量薅号）。真要降风控只能走"用系统浏览器登录"（已有外链按钮），而非伪装内嵌 webview
 
 ## 如果你要开始写代码
 
