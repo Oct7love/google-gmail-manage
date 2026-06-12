@@ -249,8 +249,11 @@ export default function AddAccountDialog(): JSX.Element | null {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-6">
-      <div className="flex h-[660px] w-full max-w-[1100px] overflow-hidden rounded-lg bg-white shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-6 animate-fade-in">
+      {/* 注意：此卡片含 <webview>，入场只用透明度（animate-fade-in），不要加带 transform 的
+          slide-up——animation-fill-mode: both 会持久保留 transform，webview 独立合成层会
+          闪烁/不跟手，且 transform 让卡片成为后代 fixed 元素的包含块 */}
+      <div className="flex h-[660px] w-full max-w-[1100px] overflow-hidden rounded-xl bg-surface shadow-popover animate-fade-in">
         {/* 左：表单（3 段：header / scroll / footer） */}
         <div className="flex w-[440px] shrink-0 flex-col border-r border-border">
           {/* Header */}
@@ -260,7 +263,7 @@ export default function AddAccountDialog(): JSX.Element | null {
               type="button"
               onClick={close}
               disabled={busy}
-              className="flex h-6 w-6 items-center justify-center rounded-md text-muted hover:bg-sidebar"
+              className="flex h-6 w-6 items-center justify-center rounded-md text-muted transition-colors duration-150 hover:bg-surface-2 hover:text-text"
               aria-label="关闭"
             >
               <X size={14} />
@@ -269,7 +272,7 @@ export default function AddAccountDialog(): JSX.Element | null {
 
           {/* 成功提示：固定横条（不占滚动区空间） */}
           {lastAdded && !isUpdate && (
-            <div className="flex shrink-0 items-center gap-1.5 border-b border-border bg-surface-2 px-5 py-1.5 text-[11.5px] text-success">
+            <div className="flex shrink-0 items-center gap-1.5 border-b border-border bg-success/10 px-5 py-1.5 text-[11.5px] text-success">
               <CheckCircle2 size={13} />
               已添加 <span className="font-mono">{lastAdded}</span>，可继续下一个
             </div>
@@ -288,19 +291,19 @@ export default function AddAccountDialog(): JSX.Element | null {
                   <button
                     type="button"
                     onClick={() => setImportOpen(true)}
-                    className="flex items-center justify-center gap-1.5 rounded-md border border-border bg-sidebar/50 px-3 py-1.5 text-[12px] text-text hover:bg-sidebar"
+                    className="flex items-center justify-center gap-1.5 rounded-md border border-border bg-surface-2/60 px-3 py-1.5 text-[12px] text-text transition-colors duration-150 hover:bg-surface-2 active:scale-[0.98]"
                   >
                     <ClipboardPaste size={13} />
                     粘贴一行账号信息自动解析
                   </button>
                 ) : (
-                  <div className="rounded-md border border-border bg-white p-2">
+                  <div className="rounded-lg border border-border bg-surface p-2">
                     <textarea
                       value={importText}
                       onChange={(e) => setImportText(e.target.value)}
                       placeholder="账号 密码 辅邮 2fa密钥&#10;或&#10;账号----密码----辅邮----2fa密钥----链接"
                       rows={3}
-                      className="w-full resize-y rounded border border-border bg-white px-2 py-1.5 font-mono text-[11px] focus:border-accent focus:outline-none"
+                      className="w-full resize-y rounded-md border border-border bg-surface px-2 py-1.5 font-mono text-[11px] transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
                     />
                     {importError && (
                       <div className="mt-1 whitespace-pre-wrap text-[11px] text-danger">
@@ -315,14 +318,14 @@ export default function AddAccountDialog(): JSX.Element | null {
                           setImportError(null);
                           setImportText('');
                         }}
-                        className="rounded px-2 py-1 text-[11px] text-muted hover:bg-sidebar"
+                        className="rounded-md px-2 py-1 text-[11px] text-muted transition-colors duration-150 hover:bg-surface-2"
                       >
                         取消
                       </button>
                       <button
                         type="button"
                         onClick={onImportParse}
-                        className="rounded bg-accent px-2.5 py-1 text-[11px] text-white hover:bg-accent/90"
+                        className="rounded-md bg-accent px-2.5 py-1 text-[11px] text-white transition duration-150 hover:bg-accent/90 active:scale-[0.98]"
                       >
                         解析并填入
                       </button>
@@ -334,8 +337,8 @@ export default function AddAccountDialog(): JSX.Element | null {
 
             {/* 登录辅助（imported 非空时显示） */}
             {imported && (
-              <div className="rounded-md border border-border bg-sidebar/40 p-2 text-[11px]">
-                <div className="mb-1 font-medium text-text">登录辅助</div>
+              <div className="rounded-lg border border-border bg-surface-2/60 p-2 text-[11px]">
+                <div className="mb-1 text-[11px] font-medium text-muted">登录辅助</div>
                 <ImportField
                   label="登录密码"
                   value={imported.googlePassword}
@@ -363,11 +366,11 @@ export default function AddAccountDialog(): JSX.Element | null {
 
             {/* 帮助（默认折叠，点开看步骤） */}
             {!isUpdate && (
-              <div className="rounded-md border border-border bg-accent-soft/50">
+              <div className="overflow-hidden rounded-lg border border-accent/15 bg-accent-soft/50">
                 <button
                   type="button"
                   onClick={() => setHelpOpen((o) => !o)}
-                  className="flex w-full items-center justify-between px-3 py-1.5 text-[11.5px] text-accent"
+                  className="flex w-full items-center justify-between px-3 py-1.5 text-[11.5px] text-accent transition-colors duration-150 hover:bg-accent-soft/80"
                 >
                   <span className="flex items-center gap-1.5">
                     <HelpCircle size={13} />
@@ -391,7 +394,7 @@ export default function AddAccountDialog(): JSX.Element | null {
 
             {/* 表单字段 */}
             <label className="block">
-              <span className="text-[12.5px] font-medium">Gmail 地址</span>
+              <span className="text-[11px] font-medium text-muted">Gmail 地址</span>
               <div className="relative mt-0.5 flex items-center gap-1.5">
                 <input
                   ref={emailInputRef}
@@ -403,7 +406,7 @@ export default function AddAccountDialog(): JSX.Element | null {
                     if (lastAdded) setLastAdded(null);
                   }}
                   placeholder="xxx@gmail.com"
-                  className="min-w-0 flex-1 rounded-md border border-border bg-white px-3 py-1.5 text-[13px] focus:border-accent focus:outline-none disabled:bg-sidebar"
+                  className="min-w-0 flex-1 rounded-md border border-border bg-surface px-3 py-1.5 text-[13px] transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 disabled:bg-surface-2 disabled:text-muted"
                   required
                   autoFocus={!isUpdate}
                 />
@@ -414,13 +417,13 @@ export default function AddAccountDialog(): JSX.Element | null {
             </label>
 
             <label className="block">
-              <span className="text-[12.5px] font-medium">应用专用密码（16 位）</span>
+              <span className="text-[11px] font-medium text-muted">应用专用密码（16 位）</span>
               <input
                 type="text"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="abcd efgh ijkl mnop（空格会自动去掉）"
-                className="mt-0.5 w-full rounded-md border border-border bg-white px-3 py-1.5 font-mono text-[12px] focus:border-accent focus:outline-none"
+                className="mt-0.5 w-full rounded-md border border-border bg-surface px-3 py-1.5 font-mono text-[12px] transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
                 required
                 autoFocus={isUpdate}
               />
@@ -440,12 +443,12 @@ export default function AddAccountDialog(): JSX.Element | null {
           </form>
 
           {/* Footer（固定，永远可见） */}
-          <footer className="flex shrink-0 items-center justify-end gap-2 border-t border-border bg-white px-5 py-3">
+          <footer className="flex shrink-0 items-center justify-end gap-2 border-t border-border bg-surface px-5 py-3">
             <button
               type="button"
               onClick={close}
               disabled={busy}
-              className="rounded-md px-3 py-1.5 text-[13px] text-muted hover:bg-sidebar"
+              className="rounded-md px-3 py-1.5 text-[13px] text-muted transition-colors duration-150 hover:bg-surface-2 hover:text-text"
             >
               {isUpdate ? '取消' : '完成'}
             </button>
@@ -453,7 +456,7 @@ export default function AddAccountDialog(): JSX.Element | null {
               type="submit"
               form="add-account-form"
               disabled={busy}
-              className="rounded-md bg-accent px-4 py-1.5 text-[13px] font-medium text-white shadow-sm hover:bg-accent/90 disabled:opacity-50"
+              className="rounded-md bg-accent px-4 py-1.5 text-[13px] font-medium text-white shadow-sm transition duration-150 hover:bg-accent/90 active:scale-[0.98] disabled:opacity-50"
             >
               {busy ? '验证中…' : isUpdate ? '更新' : '验证并添加'}
             </button>
@@ -463,13 +466,13 @@ export default function AddAccountDialog(): JSX.Element | null {
         {/* 右：Google 应用密码页 */}
         {showWebView && (
           <div className="flex min-w-0 flex-1 flex-col">
-            <header className="flex items-center justify-between gap-2 border-b border-border bg-sidebar/30 px-3 py-1.5 text-[11px] text-muted">
+            <header className="flex items-center justify-between gap-2 border-b border-border bg-surface-2/50 px-3 py-1.5 text-[11px] text-muted">
               <span className="shrink-0 font-medium">Google 应用密码页</span>
               <div className="flex shrink-0 items-center gap-1">
                 <button
                   type="button"
                   onClick={() => webviewRef.current?.loadURL(APP_PASSWORD_URL)}
-                  className="flex items-center gap-1 rounded-md bg-accent/10 px-2 py-1 font-medium text-accent hover:bg-accent/20"
+                  className="flex items-center gap-1 rounded-md bg-accent/10 px-2 py-1 font-medium text-accent transition-colors duration-150 hover:bg-accent/20 active:scale-[0.98]"
                   title="直接跳转到应用密码页"
                 >
                   <ArrowRight size={11} />
@@ -478,7 +481,7 @@ export default function AddAccountDialog(): JSX.Element | null {
                 <button
                   type="button"
                   onClick={() => webviewRef.current?.loadURL(TWO_FA_URL)}
-                  className="flex items-center gap-1 rounded-md bg-accent/10 px-2 py-1 font-medium text-accent hover:bg-accent/20"
+                  className="flex items-center gap-1 rounded-md bg-accent/10 px-2 py-1 font-medium text-accent transition-colors duration-150 hover:bg-accent/20 active:scale-[0.98]"
                   title="跳转到两步验证设置页（修改 2FA 密钥用）"
                 >
                   <ArrowRight size={11} />
@@ -495,7 +498,7 @@ export default function AddAccountDialog(): JSX.Element | null {
                         setClearing(false);
                         setConfirmClear(false);
                       }}
-                      className="flex items-center gap-1 rounded-md bg-danger px-2 py-1 font-medium text-white hover:bg-danger/90 disabled:opacity-50"
+                      className="flex items-center gap-1 rounded-md bg-danger px-2 py-1 font-medium text-white transition duration-150 hover:bg-danger/90 active:scale-[0.98] disabled:opacity-50"
                       title="退出右侧所有 Google 登录并清空缓存，不影响已添加的邮箱"
                     >
                       <LogOut size={11} />
@@ -505,7 +508,7 @@ export default function AddAccountDialog(): JSX.Element | null {
                       type="button"
                       disabled={clearing}
                       onClick={() => setConfirmClear(false)}
-                      className="rounded-md border border-border bg-white px-2 py-1 text-muted hover:bg-sidebar disabled:opacity-50"
+                      className="rounded-md border border-border bg-surface px-2 py-1 text-muted transition-colors duration-150 hover:bg-surface-2 disabled:opacity-50"
                     >
                       取消
                     </button>
@@ -514,7 +517,7 @@ export default function AddAccountDialog(): JSX.Element | null {
                   <button
                     type="button"
                     onClick={() => setConfirmClear(true)}
-                    className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-white hover:bg-sidebar"
+                    className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-surface transition-colors duration-150 hover:bg-surface-2"
                     title="退出所有 Google 账号并清空登录（不影响已添加的邮箱）"
                   >
                     <LogOut size={11} />
@@ -523,7 +526,7 @@ export default function AddAccountDialog(): JSX.Element | null {
                 <button
                   type="button"
                   onClick={() => webviewRef.current?.reload()}
-                  className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-white hover:bg-sidebar"
+                  className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-surface transition-colors duration-150 hover:bg-surface-2"
                   title="刷新"
                 >
                   <RotateCw size={11} />
@@ -531,7 +534,7 @@ export default function AddAccountDialog(): JSX.Element | null {
                 <button
                   type="button"
                   onClick={() => setProxyPanelOpen((o) => !o)}
-                  className={`flex h-6 w-6 items-center justify-center rounded-md border border-border bg-white hover:bg-sidebar ${
+                  className={`flex h-6 w-6 items-center justify-center rounded-md border border-border bg-surface transition-colors duration-150 hover:bg-surface-2 ${
                     proxyInput ? 'text-accent' : ''
                   }`}
                   title="配置 webview 代理（Google 连不上时用）"
@@ -541,7 +544,7 @@ export default function AddAccountDialog(): JSX.Element | null {
                 <button
                   type="button"
                   onClick={() => setShowWebView(false)}
-                  className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-white hover:bg-sidebar"
+                  className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-surface transition-colors duration-150 hover:bg-surface-2"
                   title="折叠侧边浏览器"
                 >
                   <ChevronRight size={11} />
@@ -549,7 +552,7 @@ export default function AddAccountDialog(): JSX.Element | null {
                 <button
                   type="button"
                   onClick={openInBrowser}
-                  className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-white hover:bg-sidebar"
+                  className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-surface transition-colors duration-150 hover:bg-surface-2"
                   title="改用系统浏览器"
                 >
                   <ExternalLink size={11} />
@@ -571,13 +574,13 @@ export default function AddAccountDialog(): JSX.Element | null {
                     value={proxyInput}
                     onChange={(e) => setProxyInput(e.target.value)}
                     placeholder="http://127.0.0.1:7890 或 socks5://127.0.0.1:1080"
-                    className="flex-1 rounded border border-border bg-white px-2 py-1 font-mono text-[11px] focus:border-accent focus:outline-none"
+                    className="flex-1 rounded-md border border-border bg-surface px-2 py-1 font-mono text-[11px] transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
                   />
                   <button
                     type="button"
                     onClick={() => void saveProxy()}
                     disabled={proxySaving}
-                    className="rounded bg-accent px-2 py-1 text-[11px] text-white hover:bg-accent/90 disabled:opacity-50"
+                    className="rounded-md bg-accent px-2 py-1 text-[11px] text-white transition duration-150 hover:bg-accent/90 active:scale-[0.98] disabled:opacity-50"
                   >
                     {proxySaving ? '保存…' : '保存并重载'}
                   </button>
@@ -595,9 +598,9 @@ export default function AddAccountDialog(): JSX.Element | null {
                 allowpopups="true"
               />
               {webviewError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-surface/95 p-8">
+                <div className="absolute inset-0 flex items-center justify-center bg-surface/95 p-8 animate-fade-in">
                   <div className="max-w-sm text-center">
-                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-warning/15">
                       <AlertTriangle size={24} className="text-warning" />
                     </div>
                     <h3 className="mb-1 text-sm font-semibold text-text">连不上 Google</h3>
@@ -613,14 +616,14 @@ export default function AddAccountDialog(): JSX.Element | null {
                           setWebviewError(null);
                           webviewRef.current?.loadURL(APP_PASSWORD_URL);
                         }}
-                        className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent/90"
+                        className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-white transition duration-150 hover:bg-accent/90 active:scale-[0.98]"
                       >
                         重试
                       </button>
                       <button
                         type="button"
                         onClick={() => setProxyPanelOpen(true)}
-                        className="rounded-md border border-border bg-white px-3 py-1.5 text-xs text-text hover:bg-sidebar"
+                        className="rounded-md border border-border bg-surface px-3 py-1.5 text-xs text-text transition-colors duration-150 hover:bg-surface-2"
                       >
                         <Settings size={11} className="mr-1 inline" />
                         配置代理
@@ -628,7 +631,7 @@ export default function AddAccountDialog(): JSX.Element | null {
                       <button
                         type="button"
                         onClick={openInBrowser}
-                        className="rounded-md border border-border bg-white px-3 py-1.5 text-xs text-text hover:bg-sidebar"
+                        className="rounded-md border border-border bg-surface px-3 py-1.5 text-xs text-text transition-colors duration-150 hover:bg-surface-2"
                       >
                         <ExternalLink size={11} className="mr-1 inline" />
                         用系统浏览器打开
@@ -646,7 +649,7 @@ export default function AddAccountDialog(): JSX.Element | null {
           <button
             type="button"
             onClick={() => setShowWebView(true)}
-            className="flex w-10 shrink-0 items-center justify-center border-l border-border bg-sidebar/50 text-muted hover:bg-sidebar"
+            className="flex w-10 shrink-0 items-center justify-center border-l border-border bg-surface-2/50 text-muted transition-colors duration-150 hover:bg-surface-2 hover:text-text"
             title="展开侧边浏览器"
           >
             <ChevronLeft size={14} />
@@ -693,7 +696,7 @@ function CopyButton({ value, onCopy }: { value: string; onCopy: (s: string) => v
     <button
       type="button"
       onClick={onClick}
-      className="flex shrink-0 items-center gap-0.5 rounded border border-border bg-surface px-1.5 py-0.5 text-[10px] text-muted hover:bg-surface-2"
+      className="flex shrink-0 items-center gap-0.5 rounded border border-border bg-surface px-1.5 py-0.5 text-[10px] text-muted transition-colors duration-150 hover:bg-surface-2 hover:text-text"
     >
       {copied ? (
         <>

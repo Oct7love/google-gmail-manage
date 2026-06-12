@@ -21,9 +21,11 @@ export default function MiddleColumn(): JSX.Element {
   if (!selected) {
     return (
       <section className="flex w-[360px] shrink-0 flex-col items-center justify-center border-r border-border-strong bg-bg">
-        <div className="text-center text-sm text-muted">
-          <Inbox size={36} strokeWidth={1.3} className="mx-auto mb-2 text-border" />
-          选择左侧账号查看邮件
+        <div className="flex flex-col items-center text-center">
+          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-surface-2">
+            <Inbox size={22} strokeWidth={1.5} className="text-muted-2" />
+          </div>
+          <div className="text-sm text-muted">选择左侧账号查看邮件</div>
         </div>
       </section>
     );
@@ -38,7 +40,7 @@ export default function MiddleColumn(): JSX.Element {
             <div className="truncate text-[13px] font-semibold text-text" title={selected}>
               收件箱
             </div>
-            <div className="truncate text-[11px] text-muted">
+            <div className="truncate text-[11px] tabular-nums text-muted">
               {selected} · {messages.length} 封
             </div>
           </div>
@@ -47,7 +49,7 @@ export default function MiddleColumn(): JSX.Element {
           <button
             type="button"
             onClick={() => setCredsOpen(true)}
-            className="flex h-7 w-7 items-center justify-center rounded-md text-muted transition hover:bg-surface-2"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-muted transition duration-150 ease-out hover:bg-surface-2 hover:text-text-2 active:scale-[0.98]"
             title="查看账号凭据（密码 / 2FA / 辅邮）"
             aria-label="查看账号凭据"
           >
@@ -57,7 +59,7 @@ export default function MiddleColumn(): JSX.Element {
             type="button"
             onClick={() => void refreshOne(selected)}
             disabled={refreshing}
-            className="flex h-7 w-7 items-center justify-center rounded-md text-muted transition hover:bg-surface-2 disabled:opacity-30"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-muted transition duration-150 ease-out hover:bg-surface-2 hover:text-text-2 active:scale-[0.98] disabled:opacity-30"
             title="刷新"
             aria-label="刷新"
           >
@@ -67,9 +69,14 @@ export default function MiddleColumn(): JSX.Element {
       </header>
       <div className="flex-1 overflow-y-auto">
         {messages.length === 0 ? (
-          <div className="p-8 text-center text-xs text-muted">暂无邮件</div>
+          <div className="flex flex-col items-center px-8 pb-8 pt-16 text-center">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-surface-2">
+              <Inbox size={18} strokeWidth={1.5} className="text-muted-2" />
+            </div>
+            <div className="text-xs text-muted">暂无邮件</div>
+          </div>
         ) : (
-          <ul className="divide-y divide-border bg-bg">
+          <ul className="divide-y divide-border/60 bg-bg">
             {messages.map((m) => (
               <MessageRow key={m.messageId} message={m} />
             ))}

@@ -21,7 +21,7 @@ export default function Avatar({ identityKey, label, size = 28 }: Props): JSX.El
         background: bg,
         fontSize,
       }}
-      className="inline-flex shrink-0 items-center justify-center rounded-full font-medium text-white select-none"
+      className="inline-flex shrink-0 items-center justify-center rounded-full font-semibold leading-none text-white select-none ring-1 ring-inset ring-black/5"
     >
       {ch}
     </span>

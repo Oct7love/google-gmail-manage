@@ -7,7 +7,14 @@ interface Props {
 
 export default function Logo({ size = 20 }: Props): JSX.Element {
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="block shrink-0"
+    >
       <defs>
         <linearGradient id="mv-logo-g" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
           <stop offset="0" stopColor="#3B82F6" />
@@ -15,6 +22,8 @@ export default function Logo({ size = 20 }: Props): JSX.Element {
         </linearGradient>
       </defs>
       <rect x="3" y="7" width="26" height="19" rx="3.5" fill="url(#mv-logo-g)" />
+      {/* 顶缘细高光：提一点立体质感 */}
+      <rect x="3.5" y="7.5" width="25" height="18" rx="3" stroke="rgba(255,255,255,0.22)" strokeWidth="1" />
       <path
         d="M5 10.5 L16 18 L27 10.5"
         stroke="white"

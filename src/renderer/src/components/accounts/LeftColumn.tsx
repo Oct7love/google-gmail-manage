@@ -18,31 +18,35 @@ export default function LeftColumn(): JSX.Element {
   return (
     <aside className="flex w-64 shrink-0 flex-col border-r border-border-strong bg-sidebar">
       <header className="flex items-center justify-between gap-1 px-3 pt-3 pb-2">
-        <div className="flex min-w-0 items-center gap-1 text-[11px] font-medium">
+        <div className="flex min-w-0 items-center gap-0.5 rounded-lg bg-surface-2 p-0.5 text-[11px] font-medium">
           <button
             type="button"
             onClick={() => setTab('active')}
-            className={`rounded-md px-2 py-1 transition ${
-              tab === 'active' ? 'bg-surface text-text shadow-sm' : 'text-muted hover:text-text'
+            className={`rounded-md px-2 py-1 leading-none transition-colors duration-150 ease-out ${
+              tab === 'active'
+                ? 'bg-surface text-text shadow-sm'
+                : 'text-text-2 hover:text-text'
             }`}
           >
-            在用 {activeAccounts.length}
+            在用 <span className="tabular-nums">{activeAccounts.length}</span>
           </button>
           <button
             type="button"
             onClick={() => setTab('archived')}
-            className={`rounded-md px-2 py-1 transition ${
-              tab === 'archived' ? 'bg-surface text-text shadow-sm' : 'text-muted hover:text-text'
+            className={`rounded-md px-2 py-1 leading-none transition-colors duration-150 ease-out ${
+              tab === 'archived'
+                ? 'bg-surface text-text shadow-sm'
+                : 'text-text-2 hover:text-text'
             }`}
           >
-            归档 {archivedAccounts.length}
+            归档 <span className="tabular-nums">{archivedAccounts.length}</span>
           </button>
         </div>
         <button
           type="button"
           onClick={() => void refreshAll()}
           disabled={activeAccounts.length === 0}
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted transition hover:bg-surface-2 disabled:opacity-30"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted transition-colors duration-150 ease-out hover:bg-surface-2 hover:text-text disabled:opacity-30"
           title="全部刷新（仅在用账号）"
           aria-label="全部刷新"
         >
@@ -70,7 +74,7 @@ export default function LeftColumn(): JSX.Element {
         <button
           type="button"
           onClick={openAddDialog}
-          className="flex w-full items-center justify-center gap-1.5 rounded-md bg-gradient-to-b from-accent to-accent/85 px-3 py-2 text-[13px] font-medium text-white shadow-sm transition hover:from-accent/95 hover:to-accent/80 active:from-accent/85"
+          className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-gradient-to-b from-accent to-accent/85 px-3 py-2 text-[13px] font-medium text-white shadow-sm transition duration-150 ease-out hover:from-accent/95 hover:to-accent/80 active:scale-[0.98] active:from-accent/85"
         >
           <Plus size={14} strokeWidth={2.5} />
           添加账号
@@ -82,10 +86,10 @@ export default function LeftColumn(): JSX.Element {
 
 function EmptyState(): JSX.Element {
   return (
-    <div className="mt-8 px-4 text-center text-xs text-muted">
-      <div className="mb-3 flex justify-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-border">
-          <Logo size={28} />
+    <div className="mt-12 px-4 text-center text-xs text-muted">
+      <div className="mb-4 flex justify-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface shadow-sm ring-1 ring-border">
+          <Logo size={30} />
         </div>
       </div>
       <p className="leading-relaxed">
@@ -93,8 +97,8 @@ function EmptyState(): JSX.Element {
         <br />
         点下方按钮添加第一个
       </p>
-      <div className="mx-auto mt-3 flex w-fit items-center gap-1 rounded-full bg-accent/5 px-2 py-0.5 text-[10.5px] text-accent">
-        <Mail size={10} /> 多账号 Gmail 查看器
+      <div className="mx-auto mt-4 flex w-fit items-center gap-1 rounded-full bg-accent-soft px-2.5 py-1 text-[10.5px] font-medium leading-none text-text-2">
+        <Mail size={10} className="text-accent" /> 多账号 Gmail 查看器
       </div>
     </div>
   );

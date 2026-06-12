@@ -16,9 +16,11 @@ export default function RightColumn(): JSX.Element {
   if (!detail) {
     return (
       <section className="flex flex-1 items-center justify-center bg-bg">
-        <div className="text-center text-sm text-muted">
-          <MailOpen size={48} strokeWidth={1.2} className="mx-auto mb-3 text-border" />
-          选择一封邮件查看内容
+        <div className="animate-fade-in text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface-2">
+            <MailOpen size={28} strokeWidth={1.4} className="text-muted-2" />
+          </div>
+          <p className="text-[13px] text-muted">选择一封邮件查看内容</p>
         </div>
       </section>
     );
@@ -30,8 +32,8 @@ export default function RightColumn(): JSX.Element {
   return (
     <section className="flex flex-1 flex-col overflow-hidden bg-bg">
       <div className="m-4 flex flex-1 flex-col overflow-hidden rounded-lg bg-surface shadow-card">
-        <header className="border-b border-border px-6 py-4">
-          <h2 className="mb-3 text-xl font-semibold leading-snug text-text">
+        <header className="border-b border-border px-6 py-5">
+          <h2 className="mb-3.5 text-xl font-semibold leading-snug tracking-[-0.01em] text-text">
             {detail.subject || '(无主题)'}
           </h2>
           <div className="flex items-start gap-3">
@@ -44,7 +46,7 @@ export default function RightColumn(): JSX.Element {
                     <span className="ml-1.5 text-[11.5px] text-muted-2">&lt;{senderEmail}&gt;</span>
                   )}
                 </div>
-                <time className="shrink-0 text-[12px] text-muted-2">
+                <time className="shrink-0 text-[12px] tabular-nums text-muted-2">
                   {new Date(detail.dateTs).toLocaleString('zh-CN')}
                 </time>
               </div>
@@ -52,14 +54,14 @@ export default function RightColumn(): JSX.Element {
             </div>
           </div>
           {detail.bodyHtml && (
-            <div className="mt-3 flex items-center gap-2">
+            <div className="mt-3.5 flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setShowImages((s) => !s)}
-                className={`flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] transition ${
+                className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px] transition-colors duration-150 ease-out ${
                   showImages
                     ? 'border-transparent bg-accent-soft text-accent'
-                    : 'border-transparent bg-transparent text-text-2 hover:bg-surface-2 hover:text-text'
+                    : 'border-border bg-transparent text-text-2 hover:bg-surface-2 hover:text-text'
                 }`}
               >
                 {showImages ? <ImageIcon size={12} /> : <ImageOff size={12} />}

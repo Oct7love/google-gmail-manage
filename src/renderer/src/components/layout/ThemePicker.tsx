@@ -89,20 +89,20 @@ export default function ThemePicker({ current, onSelect, onClose }: Props): JSX.
   // 用 Portal 把模态渲染到 document.body 跳出该 context。
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-6 backdrop-blur-sm"
+      className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-6 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl overflow-hidden rounded-lg bg-surface shadow-popover"
+        className="animate-slide-up w-full max-w-2xl overflow-hidden rounded-xl bg-surface shadow-popover"
         onClick={(e) => e.stopPropagation()}
         style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
       >
         <header className="flex items-center justify-between border-b border-border px-5 py-3">
-          <h2 className="text-base font-semibold text-text">选择主题</h2>
+          <h2 className="text-[15px] font-semibold tracking-tight text-text">选择主题</h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded p-1 text-muted hover:bg-surface-2 hover:text-text"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-muted transition duration-150 ease-out hover:bg-surface-2 hover:text-text active:scale-[0.98]"
             aria-label="关闭"
           >
             <X size={15} />
@@ -136,9 +136,9 @@ function ThemeCard({ meta, selected, onClick }: CardProps): JSX.Element {
     <button
       type="button"
       onClick={onClick}
-      className={`group relative flex flex-col overflow-hidden rounded-lg border-2 text-left transition ${
+      className={`group relative flex flex-col overflow-hidden rounded-lg border text-left transition duration-150 ease-out active:scale-[0.98] ${
         selected
-          ? 'border-accent shadow-card-hover'
+          ? 'border-accent ring-2 ring-accent ring-offset-2 ring-offset-surface shadow-card-hover'
           : 'border-border hover:border-border-strong hover:shadow-card-hover hover:-translate-y-0.5'
       }`}
     >

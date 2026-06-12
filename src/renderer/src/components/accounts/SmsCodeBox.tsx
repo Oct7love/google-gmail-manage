@@ -38,7 +38,7 @@ export default function SmsCodeBox({ url }: Props): JSX.Element {
   };
 
   return (
-    <div className="rounded-md border border-border bg-white px-3 py-2 text-xs">
+    <div className="rounded-lg border border-border bg-surface px-3 py-2 text-xs">
       <div className="mb-1.5 flex items-center justify-between">
         <span className="flex items-center gap-1.5 font-medium text-text">
           <MessageSquareText size={12} className="text-accent" />
@@ -48,7 +48,7 @@ export default function SmsCodeBox({ url }: Props): JSX.Element {
           type="button"
           onClick={() => void fetchCode()}
           disabled={state.kind === 'loading'}
-          className="flex items-center gap-1 rounded-md bg-accent px-2 py-0.5 text-[10.5px] text-white hover:bg-accent/90 disabled:opacity-50"
+          className="flex items-center gap-1 rounded-md bg-accent px-2 py-0.5 text-[10.5px] text-white transition duration-150 hover:bg-accent/90 active:scale-[0.98] disabled:opacity-50"
         >
           {state.kind === 'loading' ? (
             <>
@@ -74,7 +74,7 @@ export default function SmsCodeBox({ url }: Props): JSX.Element {
           <button
             type="button"
             onClick={() => copy(state.code!)}
-            className="flex shrink-0 items-center gap-0.5 rounded bg-accent/10 px-2 py-1 text-[10px] text-accent hover:bg-accent/20"
+            className="flex shrink-0 items-center gap-0.5 rounded bg-accent/10 px-2 py-1 text-[10px] text-accent transition-colors duration-150 hover:bg-accent/20"
           >
             {copied ? (
               <>

@@ -75,7 +75,7 @@ export default function AccountItem({ account }: Props): JSX.Element {
   return (
     <li className="relative">
       <div
-        className={`group flex items-center gap-2.5 rounded-lg pl-2 pr-1 py-1.5 transition-colors ${
+        className={`group flex items-center gap-2.5 rounded-lg pl-2 pr-1 py-1.5 transition-colors duration-150 ease-out ${
           isSelected ? 'bg-surface shadow-card ring-1 ring-accent/15' : 'hover:bg-surface-2'
         }`}
       >
@@ -117,7 +117,7 @@ export default function AccountItem({ account }: Props): JSX.Element {
               <span className="min-w-0 truncate text-[11px] text-muted">@{domain}</span>
               {account.startedAt != null && (
                 <>
-                  <span className="inline-flex shrink-0 items-center gap-0.5 rounded bg-accent-soft px-1 text-[10px] font-medium leading-tight text-accent">
+                  <span className="inline-flex h-4 shrink-0 items-center gap-0.5 rounded bg-accent-soft px-1 text-[10px] font-medium tabular-nums leading-none text-accent">
                     <Clock size={9} />
                     {formatStartedAt(account.startedAt)}
                   </span>
@@ -131,7 +131,7 @@ export default function AccountItem({ account }: Props): JSX.Element {
           </div>
           {newCount > 0 && (
             <span
-              className="shrink-0 rounded-full bg-accent px-1.5 text-[10px] font-semibold text-white shadow-card"
+              className="inline-flex h-4 shrink-0 items-center rounded-full bg-accent px-1.5 text-[10px] font-semibold tabular-nums leading-none text-white shadow-card"
               title={`${newCount} 封新邮件`}
             >
               +{newCount}
@@ -141,7 +141,9 @@ export default function AccountItem({ account }: Props): JSX.Element {
         <button
           type="button"
           onClick={() => setMenuOpen((o) => !o)}
-          className="flex h-6 w-6 items-center justify-center rounded-md text-muted opacity-0 transition hover:bg-surface-2 group-hover:opacity-100"
+          className={`flex h-6 w-6 items-center justify-center rounded-md text-muted transition duration-150 ease-out hover:bg-surface-2 hover:text-text focus-visible:opacity-100 group-hover:opacity-100 ${
+            menuOpen ? 'opacity-100' : 'opacity-0'
+          }`}
           aria-label="更多操作"
         >
           <MoreHorizontal size={14} />
@@ -151,11 +153,11 @@ export default function AccountItem({ account }: Props): JSX.Element {
       {menuOpen && (
         <>
           <div className="fixed inset-0 z-30" onClick={() => setMenuOpen(false)} />
-          <div className="absolute right-2 top-11 z-40 w-44 overflow-hidden rounded-lg border border-border bg-surface shadow-popover">
+          <div className="animate-pop-in absolute right-2 top-11 z-40 w-44 rounded-lg border border-border bg-surface p-1 shadow-popover">
             <button
               type="button"
               onClick={() => onMark('refunded')}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-surface-2"
+              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors duration-150 ease-out hover:bg-surface-2"
             >
               <BadgeCheck size={12} className="text-success" />
               标记已退款
@@ -164,7 +166,7 @@ export default function AccountItem({ account }: Props): JSX.Element {
             <button
               type="button"
               onClick={() => onMark('warning')}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-surface-2"
+              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors duration-150 ease-out hover:bg-surface-2"
             >
               <AlertTriangle size={12} className="text-warning" />
               标记有警告
@@ -174,16 +176,17 @@ export default function AccountItem({ account }: Props): JSX.Element {
               <button
                 type="button"
                 onClick={() => onMark(null)}
-                className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-muted hover:bg-surface-2"
+                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs text-muted transition-colors duration-150 ease-out hover:bg-surface-2"
               >
                 <Tag size={12} />
                 清除标记
               </button>
             )}
+            <div className="mx-1 my-1 h-px bg-border" />
             <button
               type="button"
               onClick={onToggleArchive}
-              className="flex w-full items-center gap-2 border-t border-border px-3 py-2 text-left text-xs hover:bg-surface-2"
+              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors duration-150 ease-out hover:bg-surface-2"
             >
               {account.archived ? (
                 <ArchiveRestore size={12} className="text-muted" />
@@ -195,23 +198,25 @@ export default function AccountItem({ account }: Props): JSX.Element {
             <button
               type="button"
               onClick={onRecordStartedAt}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-surface-2"
+              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors duration-150 ease-out hover:bg-surface-2"
             >
               <Clock size={12} className="text-muted" />
               记录上号时间
             </button>
+            <div className="mx-1 my-1 h-px bg-border" />
             <button
               type="button"
               onClick={onUpdate}
-              className="flex w-full items-center gap-2 border-t border-border px-3 py-2 text-left text-xs hover:bg-surface-2"
+              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors duration-150 ease-out hover:bg-surface-2"
             >
               <KeyRound size={12} className="text-muted" />
               更新应用密码
             </button>
+            <div className="mx-1 my-1 h-px bg-border" />
             <button
               type="button"
               onClick={() => void onRemove()}
-              className="flex w-full items-center gap-2 border-t border-border px-3 py-2 text-left text-xs text-danger hover:bg-surface-2"
+              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs text-danger transition-colors duration-150 ease-out hover:bg-danger/5"
             >
               <Trash2 size={12} />
               移除账号
@@ -249,7 +254,7 @@ function ElapsedPill({
   const text = days < 1 ? '今天' : `${Math.floor(days)}天`;
   return (
     <span
-      className={`inline-flex shrink-0 items-center rounded px-1 text-[10px] font-medium leading-tight ${cls}`}
+      className={`inline-flex h-4 shrink-0 items-center rounded px-1 text-[10px] font-medium tabular-nums leading-none ${cls}`}
       title={
         frozenAt != null
           ? `已退款，已上号天数冻结在 ${days.toFixed(1)} 天`
@@ -264,13 +269,13 @@ function ElapsedPill({
 function MarkPill({ mark }: { mark: AccountMark }): JSX.Element {
   if (mark === 'refunded') {
     return (
-      <span className="shrink-0 rounded-full bg-success/15 px-1.5 py-px text-[10px] font-medium leading-tight text-success">
+      <span className="inline-flex h-4 shrink-0 items-center rounded-full bg-success/15 px-1.5 text-[10px] font-medium leading-none text-success">
         已退款
       </span>
     );
   }
   return (
-    <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-warning/15 px-1.5 py-px text-[10px] font-medium leading-tight text-warning">
+    <span className="inline-flex h-4 shrink-0 items-center gap-0.5 rounded-full bg-warning/15 px-1.5 text-[10px] font-medium leading-none text-warning">
       <AlertTriangle size={9} />
       警告
     </span>

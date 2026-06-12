@@ -64,11 +64,11 @@ export default function CredentialsDrawer({ email, onClose }: Props): JSX.Elemen
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-6"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-6 animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-lg bg-surface shadow-2xl"
+        className="flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-xl bg-surface shadow-popover animate-slide-up"
         onClick={(e) => e.stopPropagation()}
       >
         <header className="flex items-center justify-between border-b border-border px-5 py-3">
@@ -81,7 +81,7 @@ export default function CredentialsDrawer({ email, onClose }: Props): JSX.Elemen
               <button
                 type="button"
                 onClick={() => setEditing(true)}
-                className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted hover:bg-sidebar"
+                className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted transition-colors duration-150 hover:bg-surface-2 hover:text-text"
                 title="编辑"
               >
                 <Pencil size={11} /> 编辑
@@ -90,7 +90,7 @@ export default function CredentialsDrawer({ email, onClose }: Props): JSX.Elemen
             <button
               type="button"
               onClick={() => setRevealAll((r) => !r)}
-              className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted hover:bg-sidebar"
+              className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted transition-colors duration-150 hover:bg-surface-2 hover:text-text"
             >
               {revealAll ? <EyeOff size={11} /> : <Eye size={11} />}
               {revealAll ? '隐藏' : '显示'}
@@ -98,7 +98,7 @@ export default function CredentialsDrawer({ email, onClose }: Props): JSX.Elemen
             <button
               type="button"
               onClick={onClose}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-sidebar"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-muted transition-colors duration-150 hover:bg-surface-2 hover:text-text"
             >
               <X size={14} />
             </button>
@@ -106,14 +106,14 @@ export default function CredentialsDrawer({ email, onClose }: Props): JSX.Elemen
         </header>
 
         <div className="flex-1 overflow-y-auto px-5 py-4">
-          <div className="mb-3 rounded-md bg-surface-2 px-3 py-2 text-[11.5px] text-warning">
+          <div className="mb-3 rounded-lg border border-warning/20 bg-warning/10 px-3 py-2 text-[11.5px] text-warning">
             <div className="flex items-start gap-1.5">
               <AlertTriangle size={12} className="mt-0.5 shrink-0" />
               <span>敏感信息，勿随意截图。凭据仅存在本机 Keychain，不上传任何地方。</span>
             </div>
           </div>
 
-          <div className="mb-3 flex items-center gap-2 rounded-md border border-border bg-surface-2 px-3 py-2 text-[12px]">
+          <div className="mb-3 flex items-center gap-2 rounded-lg border border-border bg-surface-2/60 px-3 py-2 text-[12px]">
             <span className="shrink-0 text-muted">上号时间</span>
             <input
               type="datetime-local"
@@ -122,13 +122,13 @@ export default function CredentialsDrawer({ email, onClose }: Props): JSX.Elemen
                 const ts = fromDatetimeLocal(e.target.value);
                 void setStartedAt(email, ts);
               }}
-              className="min-w-0 flex-1 rounded border border-border bg-surface px-2 py-1 text-[12px] focus:border-accent focus:outline-none"
+              className="min-w-0 flex-1 rounded-md border border-border bg-surface px-2 py-1 text-[12px] tabular-nums transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
             />
             {account?.startedAt != null && (
               <button
                 type="button"
                 onClick={() => void setStartedAt(email, null)}
-                className="shrink-0 rounded px-1.5 py-0.5 text-[11px] text-muted hover:bg-surface"
+                className="shrink-0 rounded-md px-1.5 py-0.5 text-[11px] text-muted transition-colors duration-150 hover:bg-surface hover:text-text"
               >
                 清除
               </button>
@@ -185,7 +185,7 @@ export default function CredentialsDrawer({ email, onClose }: Props): JSX.Elemen
               type="button"
               onClick={() => setEditing(false)}
               disabled={saving}
-              className="rounded-md px-3 py-1.5 text-sm text-muted hover:bg-sidebar"
+              className="rounded-md px-3 py-1.5 text-sm text-muted transition-colors duration-150 hover:bg-surface-2 hover:text-text"
             >
               取消
             </button>
@@ -193,7 +193,7 @@ export default function CredentialsDrawer({ email, onClose }: Props): JSX.Elemen
               type="button"
               onClick={() => void onSave()}
               disabled={saving}
-              className="flex items-center gap-1 rounded-md bg-accent px-4 py-1.5 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-50"
+              className="flex items-center gap-1 rounded-md bg-accent px-4 py-1.5 text-sm font-medium text-white transition duration-150 hover:bg-accent/90 active:scale-[0.98] disabled:opacity-50"
             >
               <Save size={12} />
               {saving ? '保存中…' : '保存'}
@@ -258,12 +258,12 @@ function Field({
 }): JSX.Element {
   return (
     <label className="block text-sm">
-      <span className="text-[12.5px] font-medium">{label}</span>
+      <span className="text-[11px] font-medium text-muted">{label}</span>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={`mt-0.5 w-full rounded-md border border-border bg-white px-3 py-1.5 text-[13px] focus:border-accent focus:outline-none ${
+        className={`mt-0.5 w-full rounded-md border border-border bg-surface px-3 py-1.5 text-[13px] transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 ${
           mono ? 'font-mono text-[12px]' : ''
         }`}
       />
@@ -298,7 +298,7 @@ function Row({
         <span className="text-accent">{icon}</span>
         <span className="font-medium">{label}</span>
       </div>
-      <div className="flex items-center gap-1.5 rounded-md border border-border bg-sidebar/30 px-2.5 py-1.5">
+      <div className="flex items-center gap-1.5 rounded-lg border border-border bg-surface-2/50 px-2.5 py-1.5">
         {value ? (
           <>
             <span
@@ -311,7 +311,7 @@ function Row({
               <button
                 type="button"
                 onClick={() => setRevealed((r) => !r)}
-                className="flex shrink-0 items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] text-muted hover:bg-white"
+                className="flex shrink-0 items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] text-muted transition-colors duration-150 hover:bg-surface hover:text-text"
               >
                 {revealed ? <EyeOff size={10} /> : <Eye size={10} />}
               </button>
@@ -363,7 +363,7 @@ function TotpRow({
         <ShieldCheck size={12} className="text-accent" />
         <span className="font-medium">2FA 密钥</span>
       </div>
-      <div className="rounded-md border border-border bg-sidebar/30 px-2.5 py-2">
+      <div className="rounded-lg border border-border bg-surface-2/50 px-2.5 py-2">
         {!totpSecret ? (
           <span className="text-[12px] text-muted">未保存（点编辑添加）</span>
         ) : (
@@ -400,7 +400,7 @@ function TotpRow({
                 <button
                   type="button"
                   onClick={() => setRevealed((r) => !r)}
-                  className="flex shrink-0 items-center rounded px-1.5 py-0.5 text-muted hover:bg-white"
+                  className="flex shrink-0 items-center rounded px-1.5 py-0.5 text-muted transition-colors duration-150 hover:bg-surface hover:text-text"
                 >
                   {revealed ? <EyeOff size={10} /> : <Eye size={10} />}
                 </button>
@@ -425,7 +425,7 @@ function CopyBtn({ value }: { value: string }): JSX.Element {
     <button
       type="button"
       onClick={onClick}
-      className="flex shrink-0 items-center gap-0.5 rounded bg-white px-1.5 py-0.5 text-[10px] text-muted hover:bg-border/50"
+      className="flex shrink-0 items-center gap-0.5 rounded border border-border bg-surface px-1.5 py-0.5 text-[10px] text-muted transition-colors duration-150 hover:bg-surface-2 hover:text-text"
     >
       {copied ? <Check size={9} className="text-success" /> : <Copy size={9} />}
       {copied ? '已复制' : '复制'}

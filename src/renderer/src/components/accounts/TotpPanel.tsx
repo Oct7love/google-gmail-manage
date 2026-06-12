@@ -54,14 +54,14 @@ export default function TotpPanel({ secret, onSecretChange, originalSecret }: Pr
   const modified = Boolean(originalSecret && originalSecret.trim() && secret.trim() !== originalSecret.trim());
 
   return (
-    <div className="rounded-lg border border-border bg-white px-3 py-2.5 text-xs">
+    <div className="rounded-lg border border-border bg-surface px-3 py-2.5 text-xs">
       <div className="mb-2 flex items-center justify-between">
         <span className="flex items-center gap-1.5 font-medium text-text">
           <ShieldCheck size={13} className="text-accent" />
           2FA 验证码生成器
           {modified && (
             <span
-              className="rounded-full bg-orange-100 px-1.5 py-0 text-[9.5px] text-warning"
+              className="rounded-full bg-warning/15 px-1.5 py-0 text-[9.5px] font-medium text-warning"
               title="密钥已被你修改，提交账号时会以当前值保存"
             >
               已改动
@@ -74,7 +74,7 @@ export default function TotpPanel({ secret, onSecretChange, originalSecret }: Pr
               type="button"
               onClick={() => onSecretChange(originalSecret)}
               disabled={!modified}
-              className="flex items-center gap-0.5 rounded px-1.5 py-0.5 hover:bg-sidebar disabled:opacity-30"
+              className="flex items-center gap-0.5 rounded px-1.5 py-0.5 transition-colors duration-150 hover:bg-surface-2 hover:text-text disabled:opacity-30"
               title="撤销改动，恢复成粘贴解析时的值"
             >
               <RefreshCw size={9} />
@@ -90,7 +90,7 @@ export default function TotpPanel({ secret, onSecretChange, originalSecret }: Pr
         value={secret}
         onChange={(e) => onSecretChange(e.target.value)}
         placeholder="粘贴 2FA 密钥（base32 或 otpauth://...），想改直接覆盖"
-        className="w-full rounded-md border border-border bg-white px-2 py-1.5 font-mono text-[11px] focus:border-accent focus:outline-none"
+        className="w-full rounded-md border border-border bg-surface px-2 py-1.5 font-mono text-[11px] transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
       />
 
       {code && !error && (
@@ -102,7 +102,7 @@ export default function TotpPanel({ secret, onSecretChange, originalSecret }: Pr
             <button
               type="button"
               onClick={() => void onCopy()}
-              className="flex items-center gap-1 rounded-md bg-accent px-2.5 py-1.5 text-xs font-medium text-white hover:bg-accent/90"
+              className="flex items-center gap-1 rounded-md bg-accent px-2.5 py-1.5 text-xs font-medium text-white transition duration-150 hover:bg-accent/90 active:scale-[0.98]"
             >
               {copied ? (
                 <>
