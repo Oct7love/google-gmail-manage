@@ -25,6 +25,7 @@ build/icon.iconset/
 
 # Brainstorm session artifacts (not part of the product)
 .superpowers/
+.worktrees/
 
 # Env
 .env
