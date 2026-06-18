@@ -140,8 +140,7 @@ google-mail-manage/
 - **默认不加载外部图片**（防追踪像素），每封邮件单独开关
 - **内嵌图片（cid:）默认加载**（它们是邮件附件，不是追踪）
 - **邮件正文用 sandboxed `<iframe srcDoc>`**，CSP 禁 JS / 禁外部资源，防钓鱼
-- **添加账号对话框**：左表单 + 右 webview（内嵌 `myaccount.google.com/apppasswords`）。webview 登录用户"要添加的那个 Gmail"，生成应用密码，回来粘到左边
-- **添加成功后保持登录**：提交成功**不再自动登出** webview（持久分区 `persist:google-apppasswords`，名字集中在 `src/shared/constants.ts` 的 `GOOGLE_WEBVIEW_PARTITION`）。登录态保留，可用 Google 自带账号切换器连续添加多个账号
+- **添加账号对话框**：单栏表单 + “用无痕 Chrome 打开应用密码页”按钮。Google 登录只在系统 Chrome 中人工完成，生成应用密码后回 App 粘贴
 - **TotpPanel**：本地计算 TOTP，**受控组件**（secret 由父级管理）。支持在对话框里直接编辑密钥（显示"已改动"徽章 + "还原"按钮），提交时保存当前值
 - **粘贴解析**：支持 `账号 密码 辅邮 2fa` 和 `账号----密码----辅邮----2fa----链接` 两种格式，自动填入邮箱 + 2FA 密钥，登录密码和辅邮放"登录辅助"区供复制
 - **凭据抽屉（CredentialsDrawer）**：中栏顶部 🔑 按钮，显示该账号的完整凭据（应用密码 / Google 密码 / 2FA 密钥 + 实时码 / 辅邮 / 链接）。默认打码、按需单独或全部显示。可编辑保存
@@ -149,11 +148,9 @@ google-mail-manage/
   - Keychain service `MailViewer-imap-passwords`：应用专用密码（IMAP 必需）
   - Keychain service `MailViewer-account-info`：Google 密码 / 2FA / 辅邮 / 链接（JSON，可选）
   - 删账号时两边同步清掉
-- **webview 代理**：添加账号对话框右侧有齿轮按钮，可配置 webview 专用代理（如 `http://127.0.0.1:7890`），存 `userData/settings.json`，仅影响 webview 不影响 IMAP / 翻译
-- **连不上 Google 兜底**：webview `did-fail-load` 监听 → 覆盖错误卡（重试 / 配代理 / 系统浏览器打开）
-- **2FA 设置快捷跳转**：webview 头部除了"→ 应用密码页"还有"→ 2FA 设置"按钮（直达 `/signinoptions/two-step-verification`）
-- **一键退出并清空登录**：webview 头部 LogOut 按钮 → 就地两步确认（"确定清空 / 取消"，不弹原生 confirm）→ 走 IPC `system:clearWebviewSession` 把 `GOOGLE_WEBVIEW_PARTITION` 分区的 `clearStorageData()` + `clearCache()` 清掉 → reload。**只清右侧内嵌浏览器的 Google 登录，不动左栏已添加邮箱及其 Keychain 凭据**
-- **绝对不要给 webview 伪装 UA（血泪教训）**：曾试图把 webview 的 `useragent` 改成"纯 Chrome"（去掉 Electron 字样）以为能降风控，**实测彻底翻车**——Google 直接弹"此浏览器或应用可能不安全"拒绝登录。原因：只改了 UA 字符串、没改 `Sec-CH-UA` 客户端提示头，Google 看到 UA 自称 Chrome 但客户端提示暴露是 Electron/Chromium，**判为篡改**，比老实报 Electron 更可疑。**Electron 默认 UA 反而能正常登录**，保持默认、不要动 `useragent`。**不做无痕方向**（与"保持登录连续加号"冲突，且全新无历史会话连登多号反而更像批量薅号）。真要降风控只能走"用系统浏览器登录"（已有外链按钮），而非伪装内嵌 webview
+- **无痕 Chrome 启动**：主进程直接调用 `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome --incognito <url>`；失败必须在表单内显示中文错误
+- **绝对不要伪装 UA 或自动化 Google 登录**：系统 Chrome 使用自身默认 UA、客户端提示和浏览器指纹。App 不注入脚本、不自动填写、不读取 Chrome Cookie
+- **无痕不是防封控**：它只在关闭窗口后清除本机会话；Google 仍能看到 IP、设备和登录行为，短时间登录大量账号仍可能触发额外验证
 
 ## 如果你要开始写代码
 

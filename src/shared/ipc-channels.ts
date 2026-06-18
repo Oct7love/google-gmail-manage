@@ -6,7 +6,6 @@ export const IpcChannels = {
     GetSettings: 'system:getSettings',
     SetSettings: 'system:setSettings',
     FetchSmsCode: 'system:fetchSmsCode',
-    ClearWebviewSession: 'system:clearWebviewSession',
   },
   Accounts: {
     List: 'accounts:list',

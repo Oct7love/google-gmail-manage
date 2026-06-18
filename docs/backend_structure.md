@@ -32,7 +32,7 @@
 - `contextIsolation: true`
 - `nodeIntegration: false`
 - `sandbox: false`（仅因为 preload 要访问 Electron API；Renderer 本身不碰 Node）
-- `webviewTag: true`（允许 `<webview>` 内嵌 Google 应用密码页）
+- `webviewTag` 保持关闭；Google 登录统一交给系统 Chrome
 - Renderer **不能** 直接 `require`，必须走 IPC
 
 ---
@@ -72,7 +72,7 @@ src/main/
 ### `main/index.ts`
 
 **职责**：
-- 创建 `BrowserWindow`（带 preload、webview 权限、hiddenInset 标题栏）
+- 创建 `BrowserWindow`（带 preload、hiddenInset 标题栏）
 - 注册所有 IPC handlers
 - 初始化 SQLite（懒加载，第一次 getDb 时建表）
 - 启动自动刷新定时器

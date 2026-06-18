@@ -28,7 +28,7 @@
 
 1. 用户打开“添加 Gmail 账号”或“更新应用密码”。
 2. App 显示一个醒目的“用无痕 Chrome 打开应用密码页”按钮和简短操作说明。
-3. 点击按钮后，主进程调用 macOS `/usr/bin/open`，以 Google Chrome 新实例和 `--incognito` 参数打开 `https://myaccount.google.com/apppasswords`。
+3. 点击按钮后，主进程直接调用系统 Google Chrome 可执行文件，并用 `--incognito` 参数打开 `https://myaccount.google.com/apppasswords`。
 4. 用户在 Chrome 中人工登录并生成应用密码。
 5. 用户回到 App，将 16 位应用密码粘贴到原表单并提交验证。
 
@@ -63,7 +63,7 @@
 
 ## 6. 测试与验收
 
-- 为 Chrome 启动模块增加自动化测试，验证调用 `/usr/bin/open` 时包含 `-na`、`Google Chrome`、`--incognito` 和正确 URL。
+- 为 Chrome 启动模块增加自动化测试，验证调用系统 Chrome 可执行文件时包含 `--incognito` 和正确 URL。
 - 覆盖启动失败时的结构化错误。
 - 运行 `pnpm typecheck`、自动化测试和 `pnpm build`。
 - 启动开发版，确认按钮打开带无痕标识的 Chrome 窗口，并直达 Google 应用密码页面。

@@ -1,43 +1,19 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useStore } from '../../store';
 import TotpPanel from './TotpPanel';
 import SmsCodeBox from './SmsCodeBox';
 import { parseAccountLine, ParsedAccount } from '../../lib/parseAccount';
-import { GOOGLE_WEBVIEW_PARTITION } from '../../../../shared/constants';
 import {
   X,
-  ChevronRight,
-  ChevronLeft,
   Copy,
   Check,
   ClipboardPaste,
   HelpCircle,
   ChevronDown,
   ChevronUp,
-  RotateCw,
-  LogOut,
   ExternalLink,
-  ArrowRight,
   CheckCircle2,
-  AlertTriangle,
-  Settings,
-  Globe,
 } from 'lucide-react';
-
-// React 对自定义 <webview> 标签没有内建类型；用 any 放行
-type WebviewEl = HTMLElement & {
-  loadURL: (url: string) => void;
-  reload: () => void;
-  src?: string;
-};
-const WebView = 'webview' as unknown as React.FC<Record<string, unknown>>;
-
-const APP_PASSWORD_URL = 'https://myaccount.google.com/apppasswords';
-const TWO_FA_URL = 'https://myaccount.google.com/signinoptions/two-step-verification';
-
-// 注意：不要给 webview 伪装 UA！实测把 UA 改成"纯 Chrome"会触发 Google
-// "此浏览器或应用可能不安全"拦截——因为 UA 字符串与 Sec-CH-UA 客户端提示头对不上，
-// 被判为篡改。Electron 默认 UA（老实带 Electron 字样）反而能正常登录，保持默认。
 
 export default function AddAccountDialog(): JSX.Element | null {
   const mode = useStore((s) => s.dialogMode);
@@ -52,10 +28,8 @@ export default function AddAccountDialog(): JSX.Element | null {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [showWebView, setShowWebView] = useState(true);
-  // 「退出所有账号并清空登录」的两步确认 + 清空中状态
-  const [confirmClear, setConfirmClear] = useState(false);
-  const [clearing, setClearing] = useState(false);
+  const [openingChrome, setOpeningChrome] = useState(false);
+  const [chromeError, setChromeError] = useState<string | null>(null);
   const [lastAdded, setLastAdded] = useState<string | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
 
@@ -69,26 +43,7 @@ export default function AddAccountDialog(): JSX.Element | null {
   const [totpSecret, setTotpSecret] = useState<string>('');
   const [originalTotpSecret, setOriginalTotpSecret] = useState<string>('');
 
-  const webviewRef = useRef<WebviewEl | null>(null);
   const emailInputRef = useRef<HTMLInputElement | null>(null);
-
-  // webview 加载错误 / 代理设置
-  const [webviewError, setWebviewError] = useState<string | null>(null);
-  const [proxyPanelOpen, setProxyPanelOpen] = useState(false);
-  const [proxyInput, setProxyInput] = useState('');
-  const [proxySaving, setProxySaving] = useState(false);
-
-  // 启动时读已存的代理设置
-  useEffect(() => {
-    void window.api.system.getSettings().then((s) => {
-      if (s.webviewProxy) setProxyInput(s.webviewProxy);
-    });
-  }, []);
-
-  // 对话框关闭/重开时复位「清空登录」的两步确认，避免下次打开还停在确认态
-  useEffect(() => {
-    setConfirmClear(false);
-  }, [mode]);
 
   // 切换到更新模式 or 切换到不同账号 → 把锁定邮箱同步到输入框
   // （组件常驻 App 不 unmount，useState 初始值只用一次，所以需要 effect）
@@ -123,66 +78,9 @@ export default function AddAccountDialog(): JSX.Element | null {
     };
   }, [isUpdate, lockedEmail]);
 
-  // webview 事件监听（did-fail-load / did-finish-load）
-  const webviewRefCallback = useCallback((el: HTMLElement | null) => {
-    const prev = webviewRef.current;
-    if (prev) {
-      // 清掉旧的监听
-      (prev as HTMLElement).removeEventListener('did-fail-load', onWebviewFail as EventListener);
-      (prev as HTMLElement).removeEventListener('did-finish-load', onWebviewOk as EventListener);
-    }
-    webviewRef.current = el as WebviewEl | null;
-    if (el) {
-      el.addEventListener('did-fail-load', onWebviewFail as EventListener);
-      el.addEventListener('did-finish-load', onWebviewOk as EventListener);
-    }
-  }, []);
-
-  function onWebviewFail(e: Event): void {
-    // webview 的 did-fail-load 带 errorCode / errorDescription 属性（在 CustomEvent 的 detail 或直接 on event）
-    const ev = e as Event & { errorCode?: number; errorDescription?: string; validatedURL?: string };
-    // 忽略 ERR_ABORTED（-3），因为我们主动调用 loadURL 会触发这个
-    if (ev.errorCode === -3) return;
-    setWebviewError(ev.errorDescription || '加载失败');
-  }
-
-  function onWebviewOk(): void {
-    setWebviewError(null);
-  }
-
-  const saveProxy = async (): Promise<void> => {
-    setProxySaving(true);
-    await window.api.system.setSettings({ webviewProxy: proxyInput.trim() });
-    setProxySaving(false);
-    setProxyPanelOpen(false);
-    // 重新加载 webview 生效
-    try {
-      webviewRef.current?.loadURL(APP_PASSWORD_URL);
-      setWebviewError(null);
-    } catch {
-      /* noop */
-    }
-  };
-
   if (mode === null) return null;
 
   const title = isUpdate ? `更新 ${lockedEmail} 的应用密码` : '添加 Gmail 账号';
-
-  // 退出右侧所有 Google 登录并清空登录缓存，然后 reload 回干净登录页。
-  // 只清内嵌浏览器的会话，不动左栏已添加的邮箱。
-  const clearWebviewSession = async (): Promise<void> => {
-    try {
-      await window.api.system.clearWebviewSession();
-    } catch {
-      /* noop */
-    }
-    try {
-      webviewRef.current?.loadURL(APP_PASSWORD_URL);
-    } catch {
-      /* noop */
-    }
-    setWebviewError(null);
-  };
 
   const onSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
@@ -221,7 +119,6 @@ export default function AddAccountDialog(): JSX.Element | null {
     setTotpSecret('');
     setOriginalTotpSecret('');
     setImportText('');
-    // 不再自动登出，保留右侧 Google 登录态，方便连续添加下一个账号
     setTimeout(() => emailInputRef.current?.focus(), 30);
   };
 
@@ -244,18 +141,18 @@ export default function AddAccountDialog(): JSX.Element | null {
     void navigator.clipboard.writeText(s).catch(() => undefined);
   };
 
-  const openInBrowser = (): void => {
-    void window.api.system.openAppPasswordPage();
+  const openInBrowser = async (): Promise<void> => {
+    setOpeningChrome(true);
+    setChromeError(null);
+    const result = await window.api.system.openAppPasswordPage();
+    setOpeningChrome(false);
+    if (!result.ok) setChromeError(result.error ?? '无法打开 Google Chrome');
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-6 animate-fade-in">
-      {/* 注意：此卡片含 <webview>，入场只用透明度（animate-fade-in），不要加带 transform 的
-          slide-up——animation-fill-mode: both 会持久保留 transform，webview 独立合成层会
-          闪烁/不跟手，且 transform 让卡片成为后代 fixed 元素的包含块 */}
-      <div className="flex h-[660px] w-full max-w-[1100px] overflow-hidden rounded-xl bg-surface shadow-popover animate-fade-in">
-        {/* 左：表单（3 段：header / scroll / footer） */}
-        <div className="flex w-[440px] shrink-0 flex-col border-r border-border">
+      <div className="flex h-[660px] w-full max-w-[520px] overflow-hidden rounded-xl bg-surface shadow-popover animate-slide-up">
+        <div className="flex min-w-0 flex-1 flex-col">
           {/* Header */}
           <header className="flex shrink-0 items-center justify-between border-b border-border px-5 py-3">
             <h2 className="text-[15px] font-semibold">{title}</h2>
@@ -364,6 +261,34 @@ export default function AddAccountDialog(): JSX.Element | null {
               <SmsCodeBox url={imported.link} />
             )}
 
+            <div className="rounded-lg border border-accent/20 bg-accent-soft/50 p-3">
+              <div className="mb-2 flex items-start gap-2">
+                <ExternalLink size={16} className="mt-0.5 shrink-0 text-accent" />
+                <div>
+                  <div className="text-[12px] font-medium text-text">
+                    在无痕 Chrome 中生成应用密码
+                  </div>
+                  <p className="mt-0.5 text-[11px] leading-relaxed text-muted">
+                    Chrome 关闭后不会保留本次登录。生成 16 位密码后，请回到这里粘贴。
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => void openInBrowser()}
+                disabled={openingChrome}
+                className="flex w-full items-center justify-center gap-1.5 rounded-md bg-accent px-3 py-2 text-[12px] font-medium text-white transition hover:bg-accent/90 active:scale-[0.99] disabled:opacity-50"
+              >
+                <ExternalLink size={13} />
+                {openingChrome ? '正在打开…' : '用无痕 Chrome 打开应用密码页'}
+              </button>
+              {chromeError && (
+                <p className="mt-2 text-[11px] leading-relaxed text-danger" role="alert">
+                  {chromeError}
+                </p>
+              )}
+            </div>
+
             {/* 帮助（默认折叠，点开看步骤） */}
             {!isUpdate && (
               <div className="overflow-hidden rounded-lg border border-accent/15 bg-accent-soft/50">
@@ -382,9 +307,7 @@ export default function AddAccountDialog(): JSX.Element | null {
                   <div className="border-t border-accent/20 px-3 py-2 text-[11.5px] leading-relaxed text-accent">
                     <ol className="list-decimal space-y-0.5 pl-4">
                       <li>开启 2FA（如果没开）</li>
-                      <li>
-                        右边 webview 里登录 → 点"→ 应用密码页"按钮 → 输名字 → 生成 16 位密码
-                      </li>
+                      <li>点击上方按钮，在无痕 Chrome 中登录并生成 16 位应用密码</li>
                       <li>复制回来粘贴到下方"应用专用密码" → 点"验证并添加"</li>
                     </ol>
                   </div>
@@ -463,198 +386,6 @@ export default function AddAccountDialog(): JSX.Element | null {
           </footer>
         </div>
 
-        {/* 右：Google 应用密码页 */}
-        {showWebView && (
-          <div className="flex min-w-0 flex-1 flex-col">
-            <header className="flex items-center justify-between gap-2 border-b border-border bg-surface-2/50 px-3 py-1.5 text-[11px] text-muted">
-              <span className="shrink-0 font-medium">Google 应用密码页</span>
-              <div className="flex shrink-0 items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => webviewRef.current?.loadURL(APP_PASSWORD_URL)}
-                  className="flex items-center gap-1 rounded-md bg-accent/10 px-2 py-1 font-medium text-accent transition-colors duration-150 hover:bg-accent/20 active:scale-[0.98]"
-                  title="直接跳转到应用密码页"
-                >
-                  <ArrowRight size={11} />
-                  应用密码页
-                </button>
-                <button
-                  type="button"
-                  onClick={() => webviewRef.current?.loadURL(TWO_FA_URL)}
-                  className="flex items-center gap-1 rounded-md bg-accent/10 px-2 py-1 font-medium text-accent transition-colors duration-150 hover:bg-accent/20 active:scale-[0.98]"
-                  title="跳转到两步验证设置页（修改 2FA 密钥用）"
-                >
-                  <ArrowRight size={11} />
-                  2FA 设置
-                </button>
-                {confirmClear ? (
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      disabled={clearing}
-                      onClick={async () => {
-                        setClearing(true);
-                        await clearWebviewSession();
-                        setClearing(false);
-                        setConfirmClear(false);
-                      }}
-                      className="flex items-center gap-1 rounded-md bg-danger px-2 py-1 font-medium text-white transition duration-150 hover:bg-danger/90 active:scale-[0.98] disabled:opacity-50"
-                      title="退出右侧所有 Google 登录并清空缓存，不影响已添加的邮箱"
-                    >
-                      <LogOut size={11} />
-                      {clearing ? '清空中…' : '确定清空'}
-                    </button>
-                    <button
-                      type="button"
-                      disabled={clearing}
-                      onClick={() => setConfirmClear(false)}
-                      className="rounded-md border border-border bg-surface px-2 py-1 text-muted transition-colors duration-150 hover:bg-surface-2 disabled:opacity-50"
-                    >
-                      取消
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setConfirmClear(true)}
-                    className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-surface transition-colors duration-150 hover:bg-surface-2"
-                    title="退出所有 Google 账号并清空登录（不影响已添加的邮箱）"
-                  >
-                    <LogOut size={11} />
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => webviewRef.current?.reload()}
-                  className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-surface transition-colors duration-150 hover:bg-surface-2"
-                  title="刷新"
-                >
-                  <RotateCw size={11} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setProxyPanelOpen((o) => !o)}
-                  className={`flex h-6 w-6 items-center justify-center rounded-md border border-border bg-surface transition-colors duration-150 hover:bg-surface-2 ${
-                    proxyInput ? 'text-accent' : ''
-                  }`}
-                  title="配置 webview 代理（Google 连不上时用）"
-                >
-                  <Settings size={11} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowWebView(false)}
-                  className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-surface transition-colors duration-150 hover:bg-surface-2"
-                  title="折叠侧边浏览器"
-                >
-                  <ChevronRight size={11} />
-                </button>
-                <button
-                  type="button"
-                  onClick={openInBrowser}
-                  className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-surface transition-colors duration-150 hover:bg-surface-2"
-                  title="改用系统浏览器"
-                >
-                  <ExternalLink size={11} />
-                </button>
-              </div>
-            </header>
-
-            {proxyPanelOpen && (
-              <div className="border-b border-border bg-accent-soft/50 px-3 py-2 text-[11px]">
-                <div className="mb-1 flex items-center gap-1.5 text-accent">
-                  <Globe size={11} />
-                  <span className="font-medium">webview 代理</span>
-                </div>
-                <div className="mb-1.5 text-muted">
-                  Google 连不上时填一个本地代理（只影响这个内嵌浏览器，不影响 IMAP / 翻译）。留空=直连。
-                </div>
-                <div className="flex gap-1">
-                  <input
-                    value={proxyInput}
-                    onChange={(e) => setProxyInput(e.target.value)}
-                    placeholder="http://127.0.0.1:7890 或 socks5://127.0.0.1:1080"
-                    className="flex-1 rounded-md border border-border bg-surface px-2 py-1 font-mono text-[11px] transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => void saveProxy()}
-                    disabled={proxySaving}
-                    className="rounded-md bg-accent px-2 py-1 text-[11px] text-white transition duration-150 hover:bg-accent/90 active:scale-[0.98] disabled:opacity-50"
-                  >
-                    {proxySaving ? '保存…' : '保存并重载'}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <div className="relative flex flex-1">
-              <WebView
-                ref={webviewRefCallback as unknown as React.Ref<Record<string, unknown>>}
-                src={APP_PASSWORD_URL}
-                className="flex-1 w-full"
-                style={{ display: 'flex' }}
-                partition={GOOGLE_WEBVIEW_PARTITION}
-                allowpopups="true"
-              />
-              {webviewError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-surface/95 p-8 animate-fade-in">
-                  <div className="max-w-sm text-center">
-                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-warning/15">
-                      <AlertTriangle size={24} className="text-warning" />
-                    </div>
-                    <h3 className="mb-1 text-sm font-semibold text-text">连不上 Google</h3>
-                    <p className="mb-4 text-xs text-muted">
-                      {webviewError}
-                      <br />
-                      常见原因：国内网络 / 代理没开 / VPN 断了
-                    </p>
-                    <div className="flex flex-col gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setWebviewError(null);
-                          webviewRef.current?.loadURL(APP_PASSWORD_URL);
-                        }}
-                        className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-white transition duration-150 hover:bg-accent/90 active:scale-[0.98]"
-                      >
-                        重试
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setProxyPanelOpen(true)}
-                        className="rounded-md border border-border bg-surface px-3 py-1.5 text-xs text-text transition-colors duration-150 hover:bg-surface-2"
-                      >
-                        <Settings size={11} className="mr-1 inline" />
-                        配置代理
-                      </button>
-                      <button
-                        type="button"
-                        onClick={openInBrowser}
-                        className="rounded-md border border-border bg-surface px-3 py-1.5 text-xs text-text transition-colors duration-150 hover:bg-surface-2"
-                      >
-                        <ExternalLink size={11} className="mr-1 inline" />
-                        用系统浏览器打开
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* 右：折叠时的竖条 */}
-        {!showWebView && (
-          <button
-            type="button"
-            onClick={() => setShowWebView(true)}
-            className="flex w-10 shrink-0 items-center justify-center border-l border-border bg-surface-2/50 text-muted transition-colors duration-150 hover:bg-surface-2 hover:text-text"
-            title="展开侧边浏览器"
-          >
-            <ChevronLeft size={14} />
-          </button>
-        )}
       </div>
     </div>
   );

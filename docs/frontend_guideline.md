@@ -56,21 +56,17 @@
         └── <MessageBody />        # sandboxed iframe
 
 <AddAccountDialog>                 # 渲染在 <App> 层级的 overlay
-├── 左栏（420px）：
-│   ├── Header（标题 + 关闭）
-│   ├── 成功横条（条件渲染）
-│   ├── Scroll 区
-│   │   ├── 粘贴解析按钮 / textarea
-│   │   ├── 登录辅助区（imported 时）
-│   │   ├── 可折叠帮助
-│   │   ├── Gmail 输入框
-│   │   ├── 应用密码输入框
-│   │   ├── <TotpPanel />
-│   │   └── 错误提示
-│   └── Footer（取消/完成 + 验证并添加）
-└── 右栏：
-    ├── Header（→应用密码页 / 登出 / 刷新 / 折叠 / 系统浏览器）
-    └── <webview>
+├── Header（标题 + 关闭）
+├── 成功横条（条件渲染）
+├── Scroll 区
+│   ├── 粘贴解析按钮 / textarea
+│   ├── 登录辅助区（imported 时）
+│   ├── 无痕 Chrome 启动按钮 / 错误提示
+│   ├── 可折叠帮助
+│   ├── Gmail 输入框
+│   ├── 应用密码输入框
+│   └── <TotpPanel />
+└── Footer（取消/完成 + 验证并添加）
 ```
 
 每个组件**单一职责**，每个文件 ≤ 200 行。超过就拆。

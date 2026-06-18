@@ -4,9 +4,9 @@
 
 **Goal:** Replace Google login inside Electron with a system Chrome incognito flow and upgrade Electron to 42.4.1.
 
-**Architecture:** A small main-process launcher owns the macOS `/usr/bin/open` invocation and returns a structured result through the existing system IPC boundary. The renderer becomes a single-column account form with a prominent launch button; all webview-only capabilities are removed. Launcher behavior is covered by Vitest, while typecheck/build and a manual launch check cover integration.
+**Architecture:** A small main-process launcher invokes the system Google Chrome executable directly and returns a structured result through the existing system IPC boundary. The renderer becomes a single-column account form with a prominent launch button; all webview-only capabilities are removed. Launcher behavior is covered by Vitest, while typecheck/build and a manual launch check cover integration.
 
-**Tech Stack:** Electron 42.4.1, React 18, TypeScript, Vitest, pnpm, macOS `/usr/bin/open`
+**Tech Stack:** Electron 42.4.1, React 18, TypeScript, Vitest, pnpm, macOS Google Chrome
 
 ---
 
@@ -42,13 +42,10 @@ describe('openAppPasswordInIncognitoChrome', () => {
     const result = await openAppPasswordInIncognitoChrome(run);
 
     expect(result).toEqual({ ok: true });
-    expect(run).toHaveBeenCalledWith('/usr/bin/open', [
-      '-na',
-      'Google Chrome',
-      '--args',
-      '--incognito',
-      APP_PASSWORD_URL,
-    ]);
+    expect(run).toHaveBeenCalledWith(
+      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      ['--incognito', APP_PASSWORD_URL],
+    );
   });
 
   it('returns a Chinese error when Chrome cannot be opened', async () => {
@@ -109,13 +106,10 @@ export async function openAppPasswordInIncognitoChrome(
   run: CommandRunner = runCommand,
 ): Promise<ChromeLaunchResult> {
   try {
-    await run('/usr/bin/open', [
-      '-na',
-      'Google Chrome',
-      '--args',
-      '--incognito',
-      APP_PASSWORD_URL,
-    ]);
+    await run(
+      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      ['--incognito', APP_PASSWORD_URL],
+    );
     return { ok: true };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
