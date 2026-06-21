@@ -37,7 +37,7 @@ export default function TranslationPanel({ detail }: Props): JSX.Element | null 
       <button
         type="button"
         onClick={() => void translate()}
-        className="flex items-center gap-1.5 rounded-md border border-transparent bg-transparent px-2 py-1 text-[11px] text-text-2 transition-colors duration-150 ease-out hover:bg-surface-2 hover:text-text"
+        className="flex items-center gap-1.5 rounded-md border border-transparent bg-transparent px-2 py-1 text-[11px] text-text-2 transition-colors duration-150 ease-out hover:bg-surface-2 hover:text-text active:bg-accent-soft"
       >
         <Languages size={13} className="text-accent" />
         翻译为中文
@@ -47,7 +47,7 @@ export default function TranslationPanel({ detail }: Props): JSX.Element | null 
 
   if (state.kind === 'loading') {
     return (
-      <div className="animate-fade-in flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3 py-2 text-xs text-muted">
+      <div className="animate-fade-in flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3 py-1.5 text-xs text-muted">
         <Loader2 size={13} className="animate-spin text-accent" />
         翻译中…
       </div>
@@ -56,7 +56,7 @@ export default function TranslationPanel({ detail }: Props): JSX.Element | null 
 
   if (state.kind === 'error') {
     return (
-      <div className="animate-fade-in flex items-center justify-between rounded-lg border border-danger/30 bg-danger/5 px-3 py-2 text-xs text-danger">
+      <div className="animate-fade-in flex items-center justify-between rounded-lg border border-danger/30 bg-danger/5 px-3 py-1.5 text-xs text-danger">
         <span>翻译失败：{state.error}</span>
         <button
           type="button"

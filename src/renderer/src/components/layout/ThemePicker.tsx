@@ -27,45 +27,59 @@ interface ThemeMeta {
 
 const THEMES: readonly ThemeMeta[] = [
   {
-    id: 'cream',
-    name: '米白 · 靛蓝',
-    caption: '暖米色家族，Notion 风',
+    id: 'fog',
+    name: '雾蓝',
+    caption: '默认 · 清爽专业',
     colors: {
-      bg: '#faf7f2',
+      bg: '#eef3f8',
       surface: '#ffffff',
-      sidebar: '#ede6d8',
-      border: '#e8e3d5',
-      accent: '#4f46e5',
-      muted: '#6e6e72',
+      sidebar: '#e6eef7',
+      border: '#d5dfea',
+      accent: '#2077ff',
+      muted: '#657286',
       text: '#1d1d1f',
     },
   },
   {
-    id: 'slate',
-    name: '冷青灰 · 系统蓝',
-    caption: '冷调专业，Linear 风',
+    id: 'warm',
+    name: '暖陶',
+    caption: '亲和 · 长时间扫读',
     colors: {
-      bg: '#eef0f3',
+      bg: '#f3f0ec',
       surface: '#ffffff',
-      sidebar: '#dce0e6',
-      border: '#d2d6dd',
-      accent: '#007aff',
-      muted: '#6e6e72',
-      text: '#1d1d1f',
+      sidebar: '#e8e2da',
+      border: '#dad0c6',
+      accent: '#975337',
+      muted: '#70655c',
+      text: '#211b17',
     },
   },
   {
-    id: 'onyx',
-    name: '深灰 · 克制黑',
-    caption: '中性沉稳，Things 3 风',
+    id: 'graphite',
+    name: '石墨',
+    caption: '克制 · 高对比',
     colors: {
-      bg: '#e9e9e9',
+      bg: '#e8eaed',
       surface: '#ffffff',
-      sidebar: '#cccccc',
-      border: '#c8c8c8',
-      accent: '#0a0a0a',
-      muted: '#525252',
-      text: '#0a0a0a',
+      sidebar: '#d9dde2',
+      border: '#cbd1d9',
+      accent: '#161616',
+      muted: '#5d6570',
+      text: '#111111',
+    },
+  },
+  {
+    id: 'indigo',
+    name: '靛紫',
+    caption: '识别度 · 安静品牌感',
+    colors: {
+      bg: '#f1f1f7',
+      surface: '#ffffff',
+      sidebar: '#e7e5f1',
+      border: '#d9d6e7',
+      accent: '#5b4fd8',
+      muted: '#686174',
+      text: '#1d1b24',
     },
   },
 ] as const;
@@ -89,11 +103,11 @@ export default function ThemePicker({ current, onSelect, onClose }: Props): JSX.
   // 用 Portal 把模态渲染到 document.body 跳出该 context。
   return createPortal(
     <div
-      className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-6 backdrop-blur-sm"
+      className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-6"
       onClick={onClose}
     >
       <div
-        className="animate-slide-up w-full max-w-2xl overflow-hidden rounded-xl bg-surface shadow-popover"
+        className="animate-slide-up w-full max-w-lg overflow-hidden rounded-xl bg-surface shadow-popover"
         onClick={(e) => e.stopPropagation()}
         style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
       >
@@ -109,7 +123,7 @@ export default function ThemePicker({ current, onSelect, onClose }: Props): JSX.
           </button>
         </header>
 
-        <div className="grid grid-cols-3 gap-3 p-5">
+        <div className="space-y-2.5 p-3">
           {THEMES.map((t) => (
             <ThemeCard
               key={t.id}
@@ -136,14 +150,14 @@ function ThemeCard({ meta, selected, onClick }: CardProps): JSX.Element {
     <button
       type="button"
       onClick={onClick}
-      className={`group relative flex flex-col overflow-hidden rounded-lg border text-left transition duration-150 ease-out active:scale-[0.98] ${
+      className={`group relative flex w-full overflow-hidden rounded-lg border text-left transition duration-150 ease-out active:scale-[0.99] ${ 
         selected
-          ? 'border-accent ring-2 ring-accent ring-offset-2 ring-offset-surface shadow-card-hover'
-          : 'border-border hover:border-border-strong hover:shadow-card-hover hover:-translate-y-0.5'
+          ? 'border-accent bg-accent-soft shadow-card'
+          : 'border-border bg-surface hover:border-border-strong hover:bg-surface-2'
       }`}
     >
       <ThumbPreview colors={meta.colors} />
-      <div className="border-t border-border px-3 py-2.5">
+      <div className="min-w-0 flex-1 border-l border-border px-3 py-2.5">
         <div className="flex items-center justify-between gap-2">
           <span className="truncate text-[13px] font-semibold text-text">{meta.name}</span>
           {selected && (
@@ -167,7 +181,7 @@ function ThemeCard({ meta, selected, onClick }: CardProps): JSX.Element {
 /** 三栏 mini 缩略图，按主题颜色渲染：sidebar / middle list / right detail */
 function ThumbPreview({ colors }: { colors: ThemeColors }): JSX.Element {
   return (
-    <svg viewBox="0 0 200 120" className="block h-[90px] w-full" preserveAspectRatio="none">
+    <svg viewBox="0 0 200 120" className="block h-[82px] w-36 shrink-0" preserveAspectRatio="none">
       {/* 全局底 */}
       <rect width="200" height="120" fill={colors.bg} />
       {/* 顶部工具栏 */}
@@ -186,7 +200,7 @@ function ThumbPreview({ colors }: { colors: ThemeColors }): JSX.Element {
       {/* 左栏底部添加按钮 */}
       <rect x="4" y="100" width="40" height="14" rx="3" fill={colors.accent} />
       {/* 中栏邮件列表（白色卡片浮起） */}
-      <rect x="51" y="18" width="64" height="98" rx="3" fill={colors.surface} />
+      <rect x="51" y="18" width="64" height="98" rx="3" fill={colors.bg} />
       {/* 中栏选中项 */}
       <rect x="51" y="24" width="2" height="14" fill={colors.accent} />
       <rect x="55" y="26" width="40" height="2" rx="1" fill={colors.text} fillOpacity="0.8" />
@@ -216,7 +230,7 @@ function ThumbPreview({ colors }: { colors: ThemeColors }): JSX.Element {
 function ColorSwatch({ color }: { color: string }): JSX.Element {
   return (
     <span
-      className="h-3 w-3 rounded-full border border-black/10"
+      className="h-3 w-3 rounded-full border border-border-strong"
       style={{ backgroundColor: color }}
     />
   );

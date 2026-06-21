@@ -2,53 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 默认主题：cream（暖米白·靛蓝） */
+/* 默认主题：fog（雾蓝·系统蓝） */
 :root,
-:root[data-theme="cream"] {
-  --c-bg:            250 247 242;   /* #faf7f2 暖米白 */
+:root[data-theme="fog"] {
+  --c-bg:            238 243 248;   /* #eef3f8 雾蓝底 */
   --c-surface:       255 255 255;   /* #ffffff */
-  --c-surface-2:     244 239 229;   /* #f4efe5 米黄次级 */
-  --c-sidebar:       237 230 216;   /* #ede6d8 深米黄 */
-  --c-border:        232 227 213;   /* #e8e3d5 暖边 */
-  --c-border-strong: 214 206 185;   /* #d6ceb9 */
+  --c-surface-2:     242 246 251;   /* #f2f6fb */
+  --c-sidebar:       230 238 247;   /* #e6eef7 */
+  --c-border:        213 223 234;   /* #d5dfea */
+  --c-border-strong: 185 200 217;   /* #b9c8d9 */
   --c-text:          29 29 31;
-  --c-text-2:        60 60 63;
-  --c-muted:         110 110 114;
-  --c-muted-2:       142 142 147;
-  --c-accent:        79 70 229;     /* #4f46e5 靛蓝 */
-  --c-accent-soft:   238 242 255;   /* #eef2ff */
+  --c-text-2:        61 74 92;      /* #3d4a5c */
+  --c-muted:         101 114 134;   /* #657286 */
+  --c-muted-2:       116 129 149;   /* #748195 */
+  --c-accent:        32 119 255;    /* #2077ff */
+  --c-accent-soft:   234 243 255;   /* #eaf3ff */
 }
 
-/* slate：冷青灰·系统蓝 */
-:root[data-theme="slate"] {
-  --c-bg:            238 240 243;   /* #eef0f3 冷青灰 */
+/* warm：暖陶·长时间扫读 */
+:root[data-theme="warm"] {
+  --c-bg:            243 240 236;   /* #f3f0ec 暖灰陶土 */
   --c-surface:       255 255 255;
-  --c-surface-2:     227 230 235;   /* #e3e6eb */
-  --c-sidebar:       220 224 230;   /* #dce0e6 显著冷灰 */
-  --c-border:        210 214 221;   /* #d2d6dd 冷边 */
-  --c-border-strong: 184 190 200;
-  --c-text:          29 29 31;
-  --c-text-2:        60 60 63;
-  --c-muted:         110 110 114;
-  --c-muted-2:       142 142 147;
-  --c-accent:        0 122 255;     /* #007aff Apple 系统蓝 */
-  --c-accent-soft:   224 235 255;   /* #e0ebff */
+  --c-surface-2:     248 246 242;   /* #f8f6f2 */
+  --c-sidebar:       232 226 218;   /* #e8e2da */
+  --c-border:        218 208 198;   /* #dad0c6 */
+  --c-border-strong: 190 176 162;   /* #beb0a2 */
+  --c-text:          33 27 23;      /* #211b17 */
+  --c-text-2:        77 64 54;      /* #4d4036 */
+  --c-muted:         112 101 92;    /* #70655c */
+  --c-muted-2:       144 132 121;   /* #908479 */
+  --c-accent:        151 83 55;     /* #975337 */
+  --c-accent-soft:   246 238 232;   /* #f6eee8 */
 }
 
-/* onyx：深灰·克制黑 */
-:root[data-theme="onyx"] {
-  --c-bg:            233 233 233;   /* #e9e9e9 中性深灰 */
+/* graphite：石墨·高对比 */
+:root[data-theme="graphite"] {
+  --c-bg:            232 234 237;   /* #e8eaed */
   --c-surface:       255 255 255;
-  --c-surface-2:     224 224 224;   /* #e0e0e0 */
-  --c-sidebar:       204 204 204;   /* #cccccc 显著深灰 */
-  --c-border:        200 200 200;   /* #c8c8c8 */
-  --c-border-strong: 170 170 170;
-  --c-text:          10 10 10;
-  --c-text-2:        38 38 38;
-  --c-muted:         82 82 82;
-  --c-muted-2:       115 115 115;
-  --c-accent:        10 10 10;      /* #0a0a0a 黑 */
-  --c-accent-soft:   222 222 222;   /* #dedede */
+  --c-surface-2:     236 239 243;   /* #eceff3 */
+  --c-sidebar:       217 221 226;   /* #d9dde2 */
+  --c-border:        203 209 217;   /* #cbd1d9 */
+  --c-border-strong: 174 183 194;   /* #aeb7c2 */
+  --c-text:          17 17 17;      /* #111111 */
+  --c-text-2:        49 52 56;      /* #313438 */
+  --c-muted:         93 101 112;    /* #5d6570 */
+  --c-muted-2:       120 128 138;   /* #78808a */
+  --c-accent:        22 22 22;      /* #161616 */
+  --c-accent-soft:   225 227 230;   /* #e1e3e6 */
+}
+
+/* indigo：靛紫·安静品牌感 */
+:root[data-theme="indigo"] {
+  --c-bg:            241 241 247;   /* #f1f1f7 */
+  --c-surface:       255 255 255;
+  --c-surface-2:     244 243 250;   /* #f4f3fa */
+  --c-sidebar:       231 229 241;   /* #e7e5f1 */
+  --c-border:        217 214 231;   /* #d9d6e7 */
+  --c-border-strong: 191 184 214;   /* #bfb8d6 */
+  --c-text:          29 27 36;      /* #1d1b24 */
+  --c-text-2:        65 58 79;      /* #413a4f */
+  --c-muted:         104 97 116;    /* #686174 */
+  --c-muted-2:       133 126 148;   /* #857e94 */
+  --c-accent:        91 79 216;     /* #5b4fd8 */
+  --c-accent-soft:   237 235 255;   /* #edebff */
 }
 
 html,

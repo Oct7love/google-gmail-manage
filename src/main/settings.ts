@@ -9,7 +9,7 @@ import { join, dirname } from 'node:path';
 export interface AppSettings {
   /** 新邮件提示音总开关。undefined 视为 true（首次未设置时默认开启）。 */
   soundEnabled?: boolean;
-  /** UI 主题预设 ID。undefined 视为 'cream'。 */
+  /** UI 主题预设 ID。undefined 视为 'fog'。 */
   themeId?: import('../shared/types').ThemeId;
 }
 

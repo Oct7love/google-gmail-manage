@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { TOTP, URI } from 'otpauth';
 import { ShieldCheck, Copy, Check, RefreshCw } from 'lucide-react';
-
-const PERIOD = 30;
+import { computeTotp, TOTP_PERIOD as PERIOD } from '../../lib/totp';
 
 interface Props {
   /** 当前密钥（受控值） */
@@ -22,22 +20,7 @@ export default function TotpPanel({ secret, onSecretChange, originalSecret }: Pr
     return () => clearInterval(t);
   }, []);
 
-  const { code, error, remaining } = useMemo(() => {
-    const s = secret.trim();
-    if (!s) return { code: '', error: null as string | null, remaining: PERIOD };
-    try {
-      const totp = buildTotp(s);
-      const code = totp.generate({ timestamp: now });
-      const remaining = PERIOD - Math.floor((now / 1000) % PERIOD);
-      return { code, error: null, remaining };
-    } catch (e) {
-      return {
-        code: '',
-        error: e instanceof Error ? e.message : String(e),
-        remaining: PERIOD,
-      };
-    }
-  }, [secret, now]);
+  const { code, error, remaining } = useMemo(() => computeTotp(secret, now), [secret, now]);
 
   const onCopy = async (): Promise<void> => {
     if (!code) return;
@@ -135,19 +118,4 @@ export default function TotpPanel({ secret, onSecretChange, originalSecret }: Pr
       )}
     </div>
   );
-}
-
-function buildTotp(input: string): TOTP {
-  if (input.startsWith('otpauth://')) {
-    const parsed = URI.parse(input);
-    if (parsed instanceof TOTP) return parsed;
-    throw new Error('只支持 TOTP 类型的 otpauth 链接');
-  }
-  const cleaned = input.replace(/\s+/g, '').toUpperCase();
-  return new TOTP({
-    secret: cleaned,
-    algorithm: 'SHA1',
-    digits: 6,
-    period: PERIOD,
-  });
 }

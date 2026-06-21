@@ -25,6 +25,7 @@ export default {
         danger:  '#ff3b30',
         success: '#34c759',
         warning: '#ff9500',
+        refund:  '#af52de',  // 已退款专用紫，避开与正常/上号天数的绿撞色
       },
       fontFamily: {
         sans: [

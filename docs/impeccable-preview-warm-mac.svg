@@ -1,0 +1,165 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F3EEE8"/><stop offset=".55" stop-color="#F7F3EE"/><stop offset="1" stop-color="#EFE8DF"/></linearGradient>
+  <linearGradient id="toolbar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".86"/><stop offset="1" stop-color="#FCFAF7" stop-opacity=".74"/></linearGradient>
+  <filter id="windowShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="28" stdDeviation="34" flood-color="#38526E" flood-opacity=".18"/><feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#18324A" flood-opacity=".09"/></filter>
+  <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="#46627F" flood-opacity=".10"/></filter>
+  <clipPath id="windowClip"><rect x="80" y="64" width="1440" height="872" rx="24"/></clipPath>
+</defs>
+
+<rect x="0" y="0" width="1600" height="1000" rx="0" fill="url(#bg)" stroke="none" stroke-width="1" opacity="1"  />
+<circle cx="230" cy="170" r="170" fill="#DCA982" stroke="none" stroke-width="1" opacity="0.22"/>
+<circle cx="1380" cy="820" r="220" fill="#C66B4A" stroke="none" stroke-width="1" opacity="0.16"/>
+
+<rect x="80" y="64" width="1440" height="872" rx="24" fill="#FBF8F4" stroke="#DED2C5" stroke-width="1" opacity="1" filter="url(#windowShadow)" />
+<g clip-path="url(#windowClip)">
+  <rect x="80" y="64" width="1440" height="56" rx="0" fill="url(#toolbar)" stroke="#E0D5C9" stroke-width="1" opacity="1"  />
+  <circle cx="108" cy="92" r="6" fill="#FF5F57" stroke="none" stroke-width="1" opacity="1"/>
+  <circle cx="130" cy="92" r="6" fill="#FFBD2E" stroke="none" stroke-width="1" opacity="1"/>
+  <circle cx="152" cy="92" r="6" fill="#28C840" stroke="none" stroke-width="1" opacity="1"/>
+  
+    <g transform="translate(733 80)">
+      <rect x="0" y="0" width="34" height="25" rx="7" fill="#B65A32"/>
+      <path d="M4 7 L17 16 L30 7" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity=".95"/>
+      <circle cx="29" cy="3" r="5" fill="#D97735"/>
+    </g>
+  <text x="779" y="101" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="18" font-weight="700" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">Mail Viewer</text>
+  <text x="887" y="101" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="400" fill="#74675C" text-anchor="start" opacity="1" letter-spacing="0">30 个账号</text>
+  <rect x="1127" y="78" width="96" height="28" rx="14" fill="#F7ECE5" stroke="#E4C9B8" stroke-width="1" opacity="1"  /><circle cx="1144" cy="92" r="4" fill="#B65A32" stroke="none" stroke-width="1" opacity="1"/><text x="1156" y="97" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="500" fill="#B65A32" text-anchor="start" opacity="1" letter-spacing="0">同步中</text>
+  <rect x="1240" y="78" width="34" height="34" rx="9" fill="#F8F1EA" stroke="#E4D6CA" stroke-width="1" opacity="1"  />
+  <g stroke="#6E5D51" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="1253" cy="91" r="4"/><path d="M1257 95 L1266 104 M1263 101 L1266 98 M1260 98 L1263 95"/></g>
+  <rect x="1284" y="78" width="34" height="34" rx="9" fill="#F8F1EA" stroke="#E4D6CA" stroke-width="1" opacity="1"  />
+  <g fill="none" stroke="#6E5D51" stroke-width="2" stroke-linecap="round"><path d="M1303 87c-7 0-11 4-11 9.5S1297 106 1303 106h2c1.5 0 2-1.8 1-2.8-.6-.6-.2-1.7.7-1.7h2.3c3 0 5-2.2 5-5C1314 91 1310 87 1303 87Z"/><circle cx="1298" cy="95" r="1"/><circle cx="1302" cy="92" r="1"/><circle cx="1307" cy="93" r="1"/></g>
+  <rect x="1328" y="78" width="34" height="34" rx="9" fill="#F8F1EA" stroke="#E4D6CA" stroke-width="1" opacity="1"  />
+  <g stroke="#6E5D51" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1340 101h14M1343 101V93a5 5 0 0 1 10 0v8M1346 104a3 3 0 0 0 4 0"/></g>
+
+  <rect x="80" y="120" width="260" height="816" rx="0" fill="#EDE2D7" stroke="#D8C8BA" stroke-width="1" opacity="1"  />
+  <rect x="340" y="120" width="380" height="816" rx="0" fill="#F5EFE8" stroke="#DED0C2" stroke-width="1" opacity="1"  />
+  <rect x="720" y="120" width="800" height="816" rx="0" fill="#F2EBE3" stroke="none" stroke-width="1" opacity="1"  />
+
+  <rect x="102" y="144" width="142" height="32" rx="10" fill="#E3D4C6" stroke="none" stroke-width="1" opacity="1"  />
+  <rect x="106" y="148" width="64" height="24" rx="8" fill="#FFFFFF" stroke="none" stroke-width="1" opacity="1" filter="url(#softShadow)" />
+  <text x="138" y="165" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="650" fill="#211B17" text-anchor="middle" opacity="1" letter-spacing="0">在用 24</text>
+  <text x="207" y="165" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="550" fill="#65574D" text-anchor="middle" opacity="1" letter-spacing="0">归档 6</text>
+  <rect x="284" y="143" width="34" height="34" rx="9" fill="#F8F1EA" stroke="#DDCFC1" stroke-width="1" opacity="1"  />
+  <text x="301" y="166" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="500" fill="#76675C" text-anchor="middle" opacity="1" letter-spacing="0">↻</text>
+
+  
+      <rect x="98" y="196" width="222" height="62" rx="14" fill="transparent" stroke="transparent" stroke-width="1" opacity="1"  />
+      <circle cx="132" cy="227" r="20" fill="#A96B50" stroke="none" stroke-width="1" opacity="1"/><text x="132" y="234" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="700" fill="#fff" text-anchor="middle" opacity="1" letter-spacing="0">A</text>
+      <text x="163" y="224" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="600" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">amazon-ae@gmail.com</text>
+      <text x="163" y="244" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="12" font-weight="400" fill="#74675C" text-anchor="start" opacity="1" letter-spacing="0">Amazon Seller</text>
+      <rect x="283" y="210" width="25" height="18" rx="9" fill="#D97735" stroke="none" stroke-width="1" opacity="1"  /><text x="295.5" y="224" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle" opacity="1" letter-spacing="0">+3</text>
+      <circle cx="308" cy="241" r="4" fill="#A89B8F" stroke="none" stroke-width="1" opacity="0.55"/>
+    
+      <rect x="98" y="272" width="222" height="62" rx="14" fill="#FFFFFF" stroke="#DFC2AF" stroke-width="1" opacity="1" filter="url(#softShadow)" />
+      <circle cx="132" cy="303" r="20" fill="#9A6A3A" stroke="none" stroke-width="1" opacity="1"/><text x="132" y="310" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="700" fill="#fff" text-anchor="middle" opacity="1" letter-spacing="0">N</text>
+      <text x="163" y="300" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="700" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">noon-store@gmail.com</text>
+      <text x="163" y="320" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="12" font-weight="400" fill="#74675C" text-anchor="start" opacity="1" letter-spacing="0">Noon Marketplace</text>
+      <rect x="283" y="286" width="25" height="18" rx="9" fill="#D97735" stroke="none" stroke-width="1" opacity="1"  /><text x="295.5" y="300" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle" opacity="1" letter-spacing="0">+1</text>
+      <circle cx="308" cy="317" r="4" fill="#B65A32" stroke="none" stroke-width="1" opacity="1"/>
+    
+      <rect x="98" y="348" width="222" height="62" rx="14" fill="transparent" stroke="transparent" stroke-width="1" opacity="1"  />
+      <circle cx="132" cy="379" r="20" fill="#D97735" stroke="none" stroke-width="1" opacity="1"/><text x="132" y="386" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="700" fill="#fff" text-anchor="middle" opacity="1" letter-spacing="0">P</text>
+      <text x="163" y="376" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="600" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">payment.team@gmail.com</text>
+      <text x="163" y="396" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="12" font-weight="400" fill="#74675C" text-anchor="start" opacity="1" letter-spacing="0">Payoneer</text>
+      
+      <circle cx="308" cy="393" r="4" fill="#A89B8F" stroke="none" stroke-width="1" opacity="0.55"/>
+    
+      <rect x="98" y="424" width="222" height="62" rx="14" fill="transparent" stroke="transparent" stroke-width="1" opacity="1"  />
+      <circle cx="132" cy="455" r="20" fill="#8B5C3E" stroke="none" stroke-width="1" opacity="1"/><text x="132" y="462" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="700" fill="#fff" text-anchor="middle" opacity="1" letter-spacing="0">G</text>
+      <text x="163" y="452" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="600" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">gulf-supply@gmail.com</text>
+      <text x="163" y="472" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="12" font-weight="400" fill="#74675C" text-anchor="start" opacity="1" letter-spacing="0">Gulf Supplier</text>
+      
+      <circle cx="308" cy="469" r="4" fill="#A89B8F" stroke="none" stroke-width="1" opacity="0.55"/>
+    
+      <rect x="98" y="500" width="222" height="62" rx="14" fill="transparent" stroke="transparent" stroke-width="1" opacity="1"  />
+      <circle cx="132" cy="531" r="20" fill="#7A7167" stroke="none" stroke-width="1" opacity="1"/><text x="132" y="538" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="700" fill="#fff" text-anchor="middle" opacity="1" letter-spacing="0">S</text>
+      <text x="163" y="528" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="600" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">shipping.info@gmail.com</text>
+      <text x="163" y="548" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="12" font-weight="400" fill="#74675C" text-anchor="start" opacity="1" letter-spacing="0">Aramex</text>
+      
+      <circle cx="308" cy="545" r="4" fill="#A89B8F" stroke="none" stroke-width="1" opacity="0.55"/>
+    
+      <rect x="98" y="576" width="222" height="62" rx="14" fill="transparent" stroke="transparent" stroke-width="1" opacity="1"  />
+      <circle cx="132" cy="607" r="20" fill="#B65A72" stroke="none" stroke-width="1" opacity="1"/><text x="132" y="614" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="700" fill="#fff" text-anchor="middle" opacity="1" letter-spacing="0">M</text>
+      <text x="163" y="604" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="600" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">mall.team@gmail.com</text>
+      <text x="163" y="624" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="12" font-weight="400" fill="#74675C" text-anchor="start" opacity="1" letter-spacing="0">Noon Support</text>
+      
+      <circle cx="308" cy="621" r="4" fill="#A89B8F" stroke="none" stroke-width="1" opacity="0.55"/>
+    
+
+  <rect x="102" y="856" width="216" height="42" rx="12" fill="#B65A32" stroke="none" stroke-width="1" opacity="1" filter="url(#softShadow)" />
+  <text x="210" y="882" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="15" font-weight="700" fill="#fff" text-anchor="middle" opacity="1" letter-spacing="0">＋ 添加账号</text>
+
+  <text x="370" y="162" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="700" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">收件箱</text>
+  <text x="370" y="184" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="400" fill="#74675C" text-anchor="start" opacity="1" letter-spacing="0">noon-store@gmail.com · 20 封</text>
+  <rect x="632" y="146" width="34" height="34" rx="9" fill="#FCFAF7" stroke="#E0D3C6" stroke-width="1" opacity="1"  />
+  <g stroke="#76675C" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="645" cy="159" r="4"/><path d="M649 163 L658 172 M655 169 L658 166 M652 166 L655 163"/></g>
+  <rect x="674" y="146" width="34" height="34" rx="9" fill="#FCFAF7" stroke="#E0D3C6" stroke-width="1" opacity="1"  />
+  <text x="691" y="169" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="18" font-weight="400" fill="#76675C" text-anchor="middle" opacity="1" letter-spacing="0">↻</text>
+  <rect x="340" y="202" width="380" height="1" rx="0" fill="#DED1C5" stroke="none" stroke-width="1" opacity="1"  />
+
+  
+      <rect x="360" y="217" width="340" height="82" rx="14" fill="#FFFFFF" stroke="#DFC2AF" stroke-width="1" opacity="1" filter="url(#softShadow)" />
+      <circle cx="380" cy="246" r="5" fill="#D97735" stroke="none" stroke-width="1" opacity="1"/>
+      <text x="398" y="239" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="700" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">Noon Marketplace</text>
+      <text x="682" y="239" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="12" font-weight="400" fill="#82756B" text-anchor="end" opacity="1" letter-spacing="0">8 分钟前</text>
+      <text x="398" y="264" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="15" font-weight="700" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">你的验证码是 492817</text>
+      <text x="398" y="285" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="400" fill="#766A61" text-anchor="start" opacity="1" letter-spacing="0">用于登录 Noon 商家后台，10 分钟内有效。</text>
+    
+      <rect x="360" y="325" width="340" height="82" rx="14" fill="transparent" stroke="transparent" stroke-width="1" opacity="1"  />
+      <circle cx="380" cy="354" r="5" fill="#B5A89B" stroke="none" stroke-width="1" opacity="0.55"/>
+      <text x="398" y="347" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="700" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">Google</text>
+      <text x="682" y="347" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="12" font-weight="400" fill="#82756B" text-anchor="end" opacity="1" letter-spacing="0">14 分钟前</text>
+      <text x="398" y="372" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="15" font-weight="600" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">安全提醒：新的应用专用密码已创建</text>
+      <text x="398" y="393" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="400" fill="#766A61" text-anchor="start" opacity="1" letter-spacing="0">如果这是你本人操作，则无需处理。</text>
+    
+      <rect x="360" y="433" width="340" height="82" rx="14" fill="transparent" stroke="transparent" stroke-width="1" opacity="1"  />
+      <circle cx="380" cy="462" r="5" fill="#B5A89B" stroke="none" stroke-width="1" opacity="0.55"/>
+      <text x="398" y="455" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="700" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">Aramex</text>
+      <text x="682" y="455" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="12" font-weight="400" fill="#82756B" text-anchor="end" opacity="1" letter-spacing="0">42 分钟前</text>
+      <text x="398" y="480" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="15" font-weight="600" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">Shipment delayed notice</text>
+      <text x="398" y="501" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="400" fill="#766A61" text-anchor="start" opacity="1" letter-spacing="0">Your package has a new estimated delivery time.</text>
+    
+      <rect x="360" y="541" width="340" height="82" rx="14" fill="transparent" stroke="transparent" stroke-width="1" opacity="1"  />
+      <circle cx="380" cy="570" r="5" fill="#B5A89B" stroke="none" stroke-width="1" opacity="0.55"/>
+      <text x="398" y="563" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="700" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">Payoneer</text>
+      <text x="682" y="563" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="12" font-weight="400" fill="#82756B" text-anchor="end" opacity="1" letter-spacing="0">今天 11:02</text>
+      <text x="398" y="588" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="15" font-weight="600" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">账户收款状态更新</text>
+      <text x="398" y="609" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="400" fill="#766A61" text-anchor="start" opacity="1" letter-spacing="0">本周结算款项已经进入处理中状态。</text>
+    
+      <rect x="360" y="649" width="340" height="82" rx="14" fill="transparent" stroke="transparent" stroke-width="1" opacity="1"  />
+      <circle cx="380" cy="678" r="5" fill="#B5A89B" stroke="none" stroke-width="1" opacity="0.55"/>
+      <text x="398" y="671" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="700" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">Amazon Seller</text>
+      <text x="682" y="671" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="12" font-weight="400" fill="#82756B" text-anchor="end" opacity="1" letter-spacing="0">昨天</text>
+      <text x="398" y="696" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="15" font-weight="600" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">订单确认与物流更新</text>
+      <text x="398" y="717" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="400" fill="#766A61" text-anchor="start" opacity="1" letter-spacing="0">Your seller order has been confirmed.</text>
+    
+
+  <rect x="750" y="150" width="732" height="744" rx="18" fill="#FFFFFF" stroke="#E1D2C5" stroke-width="1" opacity="1" filter="url(#softShadow)" />
+  <text x="790" y="207" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="28" font-weight="760" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="-0.2">你的验证码是 492817</text>
+  <circle cx="810" cy="258" r="20" fill="#9A6A3A" stroke="none" stroke-width="1" opacity="1"/><text x="810" y="265" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="700" fill="#fff" text-anchor="middle" opacity="1" letter-spacing="0">N</text>
+  <text x="843" y="261" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="16" font-weight="700" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">Noon Marketplace</text>
+  <text x="971" y="261" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="400" fill="#82756B" text-anchor="start" opacity="1" letter-spacing="0">&lt;security@noon.com&gt;</text>
+  <text x="1440" y="261" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="400" fill="#82756B" text-anchor="end" opacity="1" letter-spacing="0">2026/6/18 14:08</text>
+  <text x="843" y="285" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="520" fill="#4D4036" text-anchor="start" opacity="1" letter-spacing="0">发给 noon-store@gmail.com</text>
+  <rect x="790" y="318" width="118" height="30" rx="8" fill="#F7ECE5" stroke="#E3C8B7" stroke-width="1" opacity="1"  />
+  <text x="849" y="338" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="600" fill="#B65A32" text-anchor="middle" opacity="1" letter-spacing="0">加载外部图片</text>
+  <rect x="918" y="318" width="112" height="30" rx="8" fill="#FFFFFF" stroke="#E0D3C6" stroke-width="1" opacity="1"  />
+  <text x="974" y="338" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="600" fill="#4D4036" text-anchor="middle" opacity="1" letter-spacing="0">翻译为中文</text>
+  <rect x="750" y="376" width="732" height="1" rx="0" fill="#E5D9CE" stroke="none" stroke-width="1" opacity="1"  />
+
+  <text x="790" y="424" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="22" font-weight="740" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">Noon 登录验证码</text>
+  <text x="790" y="463" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="400" fill="#4C4038" text-anchor="start" opacity="1" letter-spacing="0">你正在登录 Noon 商家后台。请在 10 分钟内输入以下验证码完成验证：</text>
+  <rect x="790" y="500" width="302" height="88" rx="16" fill="#F8F1EA" stroke="#E3D4C7" stroke-width="1" opacity="1"  />
+  <text x="941" y="558" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="44" font-weight="800" fill="#B65A32" text-anchor="middle" opacity="1" letter-spacing="4">492817</text>
+  <text x="790" y="638" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="400" fill="#4C4038" text-anchor="start" opacity="1" letter-spacing="0">如果这不是你本人操作，请忽略本邮件。为了账号安全，请不要把验证码转发给任何人。</text>
+  <text x="790" y="682" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="16" font-weight="650" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">Noon Team</text>
+
+  <rect x="1170" y="782" width="272" height="72" rx="14" fill="#FBF8F4" stroke="#E4D6CA" stroke-width="1" opacity="1"  />
+  <text x="1200" y="812" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="15" font-weight="700" fill="#211B17" text-anchor="start" opacity="1" letter-spacing="0">暖陶主题预览</text>
+  <text x="1200" y="838" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="12" font-weight="400" fill="#766A61" text-anchor="start" opacity="1" letter-spacing="0">温和、稳定、适合长时间扫读</text>
+</g>
+
+<text x="800" y="970" font-family="-apple-system, BlinkMacSystemFont, SF Pro Text, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="16" font-weight="600" fill="#7A6B60" text-anchor="middle" opacity="1" letter-spacing="0">Warm preview · 暖灰陶土系 / 原生 Mac 工具质感 / 平衡舒适密度</text>
+</svg>

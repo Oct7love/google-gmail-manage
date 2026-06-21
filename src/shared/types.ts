@@ -20,6 +20,8 @@ export interface Account {
   refundedAt: number | null;
   /** 是否归档（归档=断持久连接、不自动收信，但可手动刷新、缓存只读可看） */
   archived: boolean;
+  /** 归档时刻（毫秒），用于定格"已上号"计时；未归档为 null */
+  archivedAt: number | null;
   /** 手动记录的"上号时间"，毫秒时间戳，null=未填 */
   startedAt: number | null;
 }
@@ -52,6 +54,14 @@ export interface AccountInfo {
   recoveryEmail?: string;
   /** 备用链接 */
   link?: string;
+  /** 支付银行卡末四位（仅末四位，非完整卡号） */
+  cardLast4?: string;
+  /** 卡片到期，形如 MM/YY */
+  cardExpiry?: string;
+  /** 账单地址（可多行） */
+  billingAddress?: string;
+  /** 自由备注（可多行，记任意其它信息） */
+  note?: string;
 }
 
 /** 查看账号凭据时返回的完整 bundle */
@@ -72,5 +82,5 @@ export interface RefreshEvent {
   silent?: boolean;
 }
 
-/** 可选主题预设。默认 'cream'。 */
-export type ThemeId = 'cream' | 'slate' | 'onyx';
+/** 可选主题预设。默认 'fog'。 */
+export type ThemeId = 'fog' | 'warm' | 'graphite' | 'indigo';

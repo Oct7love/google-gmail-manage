@@ -4,16 +4,16 @@
  */
 
 const PALETTE = [
-  '#2563eb', // blue
-  '#db2777', // pink
-  '#059669', // green
-  '#d97706', // amber
-  '#7c3aed', // purple
-  '#dc2626', // red
-  '#0891b2', // cyan
-  '#65a30d', // lime
-  '#c026d3', // fuchsia
-  '#ea580c', // orange
+  '#3f6f8f', // muted blue
+  '#8a5f72', // muted rose
+  '#477768', // muted teal
+  '#8b6a3f', // muted ochre
+  '#665f8f', // muted violet
+  '#8a5550', // muted clay
+  '#4f7480', // muted cyan
+  '#687947', // muted olive
+  '#7b5f86', // muted plum
+  '#8d613f', // muted orange
 ];
 
 export function colorForKey(key: string): string {

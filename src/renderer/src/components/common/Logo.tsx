@@ -15,13 +15,7 @@ export default function Logo({ size = 20 }: Props): JSX.Element {
       xmlns="http://www.w3.org/2000/svg"
       className="block shrink-0"
     >
-      <defs>
-        <linearGradient id="mv-logo-g" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#3B82F6" />
-          <stop offset="1" stopColor="#1D4ED8" />
-        </linearGradient>
-      </defs>
-      <rect x="3" y="7" width="26" height="19" rx="3.5" fill="url(#mv-logo-g)" />
+      <rect x="3" y="7" width="26" height="19" rx="3.5" fill="rgb(var(--c-accent))" />
       {/* 顶缘细高光：提一点立体质感 */}
       <rect x="3.5" y="7.5" width="25" height="18" rx="3" stroke="rgba(255,255,255,0.22)" strokeWidth="1" />
       <path
@@ -33,7 +27,7 @@ export default function Logo({ size = 20 }: Props): JSX.Element {
         opacity="0.9"
       />
       {/* 右上角小圆点（通知/多账号标识） */}
-      <circle cx="25" cy="7" r="4" fill="#F97316" stroke="white" strokeWidth="1.5" />
+      <circle cx="25" cy="7" r="4" fill="rgb(var(--c-accent))" stroke="white" strokeWidth="1.5" opacity="0.9" />
     </svg>
   );
 }

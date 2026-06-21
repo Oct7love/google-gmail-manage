@@ -32,13 +32,13 @@ function buildSrcDoc(detail: MessageDetail, allowImages: boolean): string {
       font-size: 15px;
       line-height: 1.65;
       color: #1d1d1f;
-      padding: 24px 28px;
+      padding: 20px 24px;
       margin: 0;
       background: #ffffff;
       word-break: break-word;
       overflow-wrap: break-word;
     }
-    a{ color:#4f46e5; }
+    a{ color:#2077ff; }
     pre{ white-space: pre-wrap; word-break: break-word; }
     table{ max-width: 100%; }
     ${imgStyle}

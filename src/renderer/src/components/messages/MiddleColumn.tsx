@@ -49,7 +49,7 @@ export default function MiddleColumn(): JSX.Element {
           <button
             type="button"
             onClick={() => setCredsOpen(true)}
-            className="flex h-7 w-7 items-center justify-center rounded-md text-muted transition duration-150 ease-out hover:bg-surface-2 hover:text-text-2 active:scale-[0.98]"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-text-2 transition duration-150 ease-out hover:bg-surface-2 hover:text-text active:scale-[0.98] active:bg-accent-soft"
             title="查看账号凭据（密码 / 2FA / 辅邮）"
             aria-label="查看账号凭据"
           >
@@ -59,7 +59,7 @@ export default function MiddleColumn(): JSX.Element {
             type="button"
             onClick={() => void refreshOne(selected)}
             disabled={refreshing}
-            className="flex h-7 w-7 items-center justify-center rounded-md text-muted transition duration-150 ease-out hover:bg-surface-2 hover:text-text-2 active:scale-[0.98] disabled:opacity-30"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-text-2 transition duration-150 ease-out hover:bg-surface-2 hover:text-text active:scale-[0.98] active:bg-accent-soft disabled:opacity-30"
             title="刷新"
             aria-label="刷新"
           >

@@ -46,7 +46,7 @@ export default function LeftColumn(): JSX.Element {
           type="button"
           onClick={() => void refreshAll()}
           disabled={activeAccounts.length === 0}
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted transition-colors duration-150 ease-out hover:bg-surface-2 hover:text-text disabled:opacity-30"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-text-2 transition-colors duration-150 ease-out hover:bg-surface-2 hover:text-text active:bg-accent-soft disabled:opacity-30"
           title="全部刷新（仅在用账号）"
           aria-label="全部刷新"
         >
@@ -74,7 +74,7 @@ export default function LeftColumn(): JSX.Element {
         <button
           type="button"
           onClick={openAddDialog}
-          className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-gradient-to-b from-accent to-accent/85 px-3 py-2 text-[13px] font-medium text-white shadow-sm transition duration-150 ease-out hover:from-accent/95 hover:to-accent/80 active:scale-[0.98] active:from-accent/85"
+          className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-[13px] font-medium text-white shadow-sm transition duration-150 ease-out hover:bg-accent/90 active:scale-[0.98]"
         >
           <Plus size={14} strokeWidth={2.5} />
           添加账号
@@ -88,8 +88,8 @@ function EmptyState(): JSX.Element {
   return (
     <div className="mt-12 px-4 text-center text-xs text-muted">
       <div className="mb-4 flex justify-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface shadow-sm ring-1 ring-border">
-          <Logo size={30} />
+        <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-surface shadow-sm ring-1 ring-border">
+          <Logo size={26} />
         </div>
       </div>
       <p className="leading-relaxed">

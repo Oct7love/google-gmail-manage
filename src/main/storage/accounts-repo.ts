@@ -12,6 +12,7 @@ interface AccountRow {
   mark: string | null;
   refunded_at: number | null;
   archived: number;
+  archived_at: number | null;
   started_at: number | null;
 }
 
@@ -26,6 +27,7 @@ function rowToAccount(r: AccountRow): Account {
     mark: (r.mark as AccountMark | null) ?? null,
     refundedAt: r.refunded_at,
     archived: r.archived === 1,
+    archivedAt: r.archived_at,
     startedAt: r.started_at,
   };
 }
@@ -33,7 +35,7 @@ function rowToAccount(r: AccountRow): Account {
 export function listAccounts(db: Database.Database = getDb()): Account[] {
   const rows = db
     .prepare<[], AccountRow>(
-      `SELECT email, display_order, added_at, last_synced_at, last_sync_status, last_sync_error, mark, refunded_at, archived, started_at
+      `SELECT email, display_order, added_at, last_synced_at, last_sync_status, last_sync_error, mark, refunded_at, archived, archived_at, started_at
        FROM accounts
        ORDER BY display_order ASC, added_at ASC`,
     )
@@ -44,7 +46,7 @@ export function listAccounts(db: Database.Database = getDb()): Account[] {
 export function getAccount(email: string, db: Database.Database = getDb()): Account | null {
   const row = db
     .prepare<[string], AccountRow>(
-      `SELECT email, display_order, added_at, last_synced_at, last_sync_status, last_sync_error, mark, refunded_at, archived, started_at
+      `SELECT email, display_order, added_at, last_synced_at, last_sync_status, last_sync_error, mark, refunded_at, archived, archived_at, started_at
        FROM accounts WHERE email = ?`,
     )
     .get(email);
@@ -98,13 +100,21 @@ export function setMark(
   }
 }
 
-/** 设置/取消归档。 */
+/** 设置/取消归档。
+ *  归档时记录 archived_at 定格"已上号"计时（已有定格时刻则保持不变，COALESCE）；
+ *  取消归档清掉 archived_at，计时恢复累积。 */
 export function setArchived(
   email: string,
   archived: boolean,
   db: Database.Database = getDb(),
 ): void {
-  db.prepare(`UPDATE accounts SET archived = ? WHERE email = ?`).run(archived ? 1 : 0, email);
+  if (archived) {
+    db.prepare(
+      `UPDATE accounts SET archived = 1, archived_at = COALESCE(archived_at, ?) WHERE email = ?`,
+    ).run(Date.now(), email);
+  } else {
+    db.prepare(`UPDATE accounts SET archived = 0, archived_at = NULL WHERE email = ?`).run(email);
+  }
 }
 
 /** 设置/清除手动"上号时间"（ts=null 表示清除）。 */

@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useStore } from '../../store';
 import Logo from '../common/Logo';
-import { Bell, BellOff, Loader2, Palette } from 'lucide-react';
+import { Bell, BellOff, KeyRound, Loader2, Palette } from 'lucide-react';
 import ThemePicker from './ThemePicker';
+import TotpCalculator from './TotpCalculator';
 
 /**
  * 顶部工具栏：Mac hiddenInset 交通灯下方的品牌区 + 状态。
@@ -15,6 +16,7 @@ export default function Toolbar(): JSX.Element {
   const themeId = useStore((s) => s.themeId);
   const setTheme = useStore((s) => s.setTheme);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [totpOpen, setTotpOpen] = useState(false);
 
   return (
     <div
@@ -32,7 +34,7 @@ export default function Toolbar(): JSX.Element {
       </div>
 
       <div
-        className="relative flex w-28 shrink-0 items-center justify-end gap-2"
+        className="relative flex w-36 shrink-0 items-center justify-end gap-2"
         style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
       >
         {refreshingCount > 0 && (
@@ -43,9 +45,19 @@ export default function Toolbar(): JSX.Element {
         )}
         <button
           type="button"
+          onClick={() => setTotpOpen(true)}
+          title="2FA 验证码计算器"
+          className="flex h-7 w-7 items-center justify-center rounded-md text-text-2 transition duration-150 ease-out hover:bg-surface-2 hover:text-text active:scale-[0.98] active:bg-accent-soft"
+        >
+          <KeyRound size={15} />
+        </button>
+        <button
+          type="button"
           onClick={() => setPickerOpen((o) => !o)}
           title="切换主题"
-          className="flex h-7 w-7 items-center justify-center rounded-md text-muted transition duration-150 ease-out hover:bg-surface-2 hover:text-text active:scale-[0.98]"
+          className={`flex h-7 w-7 items-center justify-center rounded-md transition duration-150 ease-out hover:bg-surface-2 hover:text-text active:scale-[0.98] active:bg-accent-soft ${
+            pickerOpen ? 'bg-surface-2 text-text' : 'text-text-2'
+          }`}
         >
           <Palette size={15} />
         </button>
@@ -53,10 +65,11 @@ export default function Toolbar(): JSX.Element {
           type="button"
           onClick={() => void toggleSound()}
           title={soundEnabled ? '提示音已开（点击关闭）' : '提示音已关（点击开启）'}
-          className="flex h-7 w-7 items-center justify-center rounded-md text-muted transition duration-150 ease-out hover:bg-surface-2 hover:text-text active:scale-[0.98]"
+          className="flex h-7 w-7 items-center justify-center rounded-md text-text-2 transition duration-150 ease-out hover:bg-surface-2 hover:text-text active:scale-[0.98] active:bg-accent-soft"
         >
           {soundEnabled ? <Bell size={15} /> : <BellOff size={15} />}
         </button>
+        {totpOpen && <TotpCalculator onClose={() => setTotpOpen(false)} />}
         {pickerOpen && (
           <ThemePicker
             current={themeId}

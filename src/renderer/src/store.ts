@@ -35,7 +35,7 @@ interface State {
   dialogMode: DialogMode;
   /** 新邮件提示音开关（true=开，默认 true） */
   soundEnabled: boolean;
-  /** 当前主题 ID。默认 'cream'。 */
+  /** 当前主题 ID。默认 'fog'。 */
   themeId: ThemeId;
 
   init: () => Promise<void>;
@@ -84,7 +84,7 @@ export const useStore = create<State>((set, get) => ({
   recentNewByEmail: {},
   dialogMode: null,
   soundEnabled: true,
-  themeId: 'cream',
+  themeId: 'fog',
 
   init: async () => {
     const [accounts, settings] = await Promise.all([
@@ -92,10 +92,7 @@ export const useStore = create<State>((set, get) => ({
       window.api.system.getSettings(),
     ]);
     const first = accounts[0]?.email ?? null;
-    // 防御：旧版本可能存了 'stock' 等已废弃值；只接受当前 3 个有效 ID
-    const stored = settings.themeId as string | undefined;
-    const themeId: ThemeId =
-      stored === 'cream' || stored === 'slate' || stored === 'onyx' ? stored : 'cream';
+    const themeId = normalizeThemeId(settings.themeId as string | undefined);
     document.documentElement.dataset.theme = themeId;
     set({
       accounts,
@@ -278,3 +275,9 @@ export const useStore = create<State>((set, get) => ({
     }
   },
 }));
+
+function normalizeThemeId(id: string | undefined): ThemeId {
+  if (id === 'fog' || id === 'warm' || id === 'graphite' || id === 'indigo') return id;
+  // 旧版本的 cream/slate/onyx 和任何未知值统一回落到新默认雾蓝主题。
+  return 'fog';
+}

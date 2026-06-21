@@ -222,7 +222,7 @@ export default function AddAccountDialog(): JSX.Element | null {
                       <button
                         type="button"
                         onClick={onImportParse}
-                        className="rounded-md bg-accent px-2.5 py-1 text-[11px] text-white transition duration-150 hover:bg-accent/90 active:scale-[0.98]"
+                        className="rounded-md border border-accent bg-transparent px-2.5 py-1 text-[11px] text-accent transition duration-150 hover:bg-accent-soft active:scale-[0.98]"
                       >
                         解析并填入
                       </button>
@@ -318,7 +318,7 @@ export default function AddAccountDialog(): JSX.Element | null {
             {/* 表单字段 */}
             <label className="block">
               <span className="text-[11px] font-medium text-muted">Gmail 地址</span>
-              <div className="relative mt-0.5 flex items-center gap-1.5">
+              <div className="relative mt-1.5 flex items-center gap-1.5">
                 <input
                   ref={emailInputRef}
                   type="email"
@@ -346,7 +346,7 @@ export default function AddAccountDialog(): JSX.Element | null {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="abcd efgh ijkl mnop（空格会自动去掉）"
-                className="mt-0.5 w-full rounded-md border border-border bg-surface px-3 py-1.5 font-mono text-[12px] transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
+                className="mt-1.5 w-full rounded-md border border-border bg-surface px-3 py-1.5 font-mono text-[12px] transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
                 required
                 autoFocus={isUpdate}
               />

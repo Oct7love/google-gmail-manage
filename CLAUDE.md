@@ -145,9 +145,12 @@ google-mail-manage/
 - **粘贴解析**：支持 `账号 密码 辅邮 2fa` 和 `账号----密码----辅邮----2fa----链接` 两种格式，自动填入邮箱 + 2FA 密钥，登录密码和辅邮放"登录辅助"区供复制
 - **凭据抽屉（CredentialsDrawer）**：中栏顶部 🔑 按钮，显示该账号的完整凭据（应用密码 / Google 密码 / 2FA 密钥 + 实时码 / 辅邮 / 链接）。默认打码、按需单独或全部显示。可编辑保存
 - **存储分层**：
-  - Keychain service `MailViewer-imap-passwords`：应用专用密码（IMAP 必需）
-  - Keychain service `MailViewer-account-info`：Google 密码 / 2FA / 辅邮 / 链接（JSON，可选）
-  - 删账号时两边同步清掉
+  - Keychain service `MailViewer-imap-passwords`：应用专用密码（IMAP 必需，每次同步都读，仍走系统钥匙串）
+  - **本地加密文件** `userData/account-info.enc`：Google 密码 / 2FA / 辅邮 / 链接（AES-256-GCM，见 `src/main/storage/account-info-store.ts`）
+    - 为什么不放钥匙串：App 未签名（`identity: null`），按账号逐条存的钥匙串会在每次打开凭据时弹"输入密码"，30+ 轮换账号下几乎每次都弹。换成单文件加密后彻底不弹框
+    - 安全边界：密钥由用户名 + pepper 派生、不入库但可由代码推导——挡得住"直接打开文件/被云备份"，挡不住以用户身份运行的恶意程序。用户已知情同意（账号一次性、应用密码仅能读邮件）
+    - 旧版本存在 `MailViewer-account-info` 钥匙串的数据：首次打开该账号凭据时懒迁移到文件（仅那一次弹框），之后不再弹
+  - 删账号时：本地文件删除 + 顺手清掉可能残留的旧钥匙串记录
 - **无痕 Chrome 启动**：主进程直接调用 `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome --incognito <url>`；失败必须在表单内显示中文错误
 - **绝对不要伪装 UA 或自动化 Google 登录**：系统 Chrome 使用自身默认 UA、客户端提示和浏览器指纹。App 不注入脚本、不自动填写、不读取 Chrome Cookie
 - **无痕不是防封控**：它只在关闭窗口后清除本机会话；Google 仍能看到 IP、设备和登录行为，短时间登录大量账号仍可能触发额外验证

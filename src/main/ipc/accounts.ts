@@ -110,6 +110,10 @@ async function handleGetCredentials(email: string): Promise<AccountCredentials> 
     totpSecret: info?.totpSecret,
     recoveryEmail: info?.recoveryEmail,
     link: info?.link,
+    cardLast4: info?.cardLast4,
+    cardExpiry: info?.cardExpiry,
+    billingAddress: info?.billingAddress,
+    note: info?.note,
   };
 }
 
