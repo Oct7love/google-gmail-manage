@@ -6,6 +6,8 @@ export const IpcChannels = {
     GetSettings: 'system:getSettings',
     SetSettings: 'system:setSettings',
     FetchSmsCode: 'system:fetchSmsCode',
+    RequestPhoneOtp: 'system:requestPhoneOtp',
+    FetchPhoneOtpCode: 'system:fetchPhoneOtpCode',
   },
   Accounts: {
     List: 'accounts:list',

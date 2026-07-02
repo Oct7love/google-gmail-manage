@@ -52,6 +52,12 @@ const api = {
     }> => ipcRenderer.invoke(IpcChannels.System.SetSettings, next),
     fetchSmsCode: (url: string): Promise<{ ok: boolean; code?: string; raw?: string; error?: string }> =>
       ipcRenderer.invoke(IpcChannels.System.FetchSmsCode, url),
+    requestPhoneOtp: (
+      number: string,
+    ): Promise<{ ok: boolean; otpId?: string; phone?: string; error?: string }> =>
+      ipcRenderer.invoke(IpcChannels.System.RequestPhoneOtp, number),
+    fetchPhoneOtpCode: (otpId: string): Promise<{ ok: boolean; code?: string; error?: string }> =>
+      ipcRenderer.invoke(IpcChannels.System.FetchPhoneOtpCode, otpId),
   },
   accounts: {
     list: (): Promise<Account[]> => ipcRenderer.invoke(IpcChannels.Accounts.List),

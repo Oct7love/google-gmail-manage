@@ -91,10 +91,11 @@ export function setMark(
   mark: AccountMark | null,
   db: Database.Database = getDb(),
 ): void {
-  if (mark === 'refunded') {
+  if (mark === 'refunded' || mark === 'banned_refunded') {
+    // 已退款 / 已封号退款：记录冻结时刻（已有则保持），"已上号天数"从此不再累积
     db.prepare(
-      `UPDATE accounts SET mark = 'refunded', refunded_at = COALESCE(refunded_at, ?) WHERE email = ?`,
-    ).run(Date.now(), email);
+      `UPDATE accounts SET mark = ?, refunded_at = COALESCE(refunded_at, ?) WHERE email = ?`,
+    ).run(mark, Date.now(), email);
   } else {
     db.prepare(`UPDATE accounts SET mark = ?, refunded_at = NULL WHERE email = ?`).run(mark, email);
   }

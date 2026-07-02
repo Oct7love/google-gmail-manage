@@ -3,6 +3,8 @@ import type { AccountCredentials, AccountInfo } from '../../../../shared/types';
 import { useStore } from '../../store';
 import { computeTotp, TOTP_PERIOD } from '../../lib/totp';
 import SmsCodeBox from './SmsCodeBox';
+import PhoneOtpBox from './PhoneOtpBox';
+import { extractPhoneFromNote } from '../../lib/parseAccount';
 import StartedAtInput from './StartedAtInput';
 import {
   X,
@@ -182,6 +184,8 @@ export default function CredentialsDrawer({ email, onClose }: Props): JSX.Elemen
               {creds.link && /^https?:\/\//i.test(creds.link) && (
                 <SmsCodeBox url={creds.link} />
               )}
+
+              <PhoneOtpBox defaultPhone={extractPhoneFromNote(creds.note)} />
 
               <SectionTitle>支付信息</SectionTitle>
               <Row

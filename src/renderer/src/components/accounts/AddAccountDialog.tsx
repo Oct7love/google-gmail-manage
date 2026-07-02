@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useStore } from '../../store';
 import TotpPanel from './TotpPanel';
 import SmsCodeBox from './SmsCodeBox';
-import { parseAccountLine, ParsedAccount } from '../../lib/parseAccount';
+import PhoneOtpBox from './PhoneOtpBox';
+import { parseAccountLine, ParsedAccount, extractPhoneFromNote } from '../../lib/parseAccount';
 import {
   X,
   Copy,
@@ -58,7 +59,8 @@ export default function AddAccountDialog(): JSX.Element | null {
     let cancelled = false;
     void window.api.accounts.getCredentials(lockedEmail).then((creds) => {
       if (cancelled) return;
-      const hasExtra = creds.googlePassword || creds.recoveryEmail || creds.link || creds.totpSecret;
+      const hasExtra =
+        creds.googlePassword || creds.recoveryEmail || creds.link || creds.totpSecret || creds.note;
       if (hasExtra) {
         setImported({
           email: lockedEmail,
@@ -66,6 +68,7 @@ export default function AddAccountDialog(): JSX.Element | null {
           recoveryEmail: creds.recoveryEmail ?? '',
           totpSecret: creds.totpSecret ?? '',
           link: creds.link,
+          note: creds.note,
         });
       }
       if (creds.totpSecret) {
@@ -93,6 +96,7 @@ export default function AddAccountDialog(): JSX.Element | null {
           totpSecret: totpSecret.trim() || undefined,
           recoveryEmail: imported?.recoveryEmail,
           link: imported?.link,
+          note: imported?.note,
         }
       : undefined;
     const submitFn = isUpdate
@@ -125,7 +129,9 @@ export default function AddAccountDialog(): JSX.Element | null {
   const onImportParse = (): void => {
     const parsed = parseAccountLine(importText);
     if (!parsed) {
-      setImportError('解析失败。支持两种格式：\n  账号 密码 辅邮 2fa密钥\n  账号----密码----辅邮----2fa密钥----链接');
+      setImportError(
+        '解析失败。首段须是合法邮箱；分隔符可为竖线 | 、四个短横线 ---- 或空格，2FA 可留空。支持例如：\n  邮箱|密码|辅邮|2FA|备份码|国家|手机\n  邮箱|密码|辅邮|国家|手机（无 2FA）\n  账号----密码----辅邮----2FA----链接\n  账号 密码 辅邮 2FA',
+      );
       return;
     }
     setImportError(null);
@@ -254,12 +260,31 @@ export default function AddAccountDialog(): JSX.Element | null {
                     onCopy={copyToClipboard}
                   />
                 )}
+                {imported.note && (
+                  <div className="mt-1 border-t border-border pt-1">
+                    <div className="mb-0.5 flex items-center justify-between">
+                      <span className="text-muted">备注（备份码/国家/手机）</span>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(imported.note!)}
+                        className="text-accent transition hover:underline"
+                      >
+                        复制
+                      </button>
+                    </div>
+                    <pre className="whitespace-pre-wrap break-all font-mono text-[10.5px] leading-snug text-text-2">
+                      {imported.note}
+                    </pre>
+                  </div>
+                )}
               </div>
             )}
 
             {imported?.link && /^https?:\/\//i.test(imported.link) && (
               <SmsCodeBox url={imported.link} />
             )}
+
+            {imported && <PhoneOtpBox defaultPhone={extractPhoneFromNote(imported.note)} />}
 
             <div className="rounded-lg border border-accent/20 bg-accent-soft/50 p-3">
               <div className="mb-2 flex items-start gap-2">

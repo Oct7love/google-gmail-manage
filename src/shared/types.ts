@@ -3,8 +3,9 @@
 /** 账号同步状态 */
 export type SyncStatus = 'ok' | 'expired' | 'error';
 
-/** 用户给账号打的业务标记（互斥单状态，null=未标记）。与同步状态无关。 */
-export type AccountMark = 'refunded' | 'warning';
+/** 用户给账号打的业务标记（互斥单状态，null=未标记）。与同步状态无关。
+ *  banned=封号未退款，banned_refunded=已封号退款（也算退款，会置顶 + 冻结上号计时）。 */
+export type AccountMark = 'refunded' | 'warning' | 'banned' | 'banned_refunded';
 
 /** 单个已绑定 Gmail 账号（暴露给 UI 的形态） */
 export interface Account {

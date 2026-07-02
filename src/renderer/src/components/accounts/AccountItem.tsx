@@ -16,6 +16,7 @@ import {
   Archive,
   ArchiveRestore,
   Clock,
+  Ban,
 } from 'lucide-react';
 
 interface Props {
@@ -155,8 +156,8 @@ export default function AccountItem({ account }: Props): JSX.Element {
               <span className="min-w-0 truncate text-[10.5px] text-muted">@{domain}</span>
               {account.startedAt != null && (
                 <>
-                  <span className="inline-flex h-4 shrink-0 items-center gap-0.5 rounded bg-surface-2 px-1 text-[10px] font-medium tabular-nums leading-none text-muted">
-                    <Clock size={9} />
+                  <span className="inline-flex h-4 shrink-0 items-center gap-0.5 rounded bg-accent-soft px-1 text-[10px] font-semibold tabular-nums leading-none text-accent ring-1 ring-accent/20">
+                    <Clock size={9} strokeWidth={2.5} />
                     {formatStartedAt(account.startedAt)}
                   </span>
                   <ElapsedPill startedAt={account.startedAt} frozenAt={frozenAtFor(account)} />
@@ -173,17 +174,6 @@ export default function AccountItem({ account }: Props): JSX.Element {
             </span>
           )}
         </button>
-        {account.archived && (
-          <button
-            type="button"
-            onClick={() => void setArchived(account.email, false)}
-            className="flex h-6 shrink-0 items-center gap-1 rounded-md bg-accent-soft px-1.5 text-[11px] font-medium text-accent transition duration-150 ease-out hover:bg-accent hover:text-white active:scale-95"
-            title="恢复到在用"
-          >
-            <ArchiveRestore size={11} />
-            恢复
-          </button>
-        )}
         <button
           ref={triggerRef}
           type="button"
@@ -195,6 +185,18 @@ export default function AccountItem({ account }: Props): JSX.Element {
         >
           <MoreHorizontal size={14} />
         </button>
+        {account.archived && (
+          // 归档行的「恢复」：纯图标、贴最右边缘，避免挤占「已上号天数」等时间信息
+          <button
+            type="button"
+            onClick={() => void setArchived(account.email, false)}
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-accent-soft text-accent transition duration-150 ease-out hover:bg-accent hover:text-white active:scale-95"
+            title="恢复到在用"
+            aria-label="恢复到在用"
+          >
+            <ArchiveRestore size={13} />
+          </button>
+        )}
       </div>
 
       {menuOpen &&
@@ -227,6 +229,26 @@ export default function AccountItem({ account }: Props): JSX.Element {
               <AlertTriangle size={12} className="text-warning" />
               标记有警告
               {account.mark === 'warning' && <Check size={12} className="ml-auto text-accent" />}
+            </button>
+            <button
+              type="button"
+              onClick={() => onMark('banned_refunded')}
+              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors duration-150 ease-out hover:bg-surface-2"
+            >
+              <Ban size={12} className="text-refund" />
+              标记封号·已退款
+              {account.mark === 'banned_refunded' && (
+                <Check size={12} className="ml-auto text-accent" />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => onMark('banned')}
+              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors duration-150 ease-out hover:bg-surface-2"
+            >
+              <Ban size={12} className="text-danger" />
+              标记封号·未退款
+              {account.mark === 'banned' && <Check size={12} className="ml-auto text-accent" />}
             </button>
             {account.mark && (
               <button
@@ -297,7 +319,7 @@ function formatStartedAt(ts: number): string {
 /** 退款或归档都会定格"已上号"计时，两者都发生时取更早的时刻。 */
 function frozenAtFor(a: Account): number | null {
   const candidates = [
-    a.mark === 'refunded' ? a.refundedAt : null,
+    a.mark === 'refunded' || a.mark === 'banned_refunded' ? a.refundedAt : null,
     a.archived ? a.archivedAt : null,
   ].filter((v): v is number => v != null);
   return candidates.length > 0 ? Math.min(...candidates) : null;
@@ -314,9 +336,9 @@ function ElapsedPill({
 }): JSX.Element {
   const end = frozenAt != null ? frozenAt : Date.now();
   const days = Math.max(0, (end - startedAt) / 86_400_000);
-  let cls = 'bg-surface-2 text-muted';
-  if (days > 4) cls = 'bg-surface-2 text-danger';
-  else if (days > 3) cls = 'bg-surface-2 text-warning';
+  let cls = 'bg-success/15 text-success ring-1 ring-success/25';
+  if (days > 4) cls = 'bg-danger/15 text-danger ring-1 ring-danger/30';
+  else if (days > 3) cls = 'bg-warning/15 text-warning ring-1 ring-warning/30';
   const totalHours = Math.max(0, Math.floor((end - startedAt) / 3_600_000));
   const d = Math.floor(totalHours / 24);
   const h = totalHours % 24;
@@ -325,7 +347,7 @@ function ElapsedPill({
   else text = h > 0 ? `${h}小时` : '刚上号';
   return (
     <span
-      className={`inline-flex h-4 shrink-0 items-center rounded px-1 text-[10px] font-medium tabular-nums leading-none ${cls}`}
+      className={`inline-flex h-4 shrink-0 items-center rounded px-1 text-[10px] font-semibold tabular-nums leading-none ${cls}`}
       title={
         frozenAt != null
           ? `计时已定格在 ${days.toFixed(1)} 天（退款/归档后不再累积）`
@@ -342,6 +364,24 @@ function MarkPill({ mark }: { mark: AccountMark }): JSX.Element {
     return (
       <span className="inline-flex h-4 shrink-0 items-center rounded-full bg-refund/15 px-1.5 text-[10px] font-medium leading-none text-refund">
         已退款
+      </span>
+    );
+  }
+  if (mark === 'banned_refunded') {
+    // 已封号退款：紫底（钱已退回=好消息）+ 封号图标，区别于"未退款"的红
+    return (
+      <span className="inline-flex h-4 shrink-0 items-center gap-0.5 rounded-full bg-refund px-1.5 text-[10px] font-semibold leading-none text-white shadow-card">
+        <Ban size={9} strokeWidth={2.5} />
+        封号已退
+      </span>
+    );
+  }
+  if (mark === 'banned') {
+    // 封号未退款：实心大红徽章，最醒目，提示"账号已死且没退款"
+    return (
+      <span className="inline-flex h-4 shrink-0 items-center gap-0.5 rounded-full bg-danger px-1.5 text-[10px] font-semibold leading-none text-white shadow-card">
+        <Ban size={9} strokeWidth={2.5} />
+        封号未退
       </span>
     );
   }
@@ -369,7 +409,10 @@ function StatusBadge({
   if (!expired && !error && !refreshing && !ok) return null;
   if (refreshing) {
     return (
-      <span className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-surface shadow ring-1 ring-border">
+      <span
+        className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-surface shadow ring-1 ring-border"
+        title="正在刷新收信…"
+      >
         <RefreshCw size={8} className="animate-spin text-accent" />
       </span>
     );
@@ -378,18 +421,22 @@ function StatusBadge({
   // 选中行底是 bg-surface(白)，未选中是 bg-sidebar——否则选中行会出现一圈脏色描边环。
   let color = 'bg-success';
   let size = 'h-2 w-2';
+  let label = '正常 · 上次收信成功';
   if (expired) {
     color = 'bg-warning';
     size = 'h-2.5 w-2.5';
+    label = '应用密码失效 · 点击账号可更新';
   } else if (error) {
     color = 'bg-danger';
     size = 'h-2.5 w-2.5';
+    label = '同步出错 · 网络或 IMAP 报错';
   }
   return (
     <span
       className={`absolute -bottom-0.5 -right-0.5 inline-block ${size} rounded-full border-2 ${
         selected ? 'border-surface' : 'border-sidebar'
       } ${color}`}
+      title={label}
     />
   );
 }
