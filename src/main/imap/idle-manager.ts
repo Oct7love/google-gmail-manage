@@ -32,6 +32,8 @@ interface IdleSession {
   email: string;
   client: ImapFlow | null;
   active: boolean;
+  /** openSession 正在建连（buildClient/connect 期间）。防止并发重复建连（#7）。 */
+  connecting: boolean;
   reconnectAttempts: number;
   reconnectTimer: NodeJS.Timeout | null;
   syncDebounceTimer: NodeJS.Timeout | null;
@@ -88,44 +90,80 @@ function triggerSync(session: IdleSession, opts: { silent?: boolean } = {}): voi
   }, SYNC_DEBOUNCE_MS);
 }
 
-async function openSession(session: IdleSession): Promise<void> {
-  const client = await buildClient(session.email);
-  if (!client) {
-    // 没密码 → 标 expired 等用户添加/更新
-    accountsRepo.updateSyncStatus(session.email, 'expired', '应用密码未设置');
-    broadcast({ email: session.email, phase: 'expired' });
-    session.active = false;
-    return;
-  }
+/** 该 session 是否仍是 map 里当前有效且启用的那个（在途 await 后用来识别孤儿）。 */
+function isLiveSession(session: IdleSession): boolean {
+  return sessions.get(session.email) === session && session.active;
+}
 
-  session.client = client;
-
-  client.on('error', (err: unknown) => {
-    const msg = err instanceof Error ? err.message : String(err);
-    log(session.email, `ERROR: ${msg}`);
-    // 强制关闭 client，保证 close 事件触发 → 走重连逻辑
-    // （有些错误 imapflow 自己不会把 socket 关干净）
+async function closeQuietly(client: ImapFlow): Promise<void> {
+  try {
+    await client.logout();
+  } catch {
     try {
       client.close();
     } catch {
       /* noop */
     }
-  });
+  }
+}
 
-  client.on('close', () => {
-    log(session.email, 'connection closed');
-    session.client = null;
-    if (session.active) scheduleReconnect(session);
-  });
-
-  client.on('exists', (data: { count: number }) => {
-    log(session.email, `exists → ${data.count}，触发同步`);
-    triggerSync(session);
-  });
-
+async function openSession(session: IdleSession): Promise<void> {
+  if (session.connecting || session.client) return; // 已在建连/已连上，避免并发重复建连（#7）
+  session.connecting = true;
   try {
+    const client = await buildClient(session.email);
+
+    // 建连期间账号可能被 stop/删除/归档（stopIdleFor 会把 session 移出 map / 置 active=false）：
+    // 此时这条连接是孤儿，任何池子都触达不到 → 关掉别泄漏（#6）
+    if (!isLiveSession(session)) {
+      if (client) await closeQuietly(client);
+      return;
+    }
+
+    if (!client) {
+      // 没密码 → 标 expired 等用户添加/更新
+      accountsRepo.updateSyncStatus(session.email, 'expired', '应用密码未设置');
+      broadcast({ email: session.email, phase: 'expired' });
+      session.active = false;
+      return;
+    }
+
+    session.client = client;
+
+    client.on('error', (err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      log(session.email, `ERROR: ${msg}`);
+      // 强制关闭 client，保证 close 事件触发 → 走重连逻辑
+      // （有些错误 imapflow 自己不会把 socket 关干净）
+      try {
+        client.close();
+      } catch {
+        /* noop */
+      }
+    });
+
+    client.on('close', () => {
+      log(session.email, 'connection closed');
+      // 只清掉自己这条 client 的槽位——老连接的 close 不能踩掉新连接（#7）
+      if (session.client === client) session.client = null;
+      if (session.active && sessions.get(session.email) === session) scheduleReconnect(session);
+    });
+
+    client.on('exists', (data: { count: number }) => {
+      log(session.email, `exists → ${data.count}，触发同步`);
+      triggerSync(session);
+    });
+
     await client.connect();
     await client.mailboxOpen('INBOX');
+
+    // connect/mailboxOpen 期间也可能被 stop → 再校验一次，避免留下孤儿连接（#6）
+    if (!isLiveSession(session)) {
+      if (session.client === client) session.client = null;
+      await closeQuietly(client);
+      return;
+    }
+
     // mailboxOpen 之后 imapflow 自动进入 IDLE（有 exists/expunge 事件就触发）
     session.reconnectAttempts = 0;
     log(session.email, 'idle active');
@@ -139,6 +177,15 @@ async function openSession(session: IdleSession): Promise<void> {
     const e = err as { responseText?: string; responseStatus?: string };
     const combined = `${msg} ${e.responseText ?? ''}`;
     log(session.email, `connect failed: ${combined}`);
+    // 连接失败时 client 可能半开着，兜底清掉自己的槽位
+    if (session.client) {
+      try {
+        session.client.close();
+      } catch {
+        /* noop */
+      }
+      session.client = null;
+    }
 
     if (
       /AUTHENTICATIONFAILED|invalid credentials|Application-specific password required|Web login required/i.test(
@@ -151,8 +198,10 @@ async function openSession(session: IdleSession): Promise<void> {
       return;
     }
 
-    // 网络错误 → 退避重连
-    scheduleReconnect(session);
+    // 网络错误 / buildClient(keytar) 异常 → 退避重连（#13：rejection 不再逃逸成静默停摆）
+    if (isLiveSession(session)) scheduleReconnect(session);
+  } finally {
+    session.connecting = false;
   }
 }
 
@@ -181,6 +230,7 @@ function getOrCreate(email: string): IdleSession {
       email,
       client: null,
       active: true,
+      connecting: false,
       reconnectAttempts: 0,
       reconnectTimer: null,
       syncDebounceTimer: null,
@@ -252,6 +302,7 @@ function healthCheck(): void {
   for (const session of sessions.values()) {
     if (!session.active) continue;
     if (session.client) continue; // 正常连着
+    if (session.connecting) continue; // 正在建连中，别重复拉起
     if (session.reconnectTimer) continue; // 已经在重连倒计时里
     log(session.email, 'health check: session 无活跃连接且无重连计划，立即拉起');
     void openSession(session);
@@ -262,9 +313,15 @@ function healthCheck(): void {
 export function reconnectAll(): void {
   for (const session of sessions.values()) {
     if (!session.active) continue;
+    if (session.connecting) continue; // 正在建连中，交给它自己完成，别插一脚
     if (session.client) {
-      // 正在连着但可能是僵尸连接，关掉让 close 事件触发重连
-      session.client.close();
+      // 正在连着但可能是僵尸连接，关掉让 close 事件触发重连。
+      // 单个 close 抛错不能中断其它账号的唤醒重连，包一层。
+      try {
+        session.client.close();
+      } catch {
+        /* noop */
+      }
     } else {
       // 没连着，立即重连
       if (session.reconnectTimer) {

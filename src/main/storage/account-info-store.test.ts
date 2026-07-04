@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -158,5 +158,53 @@ describe('createAccountInfoStore', () => {
     writeFileSync(filePath, Buffer.from('not a valid encrypted blob'));
     const store = createAccountInfoStore(filePath, key);
     expect(store.get('a@x.com')).toBeNull();
+  });
+
+  it('backs up an unreadable file before writing (never silently discards data)', () => {
+    // 用正确密钥写入两个账号
+    createAccountInfoStore(filePath, key).set('a@x.com', { googlePassword: 'a' });
+    createAccountInfoStore(filePath, key).set('b@x.com', { googlePassword: 'b' });
+    const original = readFileSync(filePath);
+
+    // 换一个错误密钥打开并保存 → 旧文件解密失败,绝不能被静默覆盖
+    const wrongKey = deriveKey('WRONG-KEY');
+    createAccountInfoStore(filePath, wrongKey).set('c@x.com', { googlePassword: 'c' });
+
+    // 原始(旧密钥加密的)数据被备份成 .corrupt-* 文件,字节完整,可日后恢复
+    const backups = readdirSync(dir).filter((f) => f.includes('.corrupt-'));
+    expect(backups.length).toBe(1);
+    expect(readFileSync(join(dir, backups[0])).equals(original)).toBe(true);
+  });
+
+  it('starts fresh (usable) after backing up a corrupt file', () => {
+    writeFileSync(filePath, Buffer.from('garbage-not-decryptable'));
+    const store = createAccountInfoStore(filePath, key);
+    store.set('a@x.com', { googlePassword: 'pw' });
+    expect(store.get('a@x.com')).toEqual({ googlePassword: 'pw' });
+  });
+
+  it('leaves no temp file behind after a successful write', () => {
+    createAccountInfoStore(filePath, key).set('a@x.com', { googlePassword: 'pw' });
+    expect(readdirSync(dir).some((f) => f.includes('.tmp'))).toBe(false);
+  });
+
+  it('可用兜底密钥读回旧密钥写的文件（种子变化不丢数据）', () => {
+    const altKey = deriveKey('OLD-SEED');
+    // 文件用 altKey 写入
+    createAccountInfoStore(filePath, altKey).set('a@x.com', { googlePassword: 'pw' });
+    // 现在主密钥换成 key，把 altKey 作为兜底 → 仍能读回
+    const store = createAccountInfoStore(filePath, key, [altKey]);
+    expect(store.get('a@x.com')).toEqual({ googlePassword: 'pw' });
+  });
+
+  it('兜底读到旧数据后，下次写入迁移到主密钥（不再依赖兜底）', () => {
+    const altKey = deriveKey('OLD-SEED');
+    createAccountInfoStore(filePath, altKey).set('a@x.com', { googlePassword: 'pw' });
+    const store = createAccountInfoStore(filePath, key, [altKey]);
+    store.set('b@x.com', { googlePassword: 'pw2' }); // 触发一次全量重写
+    // 现在只用主密钥（无兜底）也能读全部，说明已迁移
+    const primaryOnly = createAccountInfoStore(filePath, key);
+    expect(primaryOnly.get('a@x.com')).toEqual({ googlePassword: 'pw' });
+    expect(primaryOnly.get('b@x.com')).toEqual({ googlePassword: 'pw2' });
   });
 });

@@ -130,6 +130,14 @@ describe('parseAccountLine — | 卡密格式（邮箱|密码|辅邮|2FA|备份�
     expect(parseAccountLine('乱七八糟|aaa|bbb')).toBeNull();
   });
 
+  it('密码为空段不错位：邮箱||辅邮|2FA（空密码不吞掉辅邮）', () => {
+    const r = parseAccountLine('a@gmail.com||rec@x.com|JBSWY3DPEHPK3PXP');
+    expect(r?.email).toBe('a@gmail.com');
+    expect(r?.googlePassword).toBe(''); // 密码确实为空，而不是把辅邮顶上来当密码
+    expect(r?.recoveryEmail).toBe('rec@x.com');
+    expect(r?.totpSecret).toBe('JBSWY3DPEHPK3PXP');
+  });
+
   it('| 格式只有 邮箱|密码|辅邮|2FA（无备份码等）：note 为空', () => {
     const r = parseAccountLine(
       'a@gmail.com|pw123456|recovery@outlook.com|colw2jtvjwuz5hwnx4mv5icl2mz4b2rk'

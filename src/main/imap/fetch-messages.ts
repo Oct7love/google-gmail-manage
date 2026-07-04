@@ -65,7 +65,17 @@ export async function fetchLatestMessages(
       throw err;
     }
   } finally {
-    await c.logout();
+    // 连接可能在 fetch 后已断（socketTimeout / 服务端断连 / 睡眠），此时 logout 会抛错。
+    // 绝不能让它覆盖已取回的结果或原始错误——包起来，退化为 close 兜底。
+    try {
+      await c.logout();
+    } catch {
+      try {
+        c.close();
+      } catch {
+        /* noop */
+      }
+    }
   }
 }
 

@@ -51,8 +51,16 @@ function store(): AccountInfoStore {
     } catch {
       /* 极少数环境取不到用户名，退化为仅 pepper，仍可用且稳定 */
     }
-    const key = deriveKey(`${APP_PEPPER}|${user}`);
-    _store = createAccountInfoStore(join(app.getPath('userData'), 'account-info.enc'), key);
+    const primarySeed = `${APP_PEPPER}|${user}`;
+    const key = deriveKey(primarySeed);
+    // 兜底密钥：若某次运行取不到用户名（user=''）时曾以空用户名种子写入过，用这个变体救回，
+    // 并在下次写入时自动迁移回主密钥。主密钥不变，不影响正常已存文件。
+    const fallbackKeys = [`${APP_PEPPER}|`].filter((s) => s !== primarySeed).map(deriveKey);
+    _store = createAccountInfoStore(
+      join(app.getPath('userData'), 'account-info.enc'),
+      key,
+      fallbackKeys,
+    );
   }
   return _store;
 }

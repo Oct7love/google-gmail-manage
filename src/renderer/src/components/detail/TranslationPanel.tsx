@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { MessageDetail } from '../../../../shared/types';
 import { Languages, Loader2, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -15,8 +15,11 @@ type State =
 export default function TranslationPanel({ detail }: Props): JSX.Element | null {
   const [state, setState] = useState<State>({ kind: 'idle' });
   const [expanded, setExpanded] = useState(true);
+  // 当前正在看的邮件 key：翻译响应回来时用它判定是否已切走，避免旧译文落到新邮件上
+  const currentKeyRef = useRef('');
 
   useEffect(() => {
+    currentKeyRef.current = `${detail.accountEmail}:${detail.messageId}`;
     setState({ kind: 'idle' });
     setExpanded(true);
   }, [detail.accountEmail, detail.messageId]);
@@ -25,8 +28,10 @@ export default function TranslationPanel({ detail }: Props): JSX.Element | null 
   if (!sourceText.trim()) return null;
 
   const translate = async (): Promise<void> => {
+    const myKey = `${detail.accountEmail}:${detail.messageId}`;
     setState({ kind: 'loading' });
     const res = await window.api.translation.translate(sourceText);
+    if (currentKeyRef.current !== myKey) return; // 已切到别的邮件，丢弃这次过期结果
     if (res.ok && res.text) setState({ kind: 'done', text: res.text });
     else setState({ kind: 'error', error: res.error ?? '翻译失败' });
   };

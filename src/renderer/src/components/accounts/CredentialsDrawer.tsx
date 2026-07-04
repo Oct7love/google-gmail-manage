@@ -182,10 +182,10 @@ export default function CredentialsDrawer({ email, onClose }: Props): JSX.Elemen
                 emptyHint="未保存"
               />
               {creds.link && /^https?:\/\//i.test(creds.link) && (
-                <SmsCodeBox url={creds.link} />
+                <SmsCodeBox key={`sms:${email}`} url={creds.link} />
               )}
 
-              <PhoneOtpBox defaultPhone={extractPhoneFromNote(creds.note)} />
+              <PhoneOtpBox key={`otp:${email}`} defaultPhone={extractPhoneFromNote(creds.note)} />
 
               <SectionTitle>支付信息</SectionTitle>
               <Row

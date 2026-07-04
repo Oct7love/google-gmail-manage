@@ -28,6 +28,7 @@ export default function PhoneOtpBox({ defaultPhone }: Props): JSX.Element {
   const [copied, setCopied] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const otpRef = useRef<string | null>(null);
   const leftRef = useRef(TOTAL);
 
@@ -43,12 +44,19 @@ export default function PhoneOtpBox({ defaultPhone }: Props): JSX.Element {
       timerRef.current = null;
     }
   };
-  useEffect(() => clearTimer, []); // 卸载时清理轮询
+  // 卸载时清理轮询 + 复制反馈定时器，避免卸载后 setState
+  useEffect(() => {
+    return () => {
+      clearTimer();
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    };
+  }, []);
 
-  const tick = async (): Promise<void> => {
-    const id = otpRef.current;
-    if (!id) return;
+  // id 是本轮发起时的 otpId：响应回来时若 otpRef 已变（开了新一轮 / 已停止），
+  // 说明这是过期响应，直接丢弃——否则旧 session 的码会杀掉新一轮轮询并显示旧码。
+  const tick = async (id: string): Promise<void> => {
     const r = await window.api.system.fetchPhoneOtpCode(id);
+    if (otpRef.current !== id) return;
     if (r.ok && r.code) {
       clearTimer();
       otpRef.current = null;
@@ -66,10 +74,11 @@ export default function PhoneOtpBox({ defaultPhone }: Props): JSX.Element {
       setState({ kind: 'error', error: res.error ?? '获取 session 失败' });
       return;
     }
-    otpRef.current = res.otpId;
+    const otpId = res.otpId;
+    otpRef.current = otpId;
     leftRef.current = TOTAL;
     setState({ kind: 'waiting', phone: res.phone ?? n, secondsLeft: TOTAL });
-    void tick(); // 立即查一次
+    void tick(otpId); // 立即查一次
     timerRef.current = setInterval(() => {
       leftRef.current -= STEP;
       if (leftRef.current <= 0) {
@@ -79,14 +88,15 @@ export default function PhoneOtpBox({ defaultPhone }: Props): JSX.Element {
         return;
       }
       setState((s) => (s.kind === 'waiting' ? { ...s, secondsLeft: leftRef.current } : s));
-      void tick();
+      void tick(otpId);
     }, STEP * 1000);
   };
 
   const copy = (text: string): void => {
     void navigator.clipboard.writeText(text);
     setCopied(true);
-    setTimeout(() => setCopied(false), 1200);
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    copyTimerRef.current = setTimeout(() => setCopied(false), 1200);
   };
 
   const busy = state.kind === 'requesting' || state.kind === 'waiting';

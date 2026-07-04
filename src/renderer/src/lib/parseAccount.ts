@@ -57,13 +57,16 @@ function looksLikeCountry(s: string): boolean {
  * email/password 取前两段，其余按内容归类，备份码/国家/手机拼进 note。
  */
 function classifyFields(parts: string[]): ParsedAccount | null {
+  // 至少要 email + password + 一个尾段（按原始分段计，空段也算位）
   if (parts.length < 3) return null;
 
-  const email = parts[0];
+  const email = (parts[0] ?? '').trim();
   // 首段必须是合法邮箱，否则当垃圾行丢弃
   if (!looksLikeEmail(email)) return null;
-  const googlePassword = parts[1];
-  const rest = parts.slice(2);
+  // email / password 按**位置**取，空段也保留其位（否则空密码会让辅邮左移顶成密码）；
+  // 其余段是"按内容识别"的，才去掉空段。
+  const googlePassword = (parts[1] ?? '').trim();
+  const rest = parts.slice(2).map((p) => p.trim()).filter(Boolean);
 
   let link: string | undefined;
   let recoveryEmail = '';
@@ -138,16 +141,15 @@ export function parseAccountLine(raw: string): ParsedAccount | null {
   const s = raw.trim();
   if (!s) return null;
 
-  // 格式 3：竖线分隔（完整卡密）
+  // 格式 3：竖线分隔（完整卡密）。不在这里 filter 空段——空段的"位"要留给 classifyFields
+  // 定位 email/password（否则空密码会让后面的字段整体左移）。
   if (s.includes('|')) {
-    const parts = s.split('|').map((p) => p.trim()).filter(Boolean);
-    return classifyFields(parts);
+    return classifyFields(s.split('|'));
   }
 
   // 格式 2：---- 分隔
   if (/-{4,}/.test(s)) {
-    const parts = s.split(/-{4,}/).map((p) => p.trim()).filter(Boolean);
-    return classifyFields(parts);
+    return classifyFields(s.split(/-{4,}/));
   }
 
   // 格式 1：空格/Tab 分隔

@@ -1,43 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
+import { type Seg, EMPTY_SEG as EMPTY, tsToSeg, segToTs, isEmptySeg } from '../../lib/startedAtDate';
 
 interface Props {
   value: number | null;
   onChange: (ts: number | null) => void;
-}
-
-interface Seg {
-  y: string;
-  mo: string;
-  d: string;
-  h: string;
-}
-
-const EMPTY: Seg = { y: '', mo: '', d: '', h: '' };
-
-function tsToSeg(ts: number | null): Seg {
-  if (ts == null) return EMPTY;
-  const dt = new Date(ts);
-  const pad = (n: number): string => String(n).padStart(2, '0');
-  return {
-    y: String(dt.getFullYear()),
-    mo: pad(dt.getMonth() + 1),
-    d: pad(dt.getDate()),
-    h: pad(dt.getHours()),
-  };
-}
-
-/** 四格都齐且日期合法时才返回时间戳；否则 null（不提交半成品）。小时留空按 0 点算。 */
-function segToTs(s: Seg): number | null {
-  if (!s.y || !s.mo || !s.d) return null;
-  const y = Number(s.y);
-  const mo = Number(s.mo);
-  const d = Number(s.d);
-  const h = s.h ? Number(s.h) : 0;
-  if (y < 1970 || mo < 1 || mo > 12 || d < 1 || d > 31 || h > 23) return null;
-  const dt = new Date(y, mo - 1, d, h, 0, 0, 0);
-  // 回环校验，挡掉 2 月 30 日这类非法组合
-  if (dt.getFullYear() !== y || dt.getMonth() !== mo - 1 || dt.getDate() !== d) return null;
-  return dt.getTime();
 }
 
 const ORDER = ['y', 'mo', 'd', 'h'] as const;
@@ -72,16 +38,25 @@ export default function StartedAtInput({ value, onChange }: Props): JSX.Element 
     }
   }, [value]);
 
-  function commit(next: Seg): void {
-    setSeg(next);
-    const ts = segToTs(next);
+  /** 提交到存储：只在编辑结束（焦点离开整个控件）时调用，避免每敲一个数字就写一次库。 */
+  function commitToStore(current: Seg): void {
+    const ts = segToTs(current);
     if (ts != null) {
-      lastEmitted.current = ts;
-      onChange(ts);
-    } else if (!next.y && !next.mo && !next.d && !next.h) {
+      if (ts !== lastEmitted.current) {
+        lastEmitted.current = ts;
+        onChange(ts);
+      }
+    } else if (isEmptySeg(current) && lastEmitted.current !== null) {
       lastEmitted.current = null;
       onChange(null);
     }
+    // 其它情况（半成品：只填了年）不提交，保留原值
+  }
+
+  function handleBlur(e: React.FocusEvent<HTMLDivElement>): void {
+    // 焦点仍在本控件的四个小格之间跳转 → 不算编辑结束，不提交
+    if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+    commitToStore(seg);
   }
 
   function focusNext(field: Field): void {
@@ -96,7 +71,8 @@ export default function StartedAtInput({ value, onChange }: Props): JSX.Element 
 
   function handleChange(field: Field, raw: string): void {
     const digits = raw.replace(/\D/g, '').slice(0, MAXLEN[field]);
-    commit({ ...seg, [field]: digits });
+    // 只更新本地显示，不写库；提交推迟到焦点离开控件时（handleBlur）
+    setSeg({ ...seg, [field]: digits });
     if (digits.length === MAXLEN[field]) focusNext(field);
   }
 
@@ -119,7 +95,10 @@ export default function StartedAtInput({ value, onChange }: Props): JSX.Element 
   const sep = <span className="select-none text-muted-2">·</span>;
 
   return (
-    <div className="flex min-w-0 flex-1 items-center gap-0.5 rounded-md border border-border bg-surface px-2 py-1 transition-colors duration-150 focus-within:border-accent focus-within:ring-1 focus-within:ring-accent/30">
+    <div
+      onBlur={handleBlur}
+      className="flex min-w-0 flex-1 items-center gap-0.5 rounded-md border border-border bg-surface px-2 py-1 transition-colors duration-150 focus-within:border-accent focus-within:ring-1 focus-within:ring-accent/30"
+    >
       <input
         ref={yRef}
         value={seg.y}
